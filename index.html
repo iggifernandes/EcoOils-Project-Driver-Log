@@ -185,6 +185,33 @@
 
   footer{text-align:center; font-size:11.5px; color:var(--grey-mid); padding-top:10px;}
 
+  /* live camera modal — camera capture only, no gallery picker */
+  .camera-modal{
+    position:fixed; inset:0; background:#000; z-index:100; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+  }
+  .camera-modal.show{display:flex;}
+  .camera-modal video{width:100%; height:100%; object-fit:cover; background:#000;}
+  .camera-modal .cam-topbar{
+    position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between;
+    align-items:center; padding:16px 18px; z-index:2;
+  }
+  .camera-modal .cam-close{
+    width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,.5); color:#fff;
+    border:none; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .camera-modal .cam-hint{
+    color:#fff; font-size:12.5px; background:rgba(0,0,0,.5); padding:6px 12px; border-radius:20px;
+  }
+  .camera-modal .cam-controls{
+    position:absolute; bottom:0; left:0; right:0; padding:28px 0 34px; display:flex;
+    align-items:center; justify-content:center; z-index:2; background:linear-gradient(transparent, rgba(0,0,0,.45));
+  }
+  .cam-shutter{
+    width:68px; height:68px; border-radius:50%; background:#fff; border:4px solid rgba(255,255,255,.4); cursor:pointer;
+  }
+  .camera-modal .cam-error{color:#fff; text-align:center; padding:0 24px; font-size:14px; line-height:1.6;}
+
   @media (max-width:420px){
     .choice-grid.cols-3{grid-template-columns:1fr 1fr;}
     .activity-card .desc{display:none;}
@@ -296,6 +323,20 @@
   <footer data-i18n="footerText">EcoOils Mentari HSSE · Driver's Log &amp; Pre-Use Checklist</footer>
 </div>
 
+<!-- Live camera capture modal — no file/gallery picker, camera only -->
+<div class="camera-modal" id="cameraModal">
+  <div class="cam-topbar">
+    <button type="button" class="cam-close" id="camClose">&times;</button>
+    <span class="cam-hint" id="camHint" data-i18n="camHint">Point at the odometer and tap the shutter</span>
+    <span style="width:38px;"></span>
+  </div>
+  <video id="camVideo" autoplay playsinline muted></video>
+  <div class="cam-controls">
+    <button type="button" class="cam-shutter" id="camShutter" aria-label="Capture"></button>
+  </div>
+</div>
+<canvas id="camCanvas" style="display:none;"></canvas>
+
 <script>
 /* ============== CONFIG ============== */
 const CONFIG = {
@@ -323,9 +364,12 @@ en:{
   recent:"Recent",
   // Start of shift
   secOdo:"Odometer", lblOdoKm:"Odometer reading (km)", phOdoKm:"e.g. 48213",
-  lblOdoPhoto:"Photo of odometer", phUploadLabel:"Tap to take or upload a photo", phUploadSub:"Clear shot of the full odometer display",
-  photoDisclosure:"This photo of the odometer is required to verify kilometers driven, and is stored only for mileage verification and fleet records.",
+  lblOdoPhoto:"Photo of odometer", phUploadLabel:"Tap to take a photo", phUploadSub:"Taken live with your camera — the photo is time-stamped automatically",
+  photoDisclosure:"This photo of the odometer is required to verify kilometers driven, and is stored only for mileage verification and fleet records. It must be taken live in the app — uploading an existing photo isn't allowed.",
   retakePhoto:"Retake photo",
+  camHint:"Point at the odometer and tap the shutter",
+  camDenied:"Camera access is needed to photograph the odometer. Please allow camera access and try again.",
+  camUnavailable:"Camera isn't available on this device/browser.",
   secFitness:"Fitness to Drive",
   lblPretrip:"Pre-trip check completed?", yes:"Yes", no:"No",
   lblFit:"Fit to drive today?", fitYes:"Yes", fitUnwell:"Feeling unwell",
@@ -366,9 +410,12 @@ id:{
   footerText:"EcoOils Mentari HSSE · Log Pengemudi & Daftar Periksa Kendaraan",
   recent:"Terbaru",
   secOdo:"Odometer", lblOdoKm:"Pembacaan odometer (km)", phOdoKm:"cth: 48213",
-  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketuk untuk memotret atau unggah foto", phUploadSub:"Foto jelas seluruh tampilan odometer",
-  photoDisclosure:"Foto odometer ini diperlukan untuk memverifikasi kilometer yang ditempuh, dan hanya disimpan untuk verifikasi jarak tempuh dan catatan armada.",
+  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketuk untuk memotret", phUploadSub:"Diambil langsung dengan kamera — foto diberi stempel waktu otomatis",
+  photoDisclosure:"Foto odometer ini diperlukan untuk memverifikasi kilometer yang ditempuh, dan hanya disimpan untuk verifikasi jarak tempuh dan catatan armada. Foto harus diambil langsung di aplikasi — mengunggah foto yang sudah ada tidak diperbolehkan.",
   retakePhoto:"Ambil ulang foto",
+  camHint:"Arahkan ke odometer dan ketuk tombol rana",
+  camDenied:"Akses kamera diperlukan untuk memotret odometer. Mohon izinkan akses kamera dan coba lagi.",
+  camUnavailable:"Kamera tidak tersedia di perangkat/browser ini.",
   secFitness:"Kelayakan Mengemudi",
   lblPretrip:"Apakah pemeriksaan pra-perjalanan sudah dilakukan?", yes:"Ya", no:"Tidak",
   lblFit:"Apakah Anda layak untuk mengemudi hari ini?", fitYes:"Ya", fitUnwell:"Kurang sehat",
@@ -408,9 +455,12 @@ ms:{
   footerText:"EcoOils Mentari HSSE · Log Pemandu & Senarai Semak Kenderaan",
   recent:"Terkini",
   secOdo:"Odometer", lblOdoKm:"Bacaan odometer (km)", phOdoKm:"cth: 48213",
-  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketik untuk ambil atau muat naik foto", phUploadSub:"Foto jelas keseluruhan paparan odometer",
-  photoDisclosure:"Foto odometer ini diperlukan untuk mengesahkan kilometer yang dipandu, dan hanya disimpan untuk pengesahan jarak dan rekod armada.",
+  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketik untuk ambil foto", phUploadSub:"Diambil secara langsung dengan kamera — foto dicap masa secara automatik",
+  photoDisclosure:"Foto odometer ini diperlukan untuk mengesahkan kilometer yang dipandu, dan hanya disimpan untuk pengesahan jarak dan rekod armada. Foto mesti diambil secara langsung dalam aplikasi — memuat naik foto sedia ada tidak dibenarkan.",
   retakePhoto:"Ambil semula foto",
+  camHint:"Halakan ke odometer dan ketik butang rana",
+  camDenied:"Akses kamera diperlukan untuk memotret odometer. Sila benarkan akses kamera dan cuba lagi.",
+  camUnavailable:"Kamera tidak tersedia pada peranti/pelayar ini.",
   secFitness:"Kelayakan Memandu",
   lblPretrip:"Pemeriksaan pra-perjalanan telah dilakukan?", yes:"Ya", no:"Tidak",
   lblFit:"Layak untuk memandu hari ini?", fitYes:"Ya", fitUnwell:"Kurang sihat",
@@ -688,14 +738,12 @@ function vehicleCheckField(key, label){
 function photoUploadHtml(){
   if(state.odoPhotoDataUrl){
     return `<div class="photo-upload has-photo"><img src="${state.odoPhotoDataUrl}" alt="odometer"></div>
-      <div class="photo-retake" id="retakePhoto">${t('retakePhoto')}</div>
-      <input type="file" id="odoPhotoInput" accept="image/*" capture="environment" style="display:none;">`;
+      <div class="photo-retake" id="retakePhoto">${t('retakePhoto')}</div>`;
   }
   return `<div class="photo-upload" id="photoUploadBox">
       <div class="ph-label">${t('phUploadLabel')}</div>
       <div class="ph-sub">${t('phUploadSub')}</div>
-    </div>
-    <input type="file" id="odoPhotoInput" accept="image/*" capture="environment" style="display:none;">`;
+    </div>`;
 }
 
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -723,44 +771,71 @@ function wireFormStep(){
   });
 
   const photoBox = document.getElementById('photoUploadBox');
-  const photoInput = document.getElementById('odoPhotoInput');
-  if(photoBox){ photoBox.addEventListener('click', ()=> photoInput.click()); }
+  if(photoBox){ photoBox.addEventListener('click', openCamera); }
   const retake = document.getElementById('retakePhoto');
-  if(retake){ retake.addEventListener('click', ()=> photoInput.click()); }
-  if(photoInput){
-    photoInput.addEventListener('change', e=>{
-      const file = e.target.files[0];
-      if(!file) return;
-      compressImage(file, 1400, 0.72).then(dataUrl=>{
-        state.odoPhotoDataUrl = dataUrl;
-        renderFormStep();
-      });
-    });
-  }
+  if(retake){ retake.addEventListener('click', openCamera); }
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.addEventListener('click', onSubmit);
 }
 
-function compressImage(file, maxW, quality){
-  return new Promise((resolve)=>{
-    const img = new Image();
-    const reader = new FileReader();
-    reader.onload = e=>{
-      img.onload = ()=>{
-        const scale = Math.min(1, maxW / img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
+/* ============== LIVE CAMERA CAPTURE (no gallery/upload picker) ============== */
+let camStream = null;
+const cameraModal = document.getElementById('cameraModal');
+const camVideo = document.getElementById('camVideo');
+const camCanvas = document.getElementById('camCanvas');
+
+function openCamera(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert(t('camUnavailable'));
+    return;
+  }
+  cameraModal.classList.add('show');
+  document.getElementById('camHint').textContent = t('camHint');
+  navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false })
+    .then(stream=>{
+      camStream = stream;
+      camVideo.srcObject = stream;
+    })
+    .catch(()=>{
+      alert(t('camDenied'));
+      closeCamera();
+    });
 }
+
+function closeCamera(){
+  if(camStream){ camStream.getTracks().forEach(tr=>tr.stop()); camStream = null; }
+  camVideo.srcObject = null;
+  cameraModal.classList.remove('show');
+}
+
+document.getElementById('camClose').addEventListener('click', closeCamera);
+
+document.getElementById('camShutter').addEventListener('click', ()=>{
+  if(!camVideo.videoWidth){ return; }
+  const maxW = 1400;
+  const scale = Math.min(1, maxW / camVideo.videoWidth);
+  camCanvas.width = camVideo.videoWidth * scale;
+  camCanvas.height = camVideo.videoHeight * scale;
+  const ctx = camCanvas.getContext('2d');
+  ctx.drawImage(camVideo, 0, 0, camCanvas.width, camCanvas.height);
+
+  // burn a visible timestamp into the photo itself
+  const now = new Date();
+  const stamp = now.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + '  ' +
+    now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  const barH = Math.max(26, camCanvas.height * 0.05);
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(0, camCanvas.height - barH, camCanvas.width, barH);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `${Math.floor(barH * 0.52)}px sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(stamp, 10, camCanvas.height - barH / 2);
+
+  state.odoPhotoDataUrl = camCanvas.toDataURL('image/jpeg', 0.78);
+  closeCamera();
+  renderFormStep();
+});
 
 function captureCurrentFormValues(){
   const odoKmEl = document.getElementById('odoKm');
