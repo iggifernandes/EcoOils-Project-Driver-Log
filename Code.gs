@@ -1,4 +1,4 @@
-// VERSION: 1.0.0
+// VERSION: 1.1.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -22,9 +22,11 @@ function getOrCreateSheet_(name, headers) {
   return sheet;
 }
 
+const TIMEZONE = 'Asia/Jakarta'; // Sei Mangkei, North Sumatra
+
 function submissionsSheet_() {
   return getOrCreateSheet_(SUBMISSIONS_SHEET_NAME, [
-    'Timestamp', 'Activity', 'Driver Name', 'Vehicle', 'Date', 'Time',
+    'Submission Timestamp (Auto)', 'Activity', 'Driver Name', 'Vehicle', 'Date', 'Time (Entered by Driver)',
     'Odometer (km)', 'Odometer Photo URL',
     'Pre-trip Check', 'Fit to Drive', 'Hours Slept',
     'Tyres', 'Lights', 'Windscreen & Mirrors', 'Brakes & Handbrake',
@@ -78,9 +80,15 @@ function doPost(e) {
       photoUrl = savePhoto_(payload.odoPhotoDataUrl, payload.driverName, payload.date);
     }
 
+    // Server-side timestamp — always recorded automatically at the moment
+    // the Sheet receives the submission, regardless of the "Time" value the
+    // driver typed in. Formatted explicitly in the project's local timezone
+    // so it reads correctly no matter what locale the Sheet itself is set to.
+    const autoTimestamp = Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
+
     const sheet = submissionsSheet_();
     sheet.appendRow([
-      new Date(),
+      autoTimestamp,
       payload.activity || '',
       payload.driverName || '',
       payload.vehicle || '',
