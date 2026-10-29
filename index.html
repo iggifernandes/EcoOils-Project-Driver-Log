@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Driver's Log &amp; Pre-Use Checklist — Mentari Project</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --shell-red:#DD1D21;
+    --shell-red-dark:#B5181B;
+    --shell-yellow:#FBCE07;
+    --ink:#1A1A1A;
+    --grey-title:#6E6E6E;
+    --grey-mid:#8C8C8C;
+    --grey-line:#E3E3E3;
+    --grey-bg:#F7F7F6;
+    --pass-green:#1E8A3C;
+    --warn-amber:#B3760C;
+    --fail-red:#DD1D21;
+    --radius:10px;
+    --maxw:620px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Jost',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--grey-bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 18px 64px;}
+
+  /* top bar */
+  .topbar{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:22px 0 14px; border-bottom:1px solid var(--grey-line);
+    margin-bottom:22px;
+  }
+  .brand{display:flex; flex-direction:column; gap:2px;}
+  .brand-mark{
+    display:flex; align-items:center; gap:9px;
+  }
+  .brand-mark .dot{width:9px; height:9px; border-radius:50%; background:var(--shell-red); flex:none;}
+  .brand-title{
+    font-weight:300; font-size:19px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--grey-title); line-height:1.3;
+  }
+  .brand-sub{font-size:12.5px; color:var(--grey-mid); margin-left:18px; letter-spacing:.02em;}
+  .topbar-right{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
+  .version{font-size:11px; color:var(--grey-mid); letter-spacing:.06em;}
+  .langtoggle{display:flex; border:1px solid var(--grey-line); border-radius:7px; overflow:hidden;}
+  .langtoggle button{
+    border:none; background:#fff; color:var(--grey-mid); font-family:'Jost',sans-serif;
+    font-size:12px; font-weight:500; letter-spacing:.04em; padding:6px 10px; cursor:pointer;
+  }
+  .langtoggle button.active{background:var(--shell-red); color:#fff;}
+  .langtoggle button + button{border-left:1px solid var(--grey-line);}
+
+  .induction-link{
+    display:inline-flex; align-items:center; gap:7px;
+    font-size:13px; color:var(--shell-red-dark); text-decoration:none; font-weight:500;
+    padding:10px 0 22px; border-bottom:1px solid transparent;
+  }
+  .induction-link:hover{text-decoration:underline;}
+  .induction-link svg{flex:none;}
+
+  /* step shell */
+  .card{
+    background:#fff; border:1px solid var(--grey-line); border-radius:var(--radius);
+    padding:22px 20px; margin-bottom:16px;
+  }
+  .step-title{
+    font-size:13px; font-weight:500; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--grey-title); margin:0 0 18px;
+  }
+  .section-divider{
+    font-size:12.5px; font-weight:500; letter-spacing:.07em; text-transform:uppercase;
+    color:var(--shell-red-dark); margin:26px 0 12px; padding-top:18px; border-top:1px solid var(--grey-line);
+  }
+  .section-divider:first-of-type{margin-top:0; padding-top:0; border-top:none;}
+
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:14.5px; font-weight:500; margin-bottom:8px; color:var(--ink);}
+  .field .hint{font-size:12px; color:var(--grey-mid); margin-top:6px; line-height:1.5;}
+  .field input[type=text], .field input[type=number], .field input[type=time], .field input[type=date]{
+    width:100%; padding:12px 13px; border:1px solid var(--grey-line); border-radius:8px;
+    font-family:'Jost',sans-serif; font-size:15px; background:#fff; color:var(--ink);
+  }
+  .field input:focus, .field textarea:focus{outline:2px solid var(--shell-red); outline-offset:1px; border-color:var(--shell-red);}
+  .field textarea{
+    width:100%; min-height:72px; padding:12px 13px; border:1px solid var(--grey-line); border-radius:8px;
+    font-family:'Jost',sans-serif; font-size:15px; resize:vertical; color:var(--ink);
+  }
+
+  /* autocomplete name field */
+  .name-wrap{position:relative;}
+  .name-suggest{
+    position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff;
+    border:1px solid var(--grey-line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.08);
+    max-height:230px; overflow-y:auto; z-index:20; display:none;
+  }
+  .name-suggest.show{display:block;}
+  .name-suggest .opt{padding:11px 14px; font-size:14.5px; cursor:pointer; border-bottom:1px solid var(--grey-line);}
+  .name-suggest .opt:last-child{border-bottom:none;}
+  .name-suggest .opt:hover, .name-suggest .opt.hi{background:var(--grey-bg);}
+  .name-suggest .opt .recent-tag{float:right; font-size:10.5px; color:var(--grey-mid); letter-spacing:.04em; text-transform:uppercase;}
+
+  /* choice buttons */
+  .choice-grid{display:grid; gap:10px;}
+  .choice-grid.cols-2{grid-template-columns:1fr 1fr;}
+  .choice-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+  .choice-grid.cols-5{grid-template-columns:repeat(5,1fr);}
+  .choice-btn{
+    border:1.5px solid var(--grey-line); background:#fff; border-radius:9px;
+    padding:13px 10px; font-family:'Jost',sans-serif; font-size:14px; font-weight:500;
+    color:var(--ink); cursor:pointer; text-align:center; line-height:1.3; transition:border-color .12s, background .12s;
+  }
+  .choice-btn .sub{display:block; font-size:11.5px; font-weight:400; color:var(--grey-mid); margin-top:2px;}
+  .choice-btn.selected{border-color:var(--shell-red); background:#FDF0EF; color:var(--shell-red-dark);}
+  .choice-btn.pass.selected{border-color:var(--pass-green); background:#EDF8F0; color:var(--pass-green);}
+  .choice-btn.fail.selected{border-color:var(--fail-red); background:#FDF0EF; color:var(--fail-red);}
+  .choice-btn.warn.selected{border-color:var(--warn-amber); background:#FDF5E7; color:var(--warn-amber);}
+
+  .activity-grid{display:grid; gap:12px; grid-template-columns:1fr; margin-top:4px;}
+  .activity-card{
+    border:1.5px solid var(--grey-line); border-radius:var(--radius); background:#fff;
+    padding:18px; cursor:pointer; display:flex; align-items:center; gap:14px;
+  }
+  .activity-card .icon{
+    width:42px; height:42px; border-radius:50%; background:var(--grey-bg); flex:none;
+    display:flex; align-items:center; justify-content:center; font-size:19px;
+  }
+  .activity-card .label{font-size:15.5px; font-weight:600;}
+  .activity-card .desc{font-size:12.5px; color:var(--grey-mid); margin-top:2px;}
+  .activity-card:hover{border-color:var(--shell-red);}
+
+  .note-box{
+    border-left:3px solid var(--warn-amber); background:#FDF5E7; border-radius:6px;
+    padding:12px 14px; font-size:13px; line-height:1.55; color:#6B4A05; margin:10px 0 0;
+  }
+  .note-box.danger{border-left-color:var(--fail-red); background:#FDF0EF; color:#8E1215;}
+  .note-box.info{border-left-color:var(--shell-red); background:#FDF0EF; color:#5a0f11;}
+
+  /* photo upload */
+  .photo-upload{
+    border:1.5px dashed var(--grey-line); border-radius:var(--radius);
+    padding:20px; text-align:center; cursor:pointer; background:#fff;
+  }
+  .photo-upload.has-photo{border-style:solid; border-color:var(--pass-green); padding:0; overflow:hidden;}
+  .photo-upload img{width:100%; display:block; max-height:260px; object-fit:cover;}
+  .photo-upload .ph-label{font-size:13.5px; color:var(--grey-mid); font-weight:500;}
+  .photo-upload .ph-sub{font-size:11.5px; color:var(--grey-mid); margin-top:4px;}
+  .photo-retake{font-size:12.5px; color:var(--shell-red-dark); text-align:center; margin-top:8px; cursor:pointer; font-weight:500;}
+
+  .btn-row{display:flex; gap:10px; margin-top:22px;}
+  .btn{
+    flex:1; padding:14px 16px; border-radius:9px; border:none; font-family:'Jost',sans-serif;
+    font-size:15px; font-weight:600; letter-spacing:.02em; cursor:pointer;
+  }
+  .btn-primary{background:var(--shell-red); color:#fff;}
+  .btn-primary:hover{background:var(--shell-red-dark);}
+  .btn-primary:disabled{background:#E7A6A7; cursor:not-allowed;}
+  .btn-secondary{background:#fff; color:var(--ink); border:1.5px solid var(--grey-line); flex:0 0 auto; padding:14px 18px;}
+
+  .declaration{font-size:13px; line-height:1.6; color:var(--grey-mid); background:var(--grey-bg); border-radius:8px; padding:14px 16px; margin-top:4px;}
+  .declaration b{color:var(--ink);}
+
+  .confirm-wrap{text-align:center; padding:50px 16px;}
+  .confirm-wrap .mark{
+    width:64px; height:64px; border-radius:50%; background:var(--pass-green); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 18px;
+  }
+  .confirm-wrap h2{font-weight:600; font-size:19px; margin:0 0 8px;}
+  .confirm-wrap p{color:var(--grey-mid); font-size:14px; line-height:1.6; margin:0 0 24px;}
+
+  .err-msg{color:var(--fail-red); font-size:12.5px; margin-top:6px; display:none;}
+  .err-msg.show{display:block;}
+
+  .spinner{display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-2px; margin-right:7px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  footer{text-align:center; font-size:11.5px; color:var(--grey-mid); padding-top:10px;}
+
+  @media (max-width:420px){
+    .choice-grid.cols-3{grid-template-columns:1fr 1fr;}
+    .activity-card .desc{display:none;}
+  }
+  @media (min-width:860px){
+    body{padding:30px 0;}
+    .wrap{max-width:720px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
+      <span class="brand-sub" data-i18n="appSub">Mentari Project — EcoOils Sei Mangkei</span>
+    </div>
+    <div class="topbar-right">
+      <span class="version">v1.0.0</span>
+      <div class="langtoggle">
+        <button type="button" data-lang="en" class="active">EN</button>
+        <button type="button" data-lang="id">ID</button>
+        <button type="button" data-lang="ms">MS</button>
+      </div>
+    </div>
+  </div>
+
+  <a class="induction-link" href="https://iggifernandes.github.io/EcoOils-Project-Site-Induction-Sei-Mangkei/" target="_blank" rel="noopener">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    <span data-i18n="inductionLink">New to site? Complete your HSSE induction first</span>
+  </a>
+
+  <!-- STEP 1: IDENTIFY -->
+  <section id="step-identify" class="step">
+    <div class="card">
+      <p class="step-title" data-i18n="s1title">Step 1 — Who's driving</p>
+
+      <div class="field name-wrap">
+        <label data-i18n="lblName">Driver name</label>
+        <input type="text" id="driverName" autocomplete="off" placeholder="" data-i18n-ph="phName">
+        <div class="name-suggest" id="nameSuggest"></div>
+        <div class="err-msg" id="err-driverName" data-i18n="errRequired">Required</div>
+      </div>
+
+      <div class="field">
+        <label data-i18n="lblVehicle">Vehicle</label>
+        <div class="choice-grid cols-2" id="vehicleGrid">
+          <button type="button" class="choice-btn" data-val="BK-7769-DQ">BK-7769-DQ<span class="sub">Toyota Hiace</span></button>
+          <button type="button" class="choice-btn" data-val="BK-1632-MX">BK-1632-MX<span class="sub">Toyota Kijang Innova</span></button>
+          <button type="button" class="choice-btn" data-val="BK-1503-AEG">BK-1503-AEG<span class="sub">Toyota Kijang Innova</span></button>
+          <button type="button" class="choice-btn" data-val="__other">
+            <span data-i18n="other">Other</span>
+          </button>
+        </div>
+        <input type="text" id="vehicleOther" style="display:none;margin-top:10px;" data-i18n-ph="phVehicleOther" placeholder="">
+        <div class="err-msg" id="err-vehicle" data-i18n="errRequired">Required</div>
+      </div>
+
+      <div class="field" style="display:flex; gap:12px;">
+        <div style="flex:1;">
+          <label data-i18n="lblDate">Date</label>
+          <input type="date" id="entryDate">
+        </div>
+        <div style="flex:1;">
+          <label data-i18n="lblTime">Time</label>
+          <input type="time" id="entryTime">
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:4px;">
+        <label data-i18n="lblActivity">Activity</label>
+        <div class="activity-grid">
+          <div class="activity-card" data-activity="start">
+            <div class="icon">🚐</div>
+            <div><div class="label" data-i18n="actStart">Start of Shift</div><div class="desc" data-i18n="actStartDesc">Pre-use vehicle checklist + fitness to drive</div></div>
+          </div>
+          <div class="activity-card" data-activity="end">
+            <div class="icon">🏁</div>
+            <div><div class="label" data-i18n="actEnd">End of Day</div><div class="desc" data-i18n="actEndDesc">Incidents, fatigue &amp; closing odometer</div></div>
+          </div>
+          <div class="activity-card" data-activity="leave">
+            <div class="icon">📅</div>
+            <div><div class="label" data-i18n="actLeave">Leave / Rest Day</div><div class="desc" data-i18n="actLeaveDesc">Not driving today</div></div>
+          </div>
+        </div>
+        <div class="err-msg" id="err-activity" data-i18n="errRequired">Required</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="toStep2" data-i18n="btnNext">Next</button>
+    </div>
+  </section>
+
+  <!-- STEP 2: FORM BODY (built dynamically) -->
+  <section id="step-form" class="step" style="display:none;"></section>
+
+  <!-- STEP 3: CONFIRM -->
+  <section id="step-confirm" class="step" style="display:none;">
+    <div class="confirm-wrap">
+      <div class="mark">✓</div>
+      <h2 data-i18n="confTitle">Submitted</h2>
+      <p data-i18n="confDesc">Your entry has been recorded. Thank you — drive safely.</p>
+      <button class="btn btn-primary" id="newEntryBtn" style="max-width:260px;margin:0 auto;display:block;" data-i18n="btnNewEntry">New entry</button>
+    </div>
+  </section>
+
+  <footer data-i18n="footerText">EcoOils Mentari HSSE · Driver's Log &amp; Pre-Use Checklist</footer>
+</div>
+
+<script>
+/* ============== CONFIG ============== */
+const CONFIG = {
+  APPS_SCRIPT_URL: "" // set after deploying Code.gs as a web app — see setup notes
+};
+
+/* ============== I18N ============== */
+const I18N = {
+en:{
+  appTitle:"Driver's Log &amp; Pre-Use Checklist", appSub:"Mentari Project — EcoOils Sei Mangkei",
+  inductionLink:"New to site? Complete your HSSE induction first",
+  s1title:"Step 1 — Who's driving",
+  lblName:"Driver name", phName:"Type your full name",
+  lblVehicle:"Vehicle", other:"Other", phVehicleOther:"Enter vehicle plate number",
+  lblDate:"Date", lblTime:"Time",
+  lblActivity:"Activity",
+  actStart:"Start of Shift", actStartDesc:"Pre-use vehicle checklist + fitness to drive",
+  actEnd:"End of Day", actEndDesc:"Incidents, fatigue & closing odometer",
+  actLeave:"Leave / Rest Day", actLeaveDesc:"Not driving today",
+  errRequired:"Required",
+  btnNext:"Next", btnBack:"Back", btnSubmit:"Submit", btnSubmitting:"Submitting…",
+  confTitle:"Submitted", confDesc:"Your entry has been recorded. Thank you — drive safely.",
+  btnNewEntry:"New entry",
+  footerText:"EcoOils Mentari HSSE · Driver's Log & Pre-Use Checklist",
+  recent:"Recent",
+  // Start of shift
+  secOdo:"Odometer", lblOdoKm:"Odometer reading (km)", phOdoKm:"e.g. 48213",
+  lblOdoPhoto:"Photo of odometer", phUploadLabel:"Tap to take or upload a photo", phUploadSub:"Clear shot of the full odometer display",
+  photoDisclosure:"This photo of the odometer is required to verify kilometers driven, and is stored only for mileage verification and fleet records.",
+  retakePhoto:"Retake photo",
+  secFitness:"Fitness to Drive",
+  lblPretrip:"Pre-trip check completed?", yes:"Yes", no:"No",
+  lblFit:"Fit to drive today?", fitYes:"Yes", fitUnwell:"Feeling unwell",
+  lblSleep:"Hours of sleep last night?", sleepLt5:"Less than 5 hrs", sleep57:"5–7 hrs", sleep7p:"7 or more hrs",
+  sleepWarn:"You slept less than 5 hours. You are required to contact your supervisor or HR before starting your shift.",
+  secVehicle:"Vehicle Checks",
+  chkTyres:"Tyres (pressure & condition)", chkLights:"Lights (head, tail, indicators)",
+  chkWindscreen:"Windscreen & mirrors", chkBrakes:"Brakes & handbrake",
+  chkFluids:"Oil, coolant & fuel levels", chkFireAid:"Fire extinguisher & first aid kit",
+  chkSeatbeltDriver:"Driver seatbelt functioning", chkSeatbeltPax:"Passenger seatbelts functioning",
+  pass:"Pass", fail:"Fail",
+  lblFailedItems:"Failed items — describe", phFailedItems:"Describe any item marked Fail",
+  lblSafeOperate:"Is the vehicle safe to operate?",
+  declareStart:"By submitting, <b>{name}</b> declares that all checks above were physically carried out, will drive safely, and will comply with all traffic regulations of the Republic of Indonesia.",
+  // End of day
+  secIncident:"Incidents",
+  lblIncident:"Any incidents or near-misses today?", incNone:"None", incMinor:"Minor", incReportable:"Reportable",
+  incidentWarn:"ACCIDENT / NEAR MISS — IMMEDIATE ACTION REQUIRED. In the event of any accident or near miss, stop the vehicle immediately and contact your HR representative and HSSE Manager without delay. Do not wait until end of shift to report.",
+  secFatigue:"Fatigue",
+  lblFatigue:"Fatigue level at end of shift", fatigueAlert:"1 = Alert", fatigueVeryTired:"5 = Very fatigued",
+  declareEnd:"By submitting, <b>{name}</b> confirms this end-of-day report is accurate.",
+},
+id:{
+  appTitle:"Log Pengemudi &amp; Daftar Periksa Kendaraan", appSub:"Proyek Mentari — EcoOils Sei Mangkei",
+  inductionLink:"Baru di lokasi? Selesaikan induksi HSSE Anda terlebih dahulu",
+  s1title:"Langkah 1 — Siapa yang mengemudi",
+  lblName:"Nama Pengemudi", phName:"Ketik nama lengkap Anda",
+  lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"Masukkan nomor plat kendaraan",
+  lblDate:"Tanggal", lblTime:"Jam",
+  lblActivity:"Aktivitas",
+  actStart:"Awal Shift", actStartDesc:"Daftar periksa kendaraan + kelayakan mengemudi",
+  actEnd:"Akhir Hari", actEndDesc:"Insiden, kelelahan & odometer akhir",
+  actLeave:"Cuti / Hari Libur", actLeaveDesc:"Tidak mengemudi hari ini",
+  errRequired:"Wajib diisi",
+  btnNext:"Lanjut", btnBack:"Kembali", btnSubmit:"Kirim", btnSubmitting:"Mengirim…",
+  confTitle:"Terkirim", confDesc:"Entri Anda telah tercatat. Terima kasih — berkendara dengan aman.",
+  btnNewEntry:"Entri baru",
+  footerText:"EcoOils Mentari HSSE · Log Pengemudi & Daftar Periksa Kendaraan",
+  recent:"Terbaru",
+  secOdo:"Odometer", lblOdoKm:"Pembacaan odometer (km)", phOdoKm:"cth: 48213",
+  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketuk untuk memotret atau unggah foto", phUploadSub:"Foto jelas seluruh tampilan odometer",
+  photoDisclosure:"Foto odometer ini diperlukan untuk memverifikasi kilometer yang ditempuh, dan hanya disimpan untuk verifikasi jarak tempuh dan catatan armada.",
+  retakePhoto:"Ambil ulang foto",
+  secFitness:"Kelayakan Mengemudi",
+  lblPretrip:"Apakah pemeriksaan pra-perjalanan sudah dilakukan?", yes:"Ya", no:"Tidak",
+  lblFit:"Apakah Anda layak untuk mengemudi hari ini?", fitYes:"Ya", fitUnwell:"Kurang sehat",
+  lblSleep:"Berapa jam tidur Anda semalam?", sleepLt5:"Kurang dari 5 jam", sleep57:"5–7 jam", sleep7p:"7 jam atau lebih",
+  sleepWarn:"Anda tidur kurang dari 5 jam. Anda wajib menghubungi supervisor atau HR sebelum memulai shift Anda.",
+  secVehicle:"Pemeriksaan Kendaraan",
+  chkTyres:"Ban (tekanan & kondisi)", chkLights:"Lampu (depan, belakang, sein)",
+  chkWindscreen:"Kaca & spion", chkBrakes:"Rem & rem tangan",
+  chkFluids:"Oli, air radiator & bahan bakar", chkFireAid:"APAR & Kotak P3K",
+  chkSeatbeltDriver:"Sabuk pengaman pengemudi berfungsi", chkSeatbeltPax:"Sabuk pengaman penumpang berfungsi",
+  pass:"Lulus", fail:"Tidak Lulus",
+  lblFailedItems:"Item yang tidak lulus — jelaskan", phFailedItems:"Jelaskan item yang ditandai Tidak Lulus",
+  lblSafeOperate:"Apakah kendaraan aman dioperasikan?",
+  declareStart:"Dengan mengirim, <b>{name}</b> menyatakan telah melakukan semua pemeriksaan di atas secara langsung, akan mengemudi dengan aman, dan akan mematuhi seluruh peraturan lalu lintas Republik Indonesia.",
+  secIncident:"Insiden",
+  lblIncident:"Apakah ada insiden atau hampir celaka hari ini?", incNone:"Tidak ada", incMinor:"Kecil", incReportable:"Perlu dilaporkan",
+  incidentWarn:"KECELAKAAN / HAMPIR CELAKA — TINDAKAN SEGERA DIPERLUKAN. Jika terjadi kecelakaan atau hampir celaka, segera hentikan kendaraan dan hubungi perwakilan HR dan HSSE Manager Anda tanpa penundaan. Jangan menunggu hingga akhir shift untuk melapor.",
+  secFatigue:"Kelelahan",
+  lblFatigue:"Tingkat kelelahan Anda di akhir shift", fatigueAlert:"1 = Segar", fatigueVeryTired:"5 = Sangat Lelah",
+  declareEnd:"Dengan mengirim, <b>{name}</b> menegaskan laporan akhir hari ini akurat.",
+},
+ms:{
+  appTitle:"Log Pemandu &amp; Senarai Semak Kenderaan", appSub:"Projek Mentari — EcoOils Sei Mangkei",
+  inductionLink:"Baru di tapak? Lengkapkan induksi HSSE anda dahulu",
+  s1title:"Langkah 1 — Siapa yang memandu",
+  lblName:"Nama Pemandu", phName:"Taip nama penuh anda",
+  lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"Masukkan nombor plat kenderaan",
+  lblDate:"Tarikh", lblTime:"Masa",
+  lblActivity:"Aktiviti",
+  actStart:"Permulaan Syif", actStartDesc:"Senarai semak kenderaan + kelayakan memandu",
+  actEnd:"Penghujung Hari", actEndDesc:"Insiden, keletihan & bacaan odometer akhir",
+  actLeave:"Cuti / Hari Rehat", actLeaveDesc:"Tidak memandu hari ini",
+  errRequired:"Wajib diisi",
+  btnNext:"Seterusnya", btnBack:"Kembali", btnSubmit:"Hantar", btnSubmitting:"Menghantar…",
+  confTitle:"Dihantar", confDesc:"Penyertaan anda telah direkodkan. Terima kasih — memandu dengan selamat.",
+  btnNewEntry:"Penyertaan baharu",
+  footerText:"EcoOils Mentari HSSE · Log Pemandu & Senarai Semak Kenderaan",
+  recent:"Terkini",
+  secOdo:"Odometer", lblOdoKm:"Bacaan odometer (km)", phOdoKm:"cth: 48213",
+  lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketik untuk ambil atau muat naik foto", phUploadSub:"Foto jelas keseluruhan paparan odometer",
+  photoDisclosure:"Foto odometer ini diperlukan untuk mengesahkan kilometer yang dipandu, dan hanya disimpan untuk pengesahan jarak dan rekod armada.",
+  retakePhoto:"Ambil semula foto",
+  secFitness:"Kelayakan Memandu",
+  lblPretrip:"Pemeriksaan pra-perjalanan telah dilakukan?", yes:"Ya", no:"Tidak",
+  lblFit:"Layak untuk memandu hari ini?", fitYes:"Ya", fitUnwell:"Kurang sihat",
+  lblSleep:"Berapa jam anda tidur malam tadi?", sleepLt5:"Kurang 5 jam", sleep57:"5–7 jam", sleep7p:"7 jam atau lebih",
+  sleepWarn:"Anda tidur kurang daripada 5 jam. Anda diwajibkan menghubungi penyelia atau HR sebelum memulakan syif anda.",
+  secVehicle:"Pemeriksaan Kenderaan",
+  chkTyres:"Tayar (tekanan & keadaan)", chkLights:"Lampu (depan, belakang, isyarat)",
+  chkWindscreen:"Cermin hadapan & cermin sisi", chkBrakes:"Brek & brek tangan",
+  chkFluids:"Minyak, air radiator & bahan api", chkFireAid:"Alat pemadam api & kit pertolongan cemas",
+  chkSeatbeltDriver:"Tali pinggang keledar pemandu berfungsi", chkSeatbeltPax:"Tali pinggang keledar penumpang berfungsi",
+  pass:"Lulus", fail:"Gagal",
+  lblFailedItems:"Item yang gagal — terangkan", phFailedItems:"Terangkan item yang ditanda Gagal",
+  lblSafeOperate:"Adakah kenderaan selamat untuk dikendalikan?",
+  declareStart:"Dengan menghantar, <b>{name}</b> mengisytiharkan semua pemeriksaan di atas telah dijalankan secara fizikal, akan memandu dengan selamat, dan akan mematuhi semua peraturan trafik Republik Indonesia.",
+  secIncident:"Insiden",
+  lblIncident:"Terdapat insiden atau nyaris cedera hari ini?", incNone:"Tiada", incMinor:"Kecil", incReportable:"Perlu dilaporkan",
+  incidentWarn:"KEMALANGAN / NYARIS CEDERA — TINDAKAN SEGERA DIPERLUKAN. Sekiranya berlaku kemalangan atau nyaris cedera, hentikan kenderaan dengan segera dan hubungi wakil HR dan Pengurus HSSE anda tanpa berlengah. Jangan tunggu sehingga akhir syif untuk melapor.",
+  secFatigue:"Keletihan",
+  lblFatigue:"Tahap keletihan anda di penghujung syif", fatigueAlert:"1 = Segar", fatigueVeryTired:"5 = Sangat Letih",
+  declareEnd:"Dengan menghantar, <b>{name}</b> mengesahkan laporan penghujung hari ini tepat.",
+}
+};
+let LANG = 'en';
+function t(key){ return (I18N[LANG] && I18N[LANG][key]) || I18N.en[key] || key; }
+
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.innerHTML = t(el.getAttribute('data-i18n'));
+  });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    el.setAttribute('placeholder', t(el.getAttribute('data-i18n-ph')));
+  });
+  document.querySelectorAll('.langtoggle button').forEach(b=>{
+    b.classList.toggle('active', b.getAttribute('data-lang')===LANG);
+  });
+  if(document.getElementById('step-form').style.display !== 'none'){
+    renderFormStep(); // rebuild with new language, preserving state
+  }
+}
+document.querySelectorAll('.langtoggle button').forEach(b=>{
+  b.addEventListener('click', ()=>{ LANG=b.getAttribute('data-lang'); applyI18n(); });
+});
+
+/* ============== STATE ============== */
+const state = {
+  driverName:'', vehicle:'', date:'', time:'', activity:'',
+  odoKm:'', odoPhotoDataUrl:'', odoPhotoBlob:null,
+  pretrip:'', fit:'', sleep:'',
+  chkTyres:'', chkLights:'', chkWindscreen:'', chkBrakes:'', chkFluids:'', chkFireAid:'',
+  seatbeltDriver:'', seatbeltPax:'', failedItems:'', safeOperate:'',
+  incident:'', fatigue:''
+};
+
+/* ============== STEP 1: IDENTIFY ============== */
+const todayISO = new Date().toISOString().slice(0,10);
+document.getElementById('entryDate').value = todayISO;
+document.getElementById('entryTime').value = new Date().toTimeString().slice(0,5);
+
+document.getElementById('vehicleGrid').addEventListener('click', e=>{
+  const btn = e.target.closest('.choice-btn'); if(!btn) return;
+  document.querySelectorAll('#vehicleGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const val = btn.getAttribute('data-val');
+  const otherInput = document.getElementById('vehicleOther');
+  if(val === '__other'){
+    otherInput.style.display = 'block'; otherInput.focus(); state.vehicle = '';
+  } else {
+    otherInput.style.display = 'none'; state.vehicle = val;
+  }
+});
+document.getElementById('vehicleOther').addEventListener('input', e=>{ state.vehicle = e.target.value; });
+
+document.querySelectorAll('.activity-card').forEach(card=>{
+  card.addEventListener('click', ()=>{
+    document.querySelectorAll('.activity-card').forEach(c=>c.style.borderColor='');
+    card.style.borderColor = 'var(--shell-red)';
+    document.querySelectorAll('.activity-card').forEach(c=>c.style.background='#fff');
+    card.style.background = '#FDF0EF';
+    state.activity = card.getAttribute('data-activity');
+  });
+});
+
+/* driver name autocomplete w/ recency */
+let driverList = []; // [{name, lastUsed}]
+const nameInput = document.getElementById('driverName');
+const nameSuggest = document.getElementById('nameSuggest');
+
+function renderSuggestions(filter){
+  const f = (filter||'').trim().toLowerCase();
+  const matches = driverList
+    .filter(d=> !f || d.name.toLowerCase().includes(f))
+    .slice(0, 8);
+  if(matches.length === 0){ nameSuggest.classList.remove('show'); nameSuggest.innerHTML=''; return; }
+  nameSuggest.innerHTML = matches.map(d=>
+    `<div class="opt" data-name="${d.name.replace(/"/g,'&quot;')}">${d.name}${d.lastUsed ? `<span class="recent-tag">${t('recent')}</span>`:''}</div>`
+  ).join('');
+  nameSuggest.classList.add('show');
+}
+nameInput.addEventListener('focus', ()=> renderSuggestions(nameInput.value));
+nameInput.addEventListener('input', ()=>{ state.driverName = nameInput.value; renderSuggestions(nameInput.value); });
+nameSuggest.addEventListener('click', e=>{
+  const opt = e.target.closest('.opt'); if(!opt) return;
+  nameInput.value = opt.getAttribute('data-name');
+  state.driverName = nameInput.value;
+  nameSuggest.classList.remove('show');
+});
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.name-wrap')) nameSuggest.classList.remove('show');
+});
+
+function fetchDrivers(){
+  if(!CONFIG.APPS_SCRIPT_URL) return;
+  fetch(CONFIG.APPS_SCRIPT_URL + '?action=drivers')
+    .then(r=>r.json())
+    .then(data=>{ driverList = (data.drivers||[]); })
+    .catch(()=>{ /* fail silently — manual entry still works */ });
+}
+fetchDrivers();
+
+function clearErr(id){ const e=document.getElementById(id); if(e) e.classList.remove('show'); }
+function showErr(id){ const e=document.getElementById(id); if(e) e.classList.add('show'); }
+
+document.getElementById('toStep2').addEventListener('click', ()=>{
+  state.driverName = nameInput.value.trim();
+  state.date = document.getElementById('entryDate').value;
+  state.time = document.getElementById('entryTime').value;
+  let ok = true;
+  clearErr('err-driverName'); clearErr('err-vehicle'); clearErr('err-activity');
+  if(!state.driverName){ showErr('err-driverName'); ok = false; }
+  if(!state.vehicle){ showErr('err-vehicle'); ok = false; }
+  if(!state.activity){ showErr('err-activity'); ok = false; }
+  if(!ok) return;
+  document.getElementById('step-identify').style.display = 'none';
+  document.getElementById('step-form').style.display = 'block';
+  renderFormStep();
+  window.scrollTo(0,0);
+});
+
+/* ============== STEP 2: DYNAMIC FORM ============== */
+function choiceGroup(name, options, selectedVal, cols){
+  cols = cols || options.length;
+  return `<div class="choice-grid cols-${cols}" data-group="${name}">` +
+    options.map(o=>`<button type="button" class="choice-btn ${o.cls||''} ${selectedVal===o.val?'selected':''}" data-val="${o.val}">${o.label}</button>`).join('') +
+    `</div>`;
+}
+
+function renderFormStep(){
+  const el = document.getElementById('step-form');
+  let html = '';
+
+  if(state.activity === 'leave'){
+    html = `
+      <div class="card">
+        <p class="step-title">${t('s1title').replace('1','2')}</p>
+        <div class="note-box info">${LANG==='id' ? 'Tidak ada pemeriksaan diperlukan untuk hari cuti/libur.' : LANG==='ms' ? 'Tiada pemeriksaan diperlukan untuk hari cuti/rehat.' : 'No checks required for a leave/rest day.'}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="backBtn">${t('btnBack')}</button>
+        <button class="btn btn-primary" id="submitBtn">${t('btnSubmit')}</button>
+      </div>`;
+  } else if(state.activity === 'start'){
+    html = `
+      <div class="card">
+        <p class="section-divider">${t('secOdo')}</p>
+        <div class="field">
+          <label>${t('lblOdoKm')}</label>
+          <input type="number" id="odoKm" inputmode="numeric" placeholder="${t('phOdoKm')}" value="${state.odoKm}">
+          <div class="err-msg" id="err-odoKm">${t('errRequired')}</div>
+        </div>
+        <div class="field">
+          <label>${t('lblOdoPhoto')}</label>
+          ${photoUploadHtml()}
+          <div class="hint">${t('photoDisclosure')}</div>
+          <div class="err-msg" id="err-odoPhoto">${t('errRequired')}</div>
+        </div>
+
+        <p class="section-divider">${t('secFitness')}</p>
+        <div class="field">
+          <label>${t('lblPretrip')}</label>
+          ${choiceGroup('pretrip',[{val:'yes',label:t('yes')},{val:'no',label:t('no')}], state.pretrip, 2)}
+          <div class="err-msg" id="err-pretrip">${t('errRequired')}</div>
+        </div>
+        <div class="field">
+          <label>${t('lblFit')}</label>
+          ${choiceGroup('fit',[{val:'yes',label:t('fitYes')},{val:'unwell',label:t('fitUnwell')}], state.fit, 2)}
+          <div class="err-msg" id="err-fit">${t('errRequired')}</div>
+        </div>
+        <div class="field">
+          <label>${t('lblSleep')}</label>
+          ${choiceGroup('sleep',[{val:'lt5',label:t('sleepLt5')},{val:'5-7',label:t('sleep57')},{val:'7p',label:t('sleep7p')}], state.sleep, 3)}
+          <div id="sleepWarnBox"></div>
+          <div class="err-msg" id="err-sleep">${t('errRequired')}</div>
+        </div>
+
+        <p class="section-divider">${t('secVehicle')}</p>
+        ${vehicleCheckField('chkTyres', t('chkTyres'))}
+        ${vehicleCheckField('chkLights', t('chkLights'))}
+        ${vehicleCheckField('chkWindscreen', t('chkWindscreen'))}
+        ${vehicleCheckField('chkBrakes', t('chkBrakes'))}
+        ${vehicleCheckField('chkFluids', t('chkFluids'))}
+        ${vehicleCheckField('chkFireAid', t('chkFireAid'))}
+        ${vehicleCheckField('seatbeltDriver', t('chkSeatbeltDriver'))}
+        ${vehicleCheckField('seatbeltPax', t('chkSeatbeltPax'))}
+
+        <div class="field">
+          <label>${t('lblFailedItems')}</label>
+          <textarea id="failedItems" placeholder="${t('phFailedItems')}">${state.failedItems}</textarea>
+        </div>
+        <div class="field">
+          <label>${t('lblSafeOperate')}</label>
+          ${choiceGroup('safeOperate',[{val:'yes',label:t('yes')},{val:'no',label:t('no')}], state.safeOperate, 2)}
+          <div class="err-msg" id="err-safeOperate">${t('errRequired')}</div>
+        </div>
+
+        <div class="declaration">${t('declareStart').replace('{name}', escapeHtml(state.driverName))}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="backBtn">${t('btnBack')}</button>
+        <button class="btn btn-primary" id="submitBtn">${t('btnSubmit')}</button>
+      </div>`;
+  } else if(state.activity === 'end'){
+    html = `
+      <div class="card">
+        <p class="section-divider">${t('secOdo')}</p>
+        <div class="field">
+          <label>${t('lblOdoKm')}</label>
+          <input type="number" id="odoKm" inputmode="numeric" placeholder="${t('phOdoKm')}" value="${state.odoKm}">
+          <div class="err-msg" id="err-odoKm">${t('errRequired')}</div>
+        </div>
+        <div class="field">
+          <label>${t('lblOdoPhoto')}</label>
+          ${photoUploadHtml()}
+          <div class="hint">${t('photoDisclosure')}</div>
+          <div class="err-msg" id="err-odoPhoto">${t('errRequired')}</div>
+        </div>
+
+        <p class="section-divider">${t('secIncident')}</p>
+        <div class="note-box danger">${t('incidentWarn')}</div>
+        <div class="field" style="margin-top:14px;">
+          <label>${t('lblIncident')}</label>
+          ${choiceGroup('incident',[{val:'none',label:t('incNone')},{val:'minor',label:t('incMinor'),cls:'warn'},{val:'reportable',label:t('incReportable'),cls:'fail'}], state.incident, 3)}
+          <div class="err-msg" id="err-incident">${t('errRequired')}</div>
+        </div>
+
+        <p class="section-divider">${t('secFatigue')}</p>
+        <div class="field">
+          <label>${t('lblFatigue')}</label>
+          <div class="choice-grid cols-5" data-group="fatigue">
+            ${[1,2,3,4,5].map(n=>`<button type="button" class="choice-btn ${state.fatigue==String(n)?'selected':''}" data-val="${n}">${n}</button>`).join('')}
+          </div>
+          <div class="hint">${t('fatigueAlert')} · ${t('fatigueVeryTired')}</div>
+          <div class="err-msg" id="err-fatigue">${t('errRequired')}</div>
+        </div>
+
+        <div class="declaration">${t('declareEnd').replace('{name}', escapeHtml(state.driverName))}</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" id="backBtn">${t('btnBack')}</button>
+        <button class="btn btn-primary" id="submitBtn">${t('btnSubmit')}</button>
+      </div>`;
+  }
+
+  el.innerHTML = html;
+  wireFormStep();
+}
+
+function vehicleCheckField(key, label){
+  return `<div class="field">
+    <label>${label}</label>
+    ${choiceGroup(key,[{val:'pass',label:t('pass'),cls:'pass'},{val:'fail',label:t('fail'),cls:'fail'}], state[key], 2)}
+    <div class="err-msg" id="err-${key}">${t('errRequired')}</div>
+  </div>`;
+}
+
+function photoUploadHtml(){
+  if(state.odoPhotoDataUrl){
+    return `<div class="photo-upload has-photo"><img src="${state.odoPhotoDataUrl}" alt="odometer"></div>
+      <div class="photo-retake" id="retakePhoto">${t('retakePhoto')}</div>
+      <input type="file" id="odoPhotoInput" accept="image/*" capture="environment" style="display:none;">`;
+  }
+  return `<div class="photo-upload" id="photoUploadBox">
+      <div class="ph-label">${t('phUploadLabel')}</div>
+      <div class="ph-sub">${t('phUploadSub')}</div>
+    </div>
+    <input type="file" id="odoPhotoInput" accept="image/*" capture="environment" style="display:none;">`;
+}
+
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function wireFormStep(){
+  document.getElementById('backBtn').addEventListener('click', ()=>{
+    captureCurrentFormValues();
+    document.getElementById('step-form').style.display = 'none';
+    document.getElementById('step-identify').style.display = 'block';
+    window.scrollTo(0,0);
+  });
+
+  document.querySelectorAll('[data-group]').forEach(group=>{
+    group.addEventListener('click', e=>{
+      const btn = e.target.closest('.choice-btn'); if(!btn) return;
+      group.querySelectorAll('.choice-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const key = group.getAttribute('data-group');
+      state[key] = btn.getAttribute('data-val');
+      if(key === 'sleep'){
+        const box = document.getElementById('sleepWarnBox');
+        box.innerHTML = state.sleep === 'lt5' ? `<div class="note-box">${t('sleepWarn')}</div>` : '';
+      }
+    });
+  });
+
+  const photoBox = document.getElementById('photoUploadBox');
+  const photoInput = document.getElementById('odoPhotoInput');
+  if(photoBox){ photoBox.addEventListener('click', ()=> photoInput.click()); }
+  const retake = document.getElementById('retakePhoto');
+  if(retake){ retake.addEventListener('click', ()=> photoInput.click()); }
+  if(photoInput){
+    photoInput.addEventListener('change', e=>{
+      const file = e.target.files[0];
+      if(!file) return;
+      compressImage(file, 1400, 0.72).then(dataUrl=>{
+        state.odoPhotoDataUrl = dataUrl;
+        renderFormStep();
+      });
+    });
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.addEventListener('click', onSubmit);
+}
+
+function compressImage(file, maxW, quality){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{
+      img.onload = ()=>{
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function captureCurrentFormValues(){
+  const odoKmEl = document.getElementById('odoKm');
+  if(odoKmEl) state.odoKm = odoKmEl.value;
+  const failedEl = document.getElementById('failedItems');
+  if(failedEl) state.failedItems = failedEl.value;
+}
+
+/* ============== SUBMIT ============== */
+function onSubmit(){
+  captureCurrentFormValues();
+
+  let ok = true;
+  const req = (id)=>{ if(document.getElementById(id)) { clearErr(id); } };
+  const flag = (id)=>{ if(document.getElementById(id)) { showErr(id); } ok = false; };
+
+  if(state.activity !== 'leave'){
+    if(!state.odoKm){ flag('err-odoKm'); } else { req('err-odoKm'); }
+    if(!state.odoPhotoDataUrl){ flag('err-odoPhoto'); } else { req('err-odoPhoto'); }
+  }
+  if(state.activity === 'start'){
+    [['pretrip','err-pretrip'],['fit','err-fit'],['sleep','err-sleep'],
+     ['chkTyres','err-chkTyres'],['chkLights','err-chkLights'],['chkWindscreen','err-chkWindscreen'],
+     ['chkBrakes','err-chkBrakes'],['chkFluids','err-chkFluids'],['chkFireAid','err-chkFireAid'],
+     ['seatbeltDriver','err-seatbeltDriver'],['seatbeltPax','err-seatbeltPax'],
+     ['safeOperate','err-safeOperate']
+    ].forEach(([key,errId])=>{ if(!state[key]){ flag(errId); } else { req(errId); } });
+  }
+  if(state.activity === 'end'){
+    if(!state.incident){ flag('err-incident'); } else { req('err-incident'); }
+    if(!state.fatigue){ flag('err-fatigue'); } else { req('err-fatigue'); }
+  }
+  if(!ok) return;
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<span class="spinner"></span>${t('btnSubmitting')}`;
+
+  const payload = {
+    driverName: state.driverName, vehicle: state.vehicle, date: state.date, time: state.time,
+    activity: state.activity, odoKm: state.odoKm, odoPhotoDataUrl: state.odoPhotoDataUrl,
+    pretrip: state.pretrip, fit: state.fit, sleep: state.sleep,
+    chkTyres: state.chkTyres, chkLights: state.chkLights, chkWindscreen: state.chkWindscreen,
+    chkBrakes: state.chkBrakes, chkFluids: state.chkFluids, chkFireAid: state.chkFireAid,
+    seatbeltDriver: state.seatbeltDriver, seatbeltPax: state.seatbeltPax,
+    failedItems: state.failedItems, safeOperate: state.safeOperate,
+    incident: state.incident, fatigue: state.fatigue
+  };
+
+  if(!CONFIG.APPS_SCRIPT_URL){
+    // No backend configured yet — show confirmation locally so the form can still be tested.
+    console.warn('APPS_SCRIPT_URL not set — submission not saved.', payload);
+    showConfirm();
+    return;
+  }
+
+  fetch(CONFIG.APPS_SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    if(res && res.status === 'ok'){ showConfirm(); }
+    else { submitFailed(); }
+  })
+  .catch(()=>{ submitFailed(); });
+
+  function submitFailed(){
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = t('btnSubmit');
+    alert(LANG==='id' ? 'Gagal mengirim. Periksa koneksi internet Anda dan coba lagi.' : LANG==='ms' ? 'Gagal menghantar. Semak sambungan internet anda dan cuba lagi.' : 'Submission failed. Check your internet connection and try again.');
+  }
+}
+
+function showConfirm(){
+  document.getElementById('step-form').style.display = 'none';
+  document.getElementById('step-confirm').style.display = 'block';
+  window.scrollTo(0,0);
+}
+
+document.getElementById('newEntryBtn').addEventListener('click', ()=>{
+  Object.keys(state).forEach(k=>{
+    if(typeof state[k] === 'string') state[k] = '';
+  });
+  state.odoPhotoDataUrl = '';
+  nameInput.value = '';
+  document.getElementById('vehicleOther').value = '';
+  document.getElementById('vehicleOther').style.display = 'none';
+  document.querySelectorAll('#vehicleGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.activity-card').forEach(c=>{ c.style.borderColor=''; c.style.background='#fff'; });
+  document.getElementById('entryDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('entryTime').value = new Date().toTimeString().slice(0,5);
+  document.getElementById('step-confirm').style.display = 'none';
+  document.getElementById('step-identify').style.display = 'block';
+  fetchDrivers();
+  window.scrollTo(0,0);
+});
+
+applyI18n();
+</script>
+</body>
+</html>
