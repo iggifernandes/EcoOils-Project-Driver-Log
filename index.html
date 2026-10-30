@@ -385,7 +385,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.0.0</span>
+      <span class="version">v1.1.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -1017,11 +1017,6 @@ function renderFormStep(){
 
         <p class="section-divider">${t('secFitness')}</p>
         <div class="field">
-          <label>${t('lblPretrip')}</label>
-          ${choiceGroup('pretrip',[{val:'yes',label:t('yes')},{val:'no',label:t('no')}], state.pretrip, 2)}
-          <div class="err-msg" id="err-pretrip">${t('errRequired')}</div>
-        </div>
-        <div class="field">
           <label>${t('lblFit')}</label>
           ${choiceGroup('fit',[{val:'yes',label:t('fitYes')},{val:'unwell',label:t('fitUnwell')}], state.fit, 2)}
           <div class="err-msg" id="err-fit">${t('errRequired')}</div>
@@ -1235,7 +1230,7 @@ function onSubmit(){
     if(!state.odoPhotoDataUrl){ flag('err-odoPhoto'); } else { req('err-odoPhoto'); }
   }
   if(state.activity === 'start'){
-    [['pretrip','err-pretrip'],['fit','err-fit'],['sleep','err-sleep'],
+    [['fit','err-fit'],['sleep','err-sleep'],
      ['chkTyres','err-chkTyres'],['chkLights','err-chkLights'],['chkWindscreen','err-chkWindscreen'],
      ['chkBrakes','err-chkBrakes'],['chkFluids','err-chkFluids'],['chkFireAid','err-chkFireAid'],
      ['seatbeltDriver','err-seatbeltDriver'],['seatbeltPax','err-seatbeltPax'],
