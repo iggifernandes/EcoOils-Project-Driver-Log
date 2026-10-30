@@ -3,7 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Driver's Log &amp; Pre-Use Checklist — Mentari Project</title>
+<title>Driver's Log &amp; Pre-Use Checklist</title>
+
+<!-- Installable as an app (Android/Chrome "Install app", iOS "Add to Home Screen", desktop install) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#DD1D21">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Driver Log">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -102,6 +113,12 @@
 
   /* autocomplete name field */
   .name-wrap{position:relative;}
+  .switch-driver{font-size:12px; color:var(--grey-mid); margin-top:7px; line-height:1.6;}
+  .switch-driver b{color:var(--ink);}
+  .switch-driver button{
+    background:none; border:none; color:var(--shell-red-dark); font-family:'Jost',sans-serif;
+    font-size:12px; font-weight:500; text-decoration:underline; cursor:pointer; padding:0;
+  }
   .name-suggest{
     position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff;
     border:1px solid var(--grey-line); border-radius:8px; box-shadow:0 8px 24px rgba(0,0,0,.08);
@@ -230,6 +247,18 @@
   .camera-modal .cam-error{color:#fff; text-align:center; padding:0 24px; font-size:14px; line-height:1.6;}
 
   /* driver profiles admin */
+  .install-row{
+    display:flex; align-items:center; gap:10px; background:var(--grey-bg); border:1px solid var(--grey-line);
+    border-radius:9px; padding:11px 14px; margin-top:18px; font-size:12.5px; color:var(--grey-mid); line-height:1.5;
+  }
+  .install-row span{flex:1;}
+  .install-row #installBtn{
+    flex:none; background:var(--shell-red); color:#fff; border:none; border-radius:7px;
+    padding:8px 14px; font-family:'Jost',sans-serif; font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  .install-row #installRowClose{
+    flex:none; background:none; border:none; color:var(--grey-mid); font-size:16px; cursor:pointer; padding:0 2px;
+  }
   .admin-link-wrap{text-align:center; padding:6px 0 0;}
   .admin-link{
     background:none; border:none; font-family:'Jost',sans-serif; font-size:12px;
@@ -353,7 +382,6 @@
 
   <div class="topbar">
     <div class="brand">
-      <div class="logo-lockup"><span class="logo-eco">ECOOILS</span><span class="logo-bar"></span><span class="logo-mentari">Mentari</span></div>
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
@@ -381,6 +409,10 @@
         <input type="text" id="driverName" autocomplete="off" placeholder="" data-i18n-ph="phName">
         <div class="name-suggest" id="nameSuggest"></div>
         <div class="err-msg" id="err-driverName" data-i18n="errRequired">Required</div>
+        <div class="switch-driver" id="switchDriverWrap" style="display:none;">
+          <span data-i18n="rememberedAs">Remembered as</span> <b id="switchDriverName"></b> ·
+          <button type="button" id="switchDriverBtn" data-i18n="switchDriverBtn">Not you? Switch driver</button>
+        </div>
       </div>
 
       <div class="field">
@@ -439,7 +471,13 @@
     </div>
   </section>
 
-  <footer data-i18n="footerText">EcoOils Mentari HSSE · Driver's Log &amp; Pre-Use Checklist</footer>
+  <div class="install-row" id="installRow" style="display:none;">
+    <span id="installText"></span>
+    <button type="button" id="installBtn" style="display:none;" data-i18n="installBtn">Install app</button>
+    <button type="button" id="installRowClose" aria-label="Dismiss">&times;</button>
+  </div>
+
+  <footer data-i18n="footerText">Driver's Log &amp; Pre-Use Checklist</footer>
   <div class="admin-link-wrap">
     <button type="button" class="admin-link" id="adminOpenBtn" data-i18n="adminLinkText">Driver Profiles (Admin)</button>
   </div>
@@ -479,10 +517,13 @@ const CONFIG = {
 /* ============== I18N ============== */
 const I18N = {
 en:{
-  appTitle:"Driver's Log &amp; Pre-Use Checklist", appSub:"Mentari Project — EcoOils Sei Mangkei",
+  appTitle:"Driver's Log &amp; Pre-Use Checklist",
   inductionLink:"New to site? Complete your HSSE induction first",
   s1title:"Step 1 — Who's driving",
   lblName:"Driver name", phName:"Type your full name",
+  rememberedAs:"Remembered as", switchDriverBtn:"Not you? Switch driver",
+  installBtn:"Install app",
+  installIOSHint:"On iPhone/iPad: tap Share, then \"Add to Home Screen\" to install this app.",
   lblVehicle:"Vehicle", other:"Other", phVehicleOther:"Enter vehicle plate number",
   lblDate:"Date", lblTime:"Time",
   lblActivity:"Activity",
@@ -493,7 +534,7 @@ en:{
   btnNext:"Next", btnBack:"Back", btnSubmit:"Submit", btnSubmitting:"Submitting…",
   confTitle:"Submitted", confDesc:"Your entry has been recorded. Thank you — drive safely.",
   btnNewEntry:"New entry",
-  footerText:"EcoOils Mentari HSSE · Driver's Log & Pre-Use Checklist",
+  footerText:"Driver's Log & Pre-Use Checklist",
   recent:"Recent",
   // Start of shift
   secOdo:"Odometer", lblOdoKm:"Odometer reading (km)", phOdoKm:"e.g. 48213",
@@ -558,10 +599,13 @@ en:{
   companyEcoOils:"EcoOils", companyOther:"Other",
 },
 id:{
-  appTitle:"Log Pengemudi &amp; Daftar Periksa Kendaraan", appSub:"Proyek Mentari — EcoOils Sei Mangkei",
+  appTitle:"Log Pengemudi &amp; Daftar Periksa Kendaraan",
   inductionLink:"Baru di lokasi? Selesaikan induksi HSSE Anda terlebih dahulu",
   s1title:"Langkah 1 — Siapa yang mengemudi",
   lblName:"Nama Pengemudi", phName:"Ketik nama lengkap Anda",
+  rememberedAs:"Diingat sebagai", switchDriverBtn:"Bukan Anda? Ganti pengemudi",
+  installBtn:"Pasang aplikasi",
+  installIOSHint:"Di iPhone/iPad: ketuk Share (Bagikan), lalu \"Add to Home Screen\" untuk memasang aplikasi ini.",
   lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"Masukkan nomor plat kendaraan",
   lblDate:"Tanggal", lblTime:"Jam",
   lblActivity:"Aktivitas",
@@ -572,7 +616,7 @@ id:{
   btnNext:"Lanjut", btnBack:"Kembali", btnSubmit:"Kirim", btnSubmitting:"Mengirim…",
   confTitle:"Terkirim", confDesc:"Entri Anda telah tercatat. Terima kasih — berkendara dengan aman.",
   btnNewEntry:"Entri baru",
-  footerText:"EcoOils Mentari HSSE · Log Pengemudi & Daftar Periksa Kendaraan",
+  footerText:"Log Pengemudi & Daftar Periksa Kendaraan",
   recent:"Terbaru",
   secOdo:"Odometer", lblOdoKm:"Pembacaan odometer (km)", phOdoKm:"cth: 48213",
   lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketuk untuk memotret", phUploadSub:"Diambil langsung dengan kamera — foto diberi stempel waktu otomatis",
@@ -634,10 +678,13 @@ id:{
   companyEcoOils:"EcoOils", companyOther:"Lainnya",
 },
 ms:{
-  appTitle:"Log Pemandu &amp; Senarai Semak Kenderaan", appSub:"Projek Mentari — EcoOils Sei Mangkei",
+  appTitle:"Log Pemandu &amp; Senarai Semak Kenderaan",
   inductionLink:"Baru di tapak? Lengkapkan induksi HSSE anda dahulu",
   s1title:"Langkah 1 — Siapa yang memandu",
   lblName:"Nama Pemandu", phName:"Taip nama penuh anda",
+  rememberedAs:"Diingati sebagai", switchDriverBtn:"Bukan anda? Tukar pemandu",
+  installBtn:"Pasang aplikasi",
+  installIOSHint:"Di iPhone/iPad: ketik Share (Kongsi), kemudian \"Add to Home Screen\" untuk memasang aplikasi ini.",
   lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"Masukkan nombor plat kenderaan",
   lblDate:"Tarikh", lblTime:"Masa",
   lblActivity:"Aktiviti",
@@ -648,7 +695,7 @@ ms:{
   btnNext:"Seterusnya", btnBack:"Kembali", btnSubmit:"Hantar", btnSubmitting:"Menghantar…",
   confTitle:"Dihantar", confDesc:"Penyertaan anda telah direkodkan. Terima kasih — memandu dengan selamat.",
   btnNewEntry:"Penyertaan baharu",
-  footerText:"EcoOils Mentari HSSE · Log Pemandu & Senarai Semak Kenderaan",
+  footerText:"Log Pemandu & Senarai Semak Kenderaan",
   recent:"Terkini",
   secOdo:"Odometer", lblOdoKm:"Bacaan odometer (km)", phOdoKm:"cth: 48213",
   lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketik untuk ambil foto", phUploadSub:"Diambil secara langsung dengan kamera — foto dicap masa secara automatik",
@@ -725,6 +772,12 @@ function applyI18n(){
   });
   if(document.getElementById('step-form').style.display !== 'none'){
     renderFormStep(); // rebuild with new language, preserving state
+  }
+  // the iOS install hint is set manually (not via data-i18n, since the same
+  // span is also used blank on Android/desktop) — refresh it on language switch
+  const installTextEl = document.getElementById('installText');
+  if(installTextEl && typeof isIOSDevice === 'function' && isIOSDevice() && installTextEl.textContent){
+    installTextEl.textContent = t('installIOSHint');
   }
 }
 document.querySelectorAll('.langtoggle button').forEach(b=>{
@@ -832,6 +885,53 @@ function fetchDrivers(){
     .catch(()=>{ /* fail silently — manual entry still works */ });
 }
 fetchDrivers();
+
+/* ============== REMEMBER DRIVER ON THIS DEVICE ============== */
+// A driver who has submitted before on this device/browser gets their name
+// (and last-used vehicle) pre-filled next time, so they don't have to type
+// or search for it again. Not an account/password system — just a local
+// convenience, with an easy way for someone else on a shared device to
+// switch identity.
+const REMEMBER_NAME_KEY = 'driverlog_remember_name';
+const REMEMBER_VEHICLE_KEY = 'driverlog_remember_vehicle';
+
+function rememberDriver(name, vehicle){
+  try{
+    if(name) localStorage.setItem(REMEMBER_NAME_KEY, name);
+    if(vehicle && vehicle !== '__other') localStorage.setItem(REMEMBER_VEHICLE_KEY, vehicle);
+  }catch(e){ /* storage unavailable — not critical */ }
+}
+
+function forgetDriver(){
+  try{
+    localStorage.removeItem(REMEMBER_NAME_KEY);
+    localStorage.removeItem(REMEMBER_VEHICLE_KEY);
+  }catch(e){}
+  nameInput.value = '';
+  state.driverName = '';
+  document.getElementById('switchDriverWrap').style.display = 'none';
+  nameInput.focus();
+}
+
+function loadRememberedDriver(){
+  let savedName = '', savedVehicle = '';
+  try{
+    savedName = localStorage.getItem(REMEMBER_NAME_KEY) || '';
+    savedVehicle = localStorage.getItem(REMEMBER_VEHICLE_KEY) || '';
+  }catch(e){ return; }
+  if(savedName){
+    nameInput.value = savedName;
+    state.driverName = savedName;
+    document.getElementById('switchDriverName').textContent = savedName;
+    document.getElementById('switchDriverWrap').style.display = 'block';
+  }
+  if(savedVehicle){
+    const row = document.querySelector('#vehicleGrid .vehicle-option[data-val="' + savedVehicle.replace(/"/g,'') + '"]');
+    if(row) row.click();
+  }
+}
+document.getElementById('switchDriverBtn').addEventListener('click', forgetDriver);
+loadRememberedDriver();
 
 function clearErr(id){ const e=document.getElementById(id); if(e) e.classList.remove('show'); }
 function showErr(id){ const e=document.getElementById(id); if(e) e.classList.add('show'); }
@@ -1165,6 +1265,7 @@ function onSubmit(){
 }
 
 function showConfirm(){
+  rememberDriver(state.driverName, state.vehicle);
   document.getElementById('step-form').style.display = 'none';
   document.getElementById('step-confirm').style.display = 'block';
   window.scrollTo(0,0);
@@ -1185,6 +1286,7 @@ document.getElementById('newEntryBtn').addEventListener('click', ()=>{
   document.getElementById('step-confirm').style.display = 'none';
   document.getElementById('step-identify').style.display = 'block';
   fetchDrivers();
+  loadRememberedDriver();
   window.scrollTo(0,0);
 });
 
@@ -1451,6 +1553,59 @@ function adminFetch(payload){
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify(payload)
   }).then(r=>r.json());
+}
+
+/* ============== INSTALL AS APP (Android/desktop Chrome/Edge + iOS hint) ============== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{ /* installability degrades gracefully */ });
+  });
+}
+
+const installRow = document.getElementById('installRow');
+const installBtn = document.getElementById('installBtn');
+const installText = document.getElementById('installText');
+let deferredInstallPrompt = null;
+
+function isIOSDevice(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+}
+function isStandaloneDisplay(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function installHintDismissed(){
+  try{ return localStorage.getItem('driverlog_install_hint_dismissed') === '1'; }catch(e){ return false; }
+}
+
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(!isStandaloneDisplay() && !installHintDismissed()){
+    installRow.style.display = 'flex';
+    installBtn.style.display = 'inline-block';
+    installText.textContent = '';
+  }
+});
+window.addEventListener('appinstalled', ()=>{
+  installRow.style.display = 'none';
+  deferredInstallPrompt = null;
+});
+installBtn.addEventListener('click', async ()=>{
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  installRow.style.display = 'none';
+});
+document.getElementById('installRowClose').addEventListener('click', ()=>{
+  installRow.style.display = 'none';
+  try{ localStorage.setItem('driverlog_install_hint_dismissed', '1'); }catch(e){}
+});
+
+if(isIOSDevice() && !isStandaloneDisplay() && !installHintDismissed()){
+  installRow.style.display = 'flex';
+  installBtn.style.display = 'none';
+  installText.textContent = t('installIOSHint');
 }
 
 applyI18n();
