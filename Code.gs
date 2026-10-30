@@ -1,4 +1,4 @@
-// VERSION: 1.2.0
+// VERSION: 1.3.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -52,7 +52,7 @@ function driversSheet_() {
 
 function profilesSheet_() {
   return getOrCreateSheet_(PROFILES_SHEET_NAME, [
-    'Full Name', 'Phone', 'Licence No', 'Licence Expiry', 'Company',
+    'Full Name', 'Phone', 'Email', 'Assigned Vehicle', 'Licence No', 'Licence Expiry', 'Company',
     'Emergency Contact Name', 'Emergency Contact Phone', 'Photo URL', 'Last Updated'
   ]);
 }
@@ -239,16 +239,18 @@ function handleListProfiles_(payload) {
   const rows = [];
   for (let i = 1; i < data.length; i++) {
     if (!data[i][0]) continue;
-    const expiry = data[i][3];
+    const expiry = data[i][5];
     rows.push({
       name: data[i][0],
       phone: data[i][1],
-      licenceNo: data[i][2],
+      email: data[i][2],
+      vehicle: data[i][3],
+      licenceNo: data[i][4],
       licenceExpiry: expiry ? Utilities.formatDate(new Date(expiry), TIMEZONE, 'yyyy-MM-dd') : '',
-      company: data[i][4],
-      emergencyName: data[i][5],
-      emergencyPhone: data[i][6],
-      photoUrl: data[i][7]
+      company: data[i][6],
+      emergencyName: data[i][7],
+      emergencyPhone: data[i][8],
+      photoUrl: data[i][9]
     });
   }
   rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
@@ -278,6 +280,8 @@ function handleSaveProfile_(payload) {
   const rowValues = [
     name,
     payload.phone || '',
+    payload.email || '',
+    payload.vehicle || '',
     payload.licenceNo || '',
     payload.licenceExpiry || '',
     payload.company || '',

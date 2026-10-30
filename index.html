@@ -129,6 +129,19 @@
   .choice-btn.fail.selected{border-color:var(--fail-red); background:#FDF0EF; color:var(--fail-red);}
   .choice-btn.warn.selected{border-color:var(--warn-amber); background:#FDF5E7; color:var(--warn-amber);}
 
+  .vehicle-list{display:flex; flex-direction:column; gap:9px;}
+  .vehicle-option{
+    display:flex; align-items:center; gap:13px; border:1.5px solid var(--grey-line);
+    border-radius:9px; padding:11px 14px; cursor:pointer; background:#fff;
+  }
+  .vehicle-option.selected{border-color:var(--shell-red); background:#FDF0EF;}
+  .vehicle-option .v-icon{width:26px; height:26px; flex:none; color:var(--grey-mid);}
+  .vehicle-option.selected .v-icon{color:var(--shell-red-dark);}
+  .vehicle-option .v-text{display:flex; flex-direction:column; gap:1px;}
+  .vehicle-option .v-plate{font-weight:600; font-size:14.5px; color:var(--ink);}
+  .vehicle-option.selected .v-plate{color:var(--shell-red-dark);}
+  .vehicle-option .v-model{font-size:11.5px; color:var(--grey-mid);}
+
   .activity-grid{display:grid; gap:12px; grid-template-columns:1fr; margin-top:4px;}
   .activity-card{
     border:1.5px solid var(--grey-line); border-radius:var(--radius); background:#fff;
@@ -372,14 +385,7 @@
 
       <div class="field">
         <label data-i18n="lblVehicle">Vehicle</label>
-        <div class="choice-grid cols-2" id="vehicleGrid">
-          <button type="button" class="choice-btn" data-val="BK-7769-DQ">BK-7769-DQ<span class="sub">Toyota Hiace</span></button>
-          <button type="button" class="choice-btn" data-val="BK-1632-MX">BK-1632-MX<span class="sub">Toyota Kijang Innova</span></button>
-          <button type="button" class="choice-btn" data-val="BK-1503-AEG">BK-1503-AEG<span class="sub">Toyota Kijang Innova</span></button>
-          <button type="button" class="choice-btn" data-val="__other">
-            <span data-i18n="other">Other</span>
-          </button>
-        </div>
+        <div class="vehicle-list" id="vehicleGrid"></div>
         <input type="text" id="vehicleOther" style="display:none;margin-top:10px;" data-i18n-ph="phVehicleOther" placeholder="">
         <div class="err-msg" id="err-vehicle" data-i18n="errRequired">Required</div>
       </div>
@@ -534,6 +540,8 @@ en:{
   adminUploadPhoto:"Upload photo",
   adminFieldName:"Full name",
   adminFieldPhone:"Phone number",
+  adminFieldEmail:"Email",
+  adminFieldVehicle:"Assigned vehicle",
   adminFieldLicenceNo:"Driving licence number",
   adminFieldLicenceExpiry:"Licence expiry date",
   adminFieldCompany:"Company",
@@ -608,6 +616,8 @@ id:{
   adminUploadPhoto:"Unggah foto",
   adminFieldName:"Nama lengkap",
   adminFieldPhone:"Nomor telepon",
+  adminFieldEmail:"Email",
+  adminFieldVehicle:"Kendaraan yang ditugaskan",
   adminFieldLicenceNo:"Nomor SIM",
   adminFieldLicenceExpiry:"Tanggal kedaluwarsa SIM",
   adminFieldCompany:"Perusahaan",
@@ -682,6 +692,8 @@ ms:{
   adminUploadPhoto:"Muat naik foto",
   adminFieldName:"Nama penuh",
   adminFieldPhone:"Nombor telefon",
+  adminFieldEmail:"E-mel",
+  adminFieldVehicle:"Kenderaan ditugaskan",
   adminFieldLicenceNo:"Nombor lesen memandu",
   adminFieldLicenceExpiry:"Tarikh tamat tempoh lesen",
   adminFieldCompany:"Syarikat",
@@ -734,11 +746,37 @@ const todayISO = new Date().toISOString().slice(0,10);
 document.getElementById('entryDate').value = todayISO;
 document.getElementById('entryTime').value = new Date().toTimeString().slice(0,5);
 
+// Generic vehicle-type silhouettes (not a reproduction of any manufacturer's
+// logo) shown in front of the plate so a driver can spot their vehicle fast.
+const ICON_VAN = `<svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 16V8a1 1 0 0 1 1-1h11l5 4v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M15 7v9"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>`;
+const ICON_MPV = `<svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 16V12.2a1 1 0 0 1 .5-.87l2.6-1.5 1.4-2.6a1 1 0 0 1 .88-.53h6.24a1 1 0 0 1 .88.53l1.4 2.6 2.6 1.5a1 1 0 0 1 .5.87V16a1 1 0 0 1-1 1h-16a1 1 0 0 1-1-1Z"/><path d="M3.5 12h17"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>`;
+
+const VEHICLES = [
+  { plate:'BK-7769-DQ', model:'Toyota Hiace', icon:ICON_VAN },
+  { plate:'BK-1411-ADG', model:'Toyota Kijang Innova Reborn', icon:ICON_MPV },
+  { plate:'BK-1503-AEG', model:'Toyota Kijang Innova Reborn', icon:ICON_MPV },
+  { plate:'BK-1185-AGR', model:'Toyota Kijang Innova Reborn', icon:ICON_MPV }
+];
+
+function renderVehicleList(){
+  const grid = document.getElementById('vehicleGrid');
+  grid.innerHTML = VEHICLES.map(v=>`
+    <div class="vehicle-option" data-val="${v.plate}">
+      ${v.icon}
+      <div class="v-text"><span class="v-plate">${v.plate}</span><span class="v-model">${v.model}</span></div>
+    </div>`).join('') +
+    `<div class="vehicle-option" data-val="__other">
+      <svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div class="v-text"><span class="v-plate" data-i18n="other">Other</span></div>
+    </div>`;
+}
+renderVehicleList();
+
 document.getElementById('vehicleGrid').addEventListener('click', e=>{
-  const btn = e.target.closest('.choice-btn'); if(!btn) return;
-  document.querySelectorAll('#vehicleGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
-  btn.classList.add('selected');
-  const val = btn.getAttribute('data-val');
+  const row = e.target.closest('.vehicle-option'); if(!row) return;
+  document.querySelectorAll('#vehicleGrid .vehicle-option').forEach(b=>b.classList.remove('selected'));
+  row.classList.add('selected');
+  const val = row.getAttribute('data-val');
   const otherInput = document.getElementById('vehicleOther');
   if(val === '__other'){
     otherInput.style.display = 'block'; otherInput.focus(); state.vehicle = '';
@@ -1140,7 +1178,7 @@ document.getElementById('newEntryBtn').addEventListener('click', ()=>{
   nameInput.value = '';
   document.getElementById('vehicleOther').value = '';
   document.getElementById('vehicleOther').style.display = 'none';
-  document.querySelectorAll('#vehicleGrid .choice-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('#vehicleGrid .vehicle-option').forEach(b=>b.classList.remove('selected'));
   document.querySelectorAll('.activity-card').forEach(c=>{ c.style.borderColor=''; c.style.background='#fff'; });
   document.getElementById('entryDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('entryTime').value = new Date().toTimeString().slice(0,5);
@@ -1252,7 +1290,7 @@ async function renderAdminDriverList(){
       : admin.profiles.map((p,i)=>`
         <div class="driver-list-item" data-idx="${i}">
           <div class="driver-avatar">${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : (p.name||'?').charAt(0).toUpperCase()}</div>
-          <div><div class="dname">${escapeHtml(p.name)}</div><div class="dcompany">${escapeHtml(p.company||'')}</div></div>
+          <div><div class="dname">${escapeHtml(p.name)}</div><div class="dcompany">${[p.company, p.vehicle].filter(Boolean).map(escapeHtml).join(' · ')}</div></div>
           <div class="dedit">${t('adminEditDriver')}</div>
         </div>`).join('');
     adminBody.innerHTML = `
@@ -1291,6 +1329,17 @@ function renderAdminProfileForm(profile){
     <div class="field">
       <label>${t('adminFieldPhone')}</label>
       <input type="text" id="pfPhone" value="${escapeHtml(p.phone||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldEmail')}</label>
+      <input type="text" id="pfEmail" value="${escapeHtml(p.email||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldVehicle')}</label>
+      <select id="pfVehicle" style="width:100%; padding:12px 13px; border:1px solid var(--grey-line); border-radius:8px; font-family:'Jost',sans-serif; font-size:15px;">
+        <option value="">—</option>
+        ${VEHICLES.map(v=>`<option value="${v.plate}" ${p.vehicle===v.plate?'selected':''}>${v.plate} — ${v.model}</option>`).join('')}
+      </select>
     </div>
     <div class="field">
       <label>${t('adminFieldLicenceNo')}</label>
@@ -1346,6 +1395,8 @@ function renderAdminProfileForm(profile){
         action:'saveDriverProfile', token: admin.token,
         name: name,
         phone: document.getElementById('pfPhone').value.trim(),
+        email: document.getElementById('pfEmail').value.trim(),
+        vehicle: document.getElementById('pfVehicle').value,
         licenceNo: document.getElementById('pfLicenceNo').value.trim(),
         licenceExpiry: document.getElementById('pfLicenceExpiry').value,
         company: companyVal === '__other' ? '' : companyVal,
