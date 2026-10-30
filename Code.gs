@@ -1,4 +1,4 @@
-// VERSION: 1.3.1
+// VERSION: 1.4.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -103,6 +103,8 @@ function doPost(e) {
     if (action === 'verifyCode') return handleVerifyCode_(payload);
     if (action === 'listDriverProfiles') return handleListProfiles_(payload);
     if (action === 'saveDriverProfile') return handleSaveProfile_(payload);
+    if (action === 'getOwnProfile') return handleGetOwnProfile_(payload);
+    if (action === 'updateOwnProfile') return handleUpdateOwnProfile_(payload);
 
     return handleSubmission_(payload);
   } catch (err) {
@@ -299,6 +301,59 @@ function handleSaveProfile_(payload) {
   // Keep the recency-sorted driver picker (Drivers sheet) in sync so a
   // newly-added profile shows up there immediately.
   upsertDriver_(name);
+
+  return jsonOut_({ status: 'ok', photoUrl: photoUrl });
+}
+
+/* ============== DRIVER SELF-SERVICE (no admin login) ============== */
+// Intentionally open: the admin creates the base profile row first, and a
+// driver can only fill in their OWN photo and emergency contact by typing
+// their own name — nothing else on the row is editable this way, and a
+// name with no existing profile is refused rather than silently created.
+
+function findProfileRow_(name) {
+  const sheet = profilesSheet_();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toLowerCase() === String(name).trim().toLowerCase()) {
+      return { sheet: sheet, rowIndex: i + 1, row: data[i] };
+    }
+  }
+  return null;
+}
+
+function handleGetOwnProfile_(payload) {
+  const name = String(payload.name || '').trim();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+  const row = found.row;
+  return jsonOut_({
+    status: 'ok',
+    profile: {
+      emergencyName: row[7],
+      emergencyPhone: row[8],
+      photoUrl: row[9]
+    }
+  });
+}
+
+function handleUpdateOwnProfile_(payload) {
+  const name = String(payload.name || '').trim();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+
+  let photoUrl = found.row[9] || '';
+  if (payload.photoDataUrl) {
+    photoUrl = saveProfilePhoto_(payload.photoDataUrl, name);
+  }
+
+  const sheet = found.sheet;
+  sheet.getRange(found.rowIndex, 8).setValue(payload.emergencyName || found.row[7] || '');  // Emergency Contact Name
+  sheet.getRange(found.rowIndex, 9).setValue(payload.emergencyPhone || found.row[8] || ''); // Emergency Contact Phone
+  sheet.getRange(found.rowIndex, 10).setValue(photoUrl);                                    // Photo URL
+  sheet.getRange(found.rowIndex, 11).setValue(new Date());                                  // Last Updated
 
   return jsonOut_({ status: 'ok', photoUrl: photoUrl });
 }

@@ -413,6 +413,7 @@
           <span data-i18n="rememberedAs">Remembered as</span> <b id="switchDriverName"></b> ·
           <button type="button" id="switchDriverBtn" data-i18n="switchDriverBtn">Not you? Switch driver</button>
         </div>
+        <button type="button" class="admin-link" id="selfProfileOpenBtn" style="margin-top:8px;" data-i18n="selfProfileLink">Update your photo &amp; emergency contact</button>
       </div>
 
       <div class="field">
@@ -508,6 +509,18 @@
   </div>
 </div>
 
+<!-- Driver self-service: update own photo + emergency contact, no login needed
+     beyond the name already typed on the main form -->
+<div class="admin-modal" id="selfModal">
+  <div class="admin-panel">
+    <div class="admin-panel-top">
+      <span class="admin-title" data-i18n="selfProfileTitle">My Profile</span>
+      <button type="button" class="admin-close" id="selfClose">&times;</button>
+    </div>
+    <div class="admin-body" id="selfBody"></div>
+  </div>
+</div>
+
 <script>
 /* ============== CONFIG ============== */
 const CONFIG = {
@@ -524,6 +537,10 @@ en:{
   rememberedAs:"Remembered as", switchDriverBtn:"Not you? Switch driver",
   installBtn:"Install app",
   installIOSHint:"On iPhone/iPad: tap Share, then \"Add to Home Screen\" to install this app.",
+  selfProfileLink:"Update your photo & emergency contact",
+  selfProfileTitle:"My Profile",
+  selfNotFoundMsg:"We couldn't find a profile under this name yet. Ask your HSSE manager to add you first, then try again.",
+  selfNameNeeded:"Type your name above first.",
   lblVehicle:"Vehicle", other:"Other", phVehicleOther:"Enter vehicle plate number",
   lblDate:"Date", lblTime:"Time",
   lblActivity:"Activity",
@@ -606,6 +623,10 @@ id:{
   rememberedAs:"Diingat sebagai", switchDriverBtn:"Bukan Anda? Ganti pengemudi",
   installBtn:"Pasang aplikasi",
   installIOSHint:"Di iPhone/iPad: ketuk Share (Bagikan), lalu \"Add to Home Screen\" untuk memasang aplikasi ini.",
+  selfProfileLink:"Perbarui foto & kontak darurat Anda",
+  selfProfileTitle:"Profil Saya",
+  selfNotFoundMsg:"Kami belum menemukan profil dengan nama ini. Minta HSSE Manager Anda untuk menambahkan Anda terlebih dahulu, lalu coba lagi.",
+  selfNameNeeded:"Ketik nama Anda terlebih dahulu di atas.",
   lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"Masukkan nomor plat kendaraan",
   lblDate:"Tanggal", lblTime:"Jam",
   lblActivity:"Aktivitas",
@@ -685,6 +706,10 @@ ms:{
   rememberedAs:"Diingati sebagai", switchDriverBtn:"Bukan anda? Tukar pemandu",
   installBtn:"Pasang aplikasi",
   installIOSHint:"Di iPhone/iPad: ketik Share (Kongsi), kemudian \"Add to Home Screen\" untuk memasang aplikasi ini.",
+  selfProfileLink:"Kemas kini foto & hubungan kecemasan anda",
+  selfProfileTitle:"Profil Saya",
+  selfNotFoundMsg:"Kami tidak menjumpai profil dengan nama ini. Minta Pengurus HSSE anda menambah anda dahulu, kemudian cuba lagi.",
+  selfNameNeeded:"Taip nama anda dahulu di atas.",
   lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"Masukkan nombor plat kenderaan",
   lblDate:"Tarikh", lblTime:"Masa",
   lblActivity:"Aktiviti",
@@ -1553,6 +1578,111 @@ function adminFetch(payload){
     headers:{'Content-Type':'text/plain;charset=utf-8'},
     body: JSON.stringify(payload)
   }).then(r=>r.json());
+}
+
+/* ============== DRIVER SELF-SERVICE: own photo + emergency contact ============== */
+// No login beyond the name already typed on the main form — the admin
+// creates the base record, and this just fills in the two fields drivers
+// are expected to keep current themselves.
+const selfModal = document.getElementById('selfModal');
+const selfBody = document.getElementById('selfBody');
+let selfPhotoDataUrl = '';
+
+document.getElementById('selfProfileOpenBtn').addEventListener('click', openSelfProfile);
+document.getElementById('selfClose').addEventListener('click', ()=> selfModal.classList.remove('show'));
+
+async function openSelfProfile(){
+  const name = (nameInput.value || '').trim();
+  if(!name){
+    alert(t('selfNameNeeded'));
+    nameInput.focus();
+    return;
+  }
+  selfModal.classList.add('show');
+  selfPhotoDataUrl = '';
+  selfBody.innerHTML = `<div class="admin-notice">${t('adminLoadingDrivers')}</div>`;
+  try{
+    const res = await adminFetch({ action:'getOwnProfile', name: name });
+    if(res.status === 'not_found'){
+      selfBody.innerHTML = `<div class="admin-status error">${t('selfNotFoundMsg')}</div>`;
+      return;
+    }
+    if(res.status !== 'ok'){
+      selfBody.innerHTML = `<div class="admin-status error">${t('adminGenericError')}</div>`;
+      return;
+    }
+    renderSelfForm(name, res.profile || {});
+  }catch(err){
+    selfBody.innerHTML = `<div class="admin-status error">${t('adminGenericError')}</div>`;
+  }
+}
+
+function renderSelfForm(name, p){
+  selfBody.innerHTML = `
+    <div class="admin-notice"><b>${escapeHtml(name)}</b></div>
+    <div class="field" style="display:flex; align-items:center; gap:16px;">
+      <div class="profile-photo-upload" id="selfPhotoBox">
+        ${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : t('adminUploadPhoto')}
+      </div>
+      <input type="file" id="selfPhotoInput" accept="image/*" style="display:none;">
+      <label style="margin:0;">${t('adminFieldPhoto')}</label>
+    </div>
+    <div class="field">
+      <label>${t('adminFieldEmergencyName')}</label>
+      <input type="text" id="selfEmName" value="${escapeHtml(p.emergencyName||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldEmergencyPhone')}</label>
+      <input type="text" id="selfEmPhone" value="${escapeHtml(p.emergencyPhone||'')}">
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-primary" id="selfSaveBtn" style="width:100%;">${t('adminSaveBtn')}</button>
+    </div>
+    <div class="admin-status" id="selfStatus"></div>
+  `;
+
+  const photoBox = document.getElementById('selfPhotoBox');
+  const photoInput = document.getElementById('selfPhotoInput');
+  photoBox.addEventListener('click', ()=> photoInput.click());
+  photoInput.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    compressProfilePhoto(file).then(dataUrl=>{
+      selfPhotoDataUrl = dataUrl;
+      photoBox.innerHTML = `<img src="${dataUrl}" alt="">`;
+    });
+  });
+
+  document.getElementById('selfSaveBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('selfSaveBtn');
+    const statusEl = document.getElementById('selfStatus');
+    btn.disabled = true; btn.textContent = t('adminSaving');
+    try{
+      const res = await adminFetch({
+        action:'updateOwnProfile', name: name,
+        photoDataUrl: selfPhotoDataUrl || '',
+        emergencyName: document.getElementById('selfEmName').value.trim(),
+        emergencyPhone: document.getElementById('selfEmPhone').value.trim()
+      });
+      if(res.status === 'ok'){
+        statusEl.className = 'admin-status';
+        statusEl.textContent = t('adminSavedNotice');
+        setTimeout(()=> selfModal.classList.remove('show'), 900);
+      } else if(res.status === 'not_found'){
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = t('selfNotFoundMsg');
+        btn.disabled = false; btn.textContent = t('adminSaveBtn');
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false; btn.textContent = t('adminSaveBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminSaveBtn');
+    }
+  });
 }
 
 /* ============== INSTALL AS APP (Android/desktop Chrome/Edge + iOS hint) ============== */
