@@ -1,4 +1,4 @@
-// VERSION: 1.4.0
+// VERSION: 1.5.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -372,6 +372,53 @@ function saveProfilePhoto_(dataUrl, name) {
   // Needs to render as an <img> in the admin panel, so make it viewable by link.
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+/* ============== ONE-TIME SEED (run manually from the Apps Script editor) ============== */
+// Not reachable from the web app — there is no HTTP action for this. Open
+// this script in the Apps Script editor, select "seedDriverProfiles_" in the
+// function dropdown, and click Run once. Safe to re-run: it updates existing
+// rows by name instead of duplicating them. Fill in anything left blank
+// (licence no/expiry, company) later via the admin panel.
+function seedDriverProfiles_() {
+  const drivers = [
+    { name: 'Valentino T Sinaga', phone: '085834331486', email: 'vsinaga67@gmail.com', vehicle: 'BK 7769 DQ (Hiace)' },
+    { name: 'Suryadi', phone: '081263701100', email: 'Suryadi.adi210179@gmail.com', vehicle: 'BK 1411 ADG (Reborn)' },
+    { name: 'Reza Prayuda', phone: '081377220573', email: 'rezaprayuda1705@gmail.com', vehicle: 'BK 1503 AEG (Reborn)' },
+    { name: 'Bintang Patih Pamungkas', phone: '082166931731', email: 'bintangpatih9@gmail.com', vehicle: 'BK 1185 AGR (Reborn)' }
+  ];
+
+  const sheet = profilesSheet_();
+  const data = sheet.getDataRange().getValues();
+
+  drivers.forEach(function (d) {
+    let rowIndex = -1;
+    for (let i = 1; i < data.length; i++) {
+      if (String(data[i][0]).trim().toLowerCase() === d.name.toLowerCase()) { rowIndex = i + 1; break; }
+    }
+    const existing = rowIndex > 0 ? data[rowIndex - 1] : null;
+    const rowValues = [
+      d.name,
+      d.phone,
+      d.email,
+      d.vehicle,
+      existing ? existing[4] : '', // Licence No — fill in later
+      existing ? existing[5] : '', // Licence Expiry — fill in later
+      existing ? existing[6] : '', // Company — fill in later
+      existing ? existing[7] : '', // Emergency Contact Name — left for driver self-service
+      existing ? existing[8] : '', // Emergency Contact Phone — left for driver self-service
+      existing ? existing[9] : '', // Photo URL — left for driver self-service
+      new Date()
+    ];
+    if (rowIndex > 0) {
+      sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+    } else {
+      sheet.appendRow(rowValues);
+    }
+    upsertDriver_(d.name);
+  });
+
+  Logger.log('Seeded ' + drivers.length + ' driver profiles.');
 }
 
 function jsonOut_(obj) {
