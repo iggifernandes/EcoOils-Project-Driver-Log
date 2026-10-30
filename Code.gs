@@ -1,4 +1,4 @@
-// VERSION: 1.3.0
+// VERSION: 1.3.1
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -13,7 +13,7 @@ const PROFILE_PHOTO_FOLDER_NAME = 'Driver Profile Photos';
 // password/PIN anywhere in this script or the Sheet — access is granted
 // only via a one-time code emailed to this address (MailApp), per the
 // "PIN/passwords only via email reset" standard.
-const ADMIN_EMAIL = 'ignatiusambrosiofernandes@gmail.com';
+const ADMIN_EMAIL = 'Ignatius.Ambrosio@ecooils.com.my';
 const LOGIN_CODE_TTL_SECONDS = 600;      // 10 minutes
 const SESSION_TOKEN_TTL_SECONDS = 7200;  // 2 hours
 
