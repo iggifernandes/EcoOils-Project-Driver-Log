@@ -40,13 +40,17 @@
     padding:22px 0 14px; border-bottom:1px solid var(--grey-line);
     margin-bottom:22px;
   }
-  .brand{display:flex; flex-direction:column; gap:2px;}
+  .brand{display:flex; flex-direction:column; gap:7px; min-width:0;}
+  .logo-lockup{display:flex; align-items:baseline; gap:7px; line-height:1;}
+  .logo-lockup .logo-eco{font-weight:700; font-size:16px; letter-spacing:.03em; color:var(--shell-red);}
+  .logo-lockup .logo-bar{width:1px; height:13px; background:var(--grey-line);}
+  .logo-lockup .logo-mentari{font-weight:500; font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink);}
   .brand-mark{
     display:flex; align-items:center; gap:9px;
   }
   .brand-mark .dot{width:9px; height:9px; border-radius:50%; background:var(--shell-red); flex:none;}
   .brand-title{
-    font-weight:300; font-size:19px; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:300; font-size:17px; letter-spacing:.11em; text-transform:uppercase;
     color:var(--grey-title); line-height:1.3;
   }
   .brand-sub{font-size:12.5px; color:var(--grey-mid); margin-left:18px; letter-spacing:.02em;}
@@ -212,6 +216,56 @@
   }
   .camera-modal .cam-error{color:#fff; text-align:center; padding:0 24px; font-size:14px; line-height:1.6;}
 
+  /* driver profiles admin */
+  .admin-link-wrap{text-align:center; padding:6px 0 0;}
+  .admin-link{
+    background:none; border:none; font-family:'Jost',sans-serif; font-size:12px;
+    color:var(--grey-mid); cursor:pointer; text-decoration:underline; letter-spacing:.02em;
+  }
+  .admin-modal{
+    position:fixed; inset:0; background:rgba(20,20,20,.5); z-index:90; display:none;
+    align-items:center; justify-content:center; padding:18px;
+  }
+  .admin-modal.show{display:flex;}
+  .admin-panel{
+    background:#fff; border-radius:var(--radius); width:100%; max-width:480px;
+    max-height:88vh; overflow-y:auto; padding:0;
+  }
+  .admin-panel-top{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 20px; border-bottom:1px solid var(--grey-line); position:sticky; top:0; background:#fff;
+  }
+  .admin-title{font-size:15px; font-weight:600; letter-spacing:.03em;}
+  .admin-close{
+    width:30px; height:30px; border-radius:50%; background:var(--grey-bg); border:none;
+    font-size:16px; cursor:pointer; color:var(--ink); display:flex; align-items:center; justify-content:center;
+  }
+  .admin-body{padding:20px;}
+  .admin-notice{font-size:13px; color:var(--grey-mid); line-height:1.6; margin-bottom:14px;}
+  .admin-notice b{color:var(--ink);}
+  .admin-status{font-size:12.5px; margin-top:10px; color:var(--pass-green);}
+  .admin-status.error{color:var(--fail-red);}
+  .driver-list-item{
+    display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid var(--grey-line);
+    cursor:pointer;
+  }
+  .driver-list-item:last-child{border-bottom:none;}
+  .driver-avatar{
+    width:40px; height:40px; border-radius:50%; background:var(--grey-bg); flex:none;
+    display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--grey-mid);
+    overflow:hidden;
+  }
+  .driver-avatar img{width:100%; height:100%; object-fit:cover;}
+  .driver-list-item .dname{font-size:14.5px; font-weight:500;}
+  .driver-list-item .dcompany{font-size:12px; color:var(--grey-mid);}
+  .driver-list-item .dedit{margin-left:auto; font-size:12px; color:var(--shell-red-dark); font-weight:500;}
+  .profile-photo-upload{
+    width:84px; height:84px; border-radius:50%; border:1.5px dashed var(--grey-line);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; flex:none;
+    font-size:11px; color:var(--grey-mid); text-align:center; background:#fff;
+  }
+  .profile-photo-upload img{width:100%; height:100%; object-fit:cover;}
+
   /* ===== responsive wrapping: phone -> tablet -> laptop -> large/extended monitor ===== */
 
   /* small phones */
@@ -261,6 +315,24 @@
     .camera-modal .cam-controls{padding:14px 0 18px;}
     .cam-shutter{width:54px; height:54px;}
   }
+
+  /* phones/tablets rotated to landscape — body is short and wide, so cap
+     vertical padding and let the form scroll instead of fighting for height */
+  @media (orientation:landscape) and (max-height:500px) and (min-width:600px){
+    body{padding:14px 0;}
+    .topbar{padding:10px 0 10px; margin-bottom:12px;}
+    .card{padding:18px 20px;}
+  }
+
+  /* ultra-wide / extended monitors — stop the single-column form from
+     feeling lost on a very wide viewport, same centered comfortable width */
+  @media (min-width:2000px){
+    .wrap{max-width:880px;}
+  }
+
+  /* guard against any element forcing horizontal scroll on odd aspect ratios */
+  html, body{overflow-x:hidden;}
+  img{max-width:100%;}
 </style>
 </head>
 <body>
@@ -268,8 +340,8 @@
 
   <div class="topbar">
     <div class="brand">
+      <div class="logo-lockup"><span class="logo-eco">ECOOILS</span><span class="logo-bar"></span><span class="logo-mentari">Mentari</span></div>
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
-      <span class="brand-sub" data-i18n="appSub">Mentari Project — EcoOils Sei Mangkei</span>
     </div>
     <div class="topbar-right">
       <span class="version">v1.0.0</span>
@@ -362,6 +434,9 @@
   </section>
 
   <footer data-i18n="footerText">EcoOils Mentari HSSE · Driver's Log &amp; Pre-Use Checklist</footer>
+  <div class="admin-link-wrap">
+    <button type="button" class="admin-link" id="adminOpenBtn" data-i18n="adminLinkText">Driver Profiles (Admin)</button>
+  </div>
 </div>
 
 <!-- Live camera capture modal — no file/gallery picker, camera only -->
@@ -377,6 +452,17 @@
   </div>
 </div>
 <canvas id="camCanvas" style="display:none;"></canvas>
+
+<!-- Driver Profiles admin (email one-time-code login, no stored password) -->
+<div class="admin-modal" id="adminModal">
+  <div class="admin-panel">
+    <div class="admin-panel-top">
+      <span class="admin-title" data-i18n="adminTitle">Driver Profiles</span>
+      <button type="button" class="admin-close" id="adminClose">&times;</button>
+    </div>
+    <div class="admin-body" id="adminBody"></div>
+  </div>
+</div>
 
 <script>
 /* ============== CONFIG ============== */
@@ -432,6 +518,36 @@ en:{
   secFatigue:"Fatigue",
   lblFatigue:"Fatigue level at end of shift", fatigueAlert:"1 = Alert", fatigueVeryTired:"5 = Very fatigued",
   declareEnd:"By submitting, <b>{name}</b> confirms this end-of-day report is accurate.",
+  // Driver Profiles admin
+  adminLinkText:"Driver Profiles (Admin)",
+  adminTitle:"Driver Profiles",
+  adminEmailNotice:"A one-time login code will be emailed to",
+  adminRequestCodeBtn:"Email me a login code",
+  adminRequestingCode:"Sending…",
+  adminCodeSentNotice:"Code sent. Check your email — it expires in 10 minutes.",
+  adminCodeLabel:"Enter the 6-digit code",
+  adminVerifyBtn:"Verify & continue",
+  adminVerifying:"Verifying…",
+  adminBackBtn:"Back",
+  adminAddDriverBtn:"+ Add driver",
+  adminFieldPhoto:"Photo",
+  adminUploadPhoto:"Upload photo",
+  adminFieldName:"Full name",
+  adminFieldPhone:"Phone number",
+  adminFieldLicenceNo:"Driving licence number",
+  adminFieldLicenceExpiry:"Licence expiry date",
+  adminFieldCompany:"Company",
+  adminFieldEmergencyName:"Emergency contact — name",
+  adminFieldEmergencyPhone:"Emergency contact — phone",
+  adminSaveBtn:"Save profile",
+  adminSaving:"Saving…",
+  adminSavedNotice:"Profile saved.",
+  adminLoadingDrivers:"Loading drivers…",
+  adminNoDrivers:"No driver profiles yet.",
+  adminEditDriver:"Edit",
+  adminGenericError:"Something went wrong. Please try again.",
+  adminInvalidCode:"Invalid or expired code. Request a new one.",
+  companyEcoOils:"EcoOils", companyOther:"Other",
 },
 id:{
   appTitle:"Log Pengemudi &amp; Daftar Periksa Kendaraan", appSub:"Proyek Mentari — EcoOils Sei Mangkei",
@@ -477,6 +593,35 @@ id:{
   secFatigue:"Kelelahan",
   lblFatigue:"Tingkat kelelahan Anda di akhir shift", fatigueAlert:"1 = Segar", fatigueVeryTired:"5 = Sangat Lelah",
   declareEnd:"Dengan mengirim, <b>{name}</b> menegaskan laporan akhir hari ini akurat.",
+  adminLinkText:"Profil Pengemudi (Admin)",
+  adminTitle:"Profil Pengemudi",
+  adminEmailNotice:"Kode login sekali pakai akan dikirim ke",
+  adminRequestCodeBtn:"Kirim kode login ke email saya",
+  adminRequestingCode:"Mengirim…",
+  adminCodeSentNotice:"Kode terkirim. Periksa email Anda — berlaku 10 menit.",
+  adminCodeLabel:"Masukkan kode 6 digit",
+  adminVerifyBtn:"Verifikasi & lanjutkan",
+  adminVerifying:"Memverifikasi…",
+  adminBackBtn:"Kembali",
+  adminAddDriverBtn:"+ Tambah pengemudi",
+  adminFieldPhoto:"Foto",
+  adminUploadPhoto:"Unggah foto",
+  adminFieldName:"Nama lengkap",
+  adminFieldPhone:"Nomor telepon",
+  adminFieldLicenceNo:"Nomor SIM",
+  adminFieldLicenceExpiry:"Tanggal kedaluwarsa SIM",
+  adminFieldCompany:"Perusahaan",
+  adminFieldEmergencyName:"Kontak darurat — nama",
+  adminFieldEmergencyPhone:"Kontak darurat — telepon",
+  adminSaveBtn:"Simpan profil",
+  adminSaving:"Menyimpan…",
+  adminSavedNotice:"Profil tersimpan.",
+  adminLoadingDrivers:"Memuat daftar pengemudi…",
+  adminNoDrivers:"Belum ada profil pengemudi.",
+  adminEditDriver:"Ubah",
+  adminGenericError:"Terjadi kesalahan. Silakan coba lagi.",
+  adminInvalidCode:"Kode tidak valid atau kedaluwarsa. Minta kode baru.",
+  companyEcoOils:"EcoOils", companyOther:"Lainnya",
 },
 ms:{
   appTitle:"Log Pemandu &amp; Senarai Semak Kenderaan", appSub:"Projek Mentari — EcoOils Sei Mangkei",
@@ -522,6 +667,35 @@ ms:{
   secFatigue:"Keletihan",
   lblFatigue:"Tahap keletihan anda di penghujung syif", fatigueAlert:"1 = Segar", fatigueVeryTired:"5 = Sangat Letih",
   declareEnd:"Dengan menghantar, <b>{name}</b> mengesahkan laporan penghujung hari ini tepat.",
+  adminLinkText:"Profil Pemandu (Admin)",
+  adminTitle:"Profil Pemandu",
+  adminEmailNotice:"Kod log masuk sekali guna akan dihantar ke",
+  adminRequestCodeBtn:"Hantar kod log masuk ke e-mel saya",
+  adminRequestingCode:"Menghantar…",
+  adminCodeSentNotice:"Kod dihantar. Semak e-mel anda — tamat tempoh dalam 10 minit.",
+  adminCodeLabel:"Masukkan kod 6 digit",
+  adminVerifyBtn:"Sahkan & teruskan",
+  adminVerifying:"Mengesahkan…",
+  adminBackBtn:"Kembali",
+  adminAddDriverBtn:"+ Tambah pemandu",
+  adminFieldPhoto:"Foto",
+  adminUploadPhoto:"Muat naik foto",
+  adminFieldName:"Nama penuh",
+  adminFieldPhone:"Nombor telefon",
+  adminFieldLicenceNo:"Nombor lesen memandu",
+  adminFieldLicenceExpiry:"Tarikh tamat tempoh lesen",
+  adminFieldCompany:"Syarikat",
+  adminFieldEmergencyName:"Hubungan kecemasan — nama",
+  adminFieldEmergencyPhone:"Hubungan kecemasan — telefon",
+  adminSaveBtn:"Simpan profil",
+  adminSaving:"Menyimpan…",
+  adminSavedNotice:"Profil disimpan.",
+  adminLoadingDrivers:"Memuatkan senarai pemandu…",
+  adminNoDrivers:"Belum ada profil pemandu.",
+  adminEditDriver:"Edit",
+  adminGenericError:"Sesuatu tidak kena. Sila cuba lagi.",
+  adminInvalidCode:"Kod tidak sah atau tamat tempoh. Minta kod baharu.",
+  companyEcoOils:"EcoOils", companyOther:"Lain-lain",
 }
 };
 let LANG = 'en';
@@ -975,6 +1149,258 @@ document.getElementById('newEntryBtn').addEventListener('click', ()=>{
   fetchDrivers();
   window.scrollTo(0,0);
 });
+
+/* ============== DRIVER PROFILES ADMIN ============== */
+const ADMIN_EMAIL = 'ignatiusambrosiofernandes@gmail.com';
+const admin = { token: null, email: '', profiles: [], editing: null, photoDataUrl: '' };
+
+const adminModal = document.getElementById('adminModal');
+const adminBody = document.getElementById('adminBody');
+
+document.getElementById('adminOpenBtn').addEventListener('click', openAdmin);
+document.getElementById('adminClose').addEventListener('click', closeAdmin);
+
+function openAdmin(){
+  adminModal.classList.add('show');
+  const savedToken = sessionStorage.getItem('driverlog_admin_token');
+  const savedExp = Number(sessionStorage.getItem('driverlog_admin_token_exp') || 0);
+  if(savedToken && savedExp > Date.now()){
+    admin.token = savedToken;
+    renderAdminDriverList();
+  } else {
+    renderAdminLogin();
+  }
+}
+function closeAdmin(){
+  adminModal.classList.remove('show');
+}
+
+function renderAdminLogin(){
+  adminBody.innerHTML = `
+    <div class="admin-notice">${t('adminEmailNotice')} <b>${ADMIN_EMAIL}</b></div>
+    <button type="button" class="btn btn-primary" id="adminRequestCodeBtn" style="width:100%;">${t('adminRequestCodeBtn')}</button>
+    <div class="admin-status" id="adminLoginStatus"></div>
+  `;
+  document.getElementById('adminRequestCodeBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('adminRequestCodeBtn');
+    const statusEl = document.getElementById('adminLoginStatus');
+    btn.disabled = true; btn.textContent = t('adminRequestingCode');
+    try{
+      const res = await adminFetch({ action:'requestCode', email: ADMIN_EMAIL });
+      if(res.status === 'ok'){
+        renderAdminCodeEntry();
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false; btn.textContent = t('adminRequestCodeBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminRequestCodeBtn');
+    }
+  });
+}
+
+function renderAdminCodeEntry(){
+  adminBody.innerHTML = `
+    <div class="admin-notice">${t('adminCodeSentNotice')}</div>
+    <div class="field">
+      <label>${t('adminCodeLabel')}</label>
+      <input type="text" id="adminCodeInput" inputmode="numeric" maxlength="6" style="letter-spacing:.3em; text-align:center; font-size:20px;">
+    </div>
+    <button type="button" class="btn btn-primary" id="adminVerifyBtn" style="width:100%;">${t('adminVerifyBtn')}</button>
+    <div class="admin-status" id="adminLoginStatus"></div>
+  `;
+  document.getElementById('adminVerifyBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('adminVerifyBtn');
+    const statusEl = document.getElementById('adminLoginStatus');
+    const code = document.getElementById('adminCodeInput').value.trim();
+    btn.disabled = true; btn.textContent = t('adminVerifying');
+    try{
+      const res = await adminFetch({ action:'verifyCode', email: ADMIN_EMAIL, code: code });
+      if(res.status === 'ok' && res.token){
+        admin.token = res.token;
+        sessionStorage.setItem('driverlog_admin_token', res.token);
+        sessionStorage.setItem('driverlog_admin_token_exp', String(Date.now() + 2*60*60*1000));
+        renderAdminDriverList();
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = t('adminInvalidCode');
+        btn.disabled = false; btn.textContent = t('adminVerifyBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminVerifyBtn');
+    }
+  });
+}
+
+async function renderAdminDriverList(){
+  adminBody.innerHTML = `<div class="admin-notice">${t('adminLoadingDrivers')}</div>`;
+  try{
+    const res = await adminFetch({ action:'listDriverProfiles', token: admin.token });
+    if(res.status !== 'ok'){
+      sessionStorage.removeItem('driverlog_admin_token');
+      renderAdminLogin();
+      return;
+    }
+    admin.profiles = res.profiles || [];
+    let listHtml = admin.profiles.length === 0
+      ? `<div class="admin-notice">${t('adminNoDrivers')}</div>`
+      : admin.profiles.map((p,i)=>`
+        <div class="driver-list-item" data-idx="${i}">
+          <div class="driver-avatar">${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : (p.name||'?').charAt(0).toUpperCase()}</div>
+          <div><div class="dname">${escapeHtml(p.name)}</div><div class="dcompany">${escapeHtml(p.company||'')}</div></div>
+          <div class="dedit">${t('adminEditDriver')}</div>
+        </div>`).join('');
+    adminBody.innerHTML = `
+      <button type="button" class="btn btn-primary" id="adminAddDriverBtn" style="width:100%; margin-bottom:16px;">${t('adminAddDriverBtn')}</button>
+      <div>${listHtml}</div>
+    `;
+    document.getElementById('adminAddDriverBtn').addEventListener('click', ()=> renderAdminProfileForm(null));
+    adminBody.querySelectorAll('.driver-list-item').forEach(item=>{
+      item.addEventListener('click', ()=> renderAdminProfileForm(admin.profiles[Number(item.getAttribute('data-idx'))]));
+    });
+  }catch(err){
+    adminBody.innerHTML = `<div class="admin-status error">${t('adminGenericError')}</div>`;
+  }
+}
+
+function renderAdminProfileForm(profile){
+  admin.editing = profile;
+  admin.photoDataUrl = '';
+  const p = profile || {};
+  const companies = ['EcoOils','GSB','WEN','KKS','PBS'];
+  const companyOptions = companies.map(c=>`<option value="${c}" ${p.company===c?'selected':''}>${c}</option>`).join('')
+    + `<option value="__other" ${p.company && !companies.includes(p.company)?'selected':''}>${t('companyOther')}</option>`;
+
+  adminBody.innerHTML = `
+    <div class="field" style="display:flex; align-items:center; gap:16px;">
+      <div class="profile-photo-upload" id="profilePhotoBox">
+        ${p.photoUrl ? `<img src="${p.photoUrl}" alt="">` : t('adminUploadPhoto')}
+      </div>
+      <input type="file" id="profilePhotoInput" accept="image/*" style="display:none;">
+      <label style="margin:0;">${t('adminFieldPhoto')}</label>
+    </div>
+    <div class="field">
+      <label>${t('adminFieldName')}</label>
+      <input type="text" id="pfName" value="${escapeHtml(p.name||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldPhone')}</label>
+      <input type="text" id="pfPhone" value="${escapeHtml(p.phone||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldLicenceNo')}</label>
+      <input type="text" id="pfLicenceNo" value="${escapeHtml(p.licenceNo||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldLicenceExpiry')}</label>
+      <input type="date" id="pfLicenceExpiry" value="${p.licenceExpiry||''}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldCompany')}</label>
+      <select id="pfCompany" style="width:100%; padding:12px 13px; border:1px solid var(--grey-line); border-radius:8px; font-family:'Jost',sans-serif; font-size:15px;">
+        ${companyOptions}
+      </select>
+    </div>
+    <div class="field">
+      <label>${t('adminFieldEmergencyName')}</label>
+      <input type="text" id="pfEmName" value="${escapeHtml(p.emergencyName||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminFieldEmergencyPhone')}</label>
+      <input type="text" id="pfEmPhone" value="${escapeHtml(p.emergencyPhone||'')}">
+    </div>
+    <div class="btn-row">
+      <button type="button" class="btn btn-secondary" id="pfBackBtn">${t('adminBackBtn')}</button>
+      <button type="button" class="btn btn-primary" id="pfSaveBtn">${t('adminSaveBtn')}</button>
+    </div>
+    <div class="admin-status" id="pfStatus"></div>
+  `;
+
+  document.getElementById('pfBackBtn').addEventListener('click', renderAdminDriverList);
+  const photoBox = document.getElementById('profilePhotoBox');
+  const photoInput = document.getElementById('profilePhotoInput');
+  photoBox.addEventListener('click', ()=> photoInput.click());
+  photoInput.addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    compressProfilePhoto(file).then(dataUrl=>{
+      admin.photoDataUrl = dataUrl;
+      photoBox.innerHTML = `<img src="${dataUrl}" alt="">`;
+    });
+  });
+
+  document.getElementById('pfSaveBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('pfSaveBtn');
+    const statusEl = document.getElementById('pfStatus');
+    const name = document.getElementById('pfName').value.trim();
+    if(!name){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
+    btn.disabled = true; btn.textContent = t('adminSaving');
+    const companyVal = document.getElementById('pfCompany').value;
+    try{
+      const res = await adminFetch({
+        action:'saveDriverProfile', token: admin.token,
+        name: name,
+        phone: document.getElementById('pfPhone').value.trim(),
+        licenceNo: document.getElementById('pfLicenceNo').value.trim(),
+        licenceExpiry: document.getElementById('pfLicenceExpiry').value,
+        company: companyVal === '__other' ? '' : companyVal,
+        emergencyName: document.getElementById('pfEmName').value.trim(),
+        emergencyPhone: document.getElementById('pfEmPhone').value.trim(),
+        photoDataUrl: admin.photoDataUrl || '',
+        existingPhotoUrl: p.photoUrl || ''
+      });
+      if(res.status === 'ok'){
+        statusEl.className = 'admin-status';
+        statusEl.textContent = t('adminSavedNotice');
+        fetchDrivers();
+        setTimeout(renderAdminDriverList, 700);
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false; btn.textContent = t('adminSaveBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminSaveBtn');
+    }
+  });
+}
+
+function compressProfilePhoto(file){
+  return new Promise((resolve)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{
+      img.onload = ()=>{
+        const maxW = 500;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function adminFetch(payload){
+  if(!CONFIG.APPS_SCRIPT_URL) return Promise.resolve({status:'error', message:'Backend not configured.'});
+  return fetch(CONFIG.APPS_SCRIPT_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  }).then(r=>r.json());
+}
 
 applyI18n();
 </script>

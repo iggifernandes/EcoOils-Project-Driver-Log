@@ -1,11 +1,21 @@
-// VERSION: 1.1.0
+// VERSION: 1.2.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
 
 const SUBMISSIONS_SHEET_NAME = 'Submissions';
 const DRIVERS_SHEET_NAME = 'Drivers';
+const PROFILES_SHEET_NAME = 'Driver Profiles';
 const PHOTO_ROOT_FOLDER_NAME = 'Driver Log - Odometer Photos';
+const PROFILE_PHOTO_FOLDER_NAME = 'Driver Profile Photos';
+
+// Only this address can manage driver profiles. There is no stored
+// password/PIN anywhere in this script or the Sheet — access is granted
+// only via a one-time code emailed to this address (MailApp), per the
+// "PIN/passwords only via email reset" standard.
+const ADMIN_EMAIL = 'ignatiusambrosiofernandes@gmail.com';
+const LOGIN_CODE_TTL_SECONDS = 600;      // 10 minutes
+const SESSION_TOKEN_TTL_SECONDS = 7200;  // 2 hours
 
 function getSS_() {
   return SpreadsheetApp.getActiveSpreadsheet();
@@ -40,6 +50,13 @@ function driversSheet_() {
   return getOrCreateSheet_(DRIVERS_SHEET_NAME, ['Name', 'Last Used']);
 }
 
+function profilesSheet_() {
+  return getOrCreateSheet_(PROFILES_SHEET_NAME, [
+    'Full Name', 'Phone', 'Licence No', 'Licence Expiry', 'Company',
+    'Emergency Contact Name', 'Emergency Contact Phone', 'Photo URL', 'Last Updated'
+  ]);
+}
+
 function getOrCreatePhotoFolder_() {
   const root = getOrCreateRootFolder_();
   const monthLabel = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Jakarta', 'yyyy-MM');
@@ -52,6 +69,12 @@ function getOrCreateRootFolder_() {
   const it = DriveApp.getFoldersByName(PHOTO_ROOT_FOLDER_NAME);
   if (it.hasNext()) return it.next();
   return DriveApp.createFolder(PHOTO_ROOT_FOLDER_NAME);
+}
+
+function getOrCreateProfilePhotoFolder_() {
+  const it = DriveApp.getFoldersByName(PROFILE_PHOTO_FOLDER_NAME);
+  if (it.hasNext()) return it.next();
+  return DriveApp.createFolder(PROFILE_PHOTO_FOLDER_NAME);
 }
 
 function doGet(e) {
@@ -74,7 +97,21 @@ function doGet(e) {
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
+    const action = payload.action || 'submit';
 
+    if (action === 'requestCode') return handleRequestCode_(payload);
+    if (action === 'verifyCode') return handleVerifyCode_(payload);
+    if (action === 'listDriverProfiles') return handleListProfiles_(payload);
+    if (action === 'saveDriverProfile') return handleSaveProfile_(payload);
+
+    return handleSubmission_(payload);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err) });
+  }
+}
+
+function handleSubmission_(payload) {
+  try {
     let photoUrl = '';
     if (payload.odoPhotoDataUrl) {
       photoUrl = savePhoto_(payload.odoPhotoDataUrl, payload.driverName, payload.date);
@@ -147,6 +184,135 @@ function savePhoto_(dataUrl, driverName, dateStr) {
   const folder = getOrCreatePhotoFolder_();
   const file = folder.createFile(blob);
   return file.getUrl();
+}
+
+/* ============== DRIVER PROFILES ADMIN (email one-time-code login) ============== */
+
+function handleRequestCode_(payload) {
+  const email = String(payload.email || '').trim().toLowerCase();
+  if (email !== ADMIN_EMAIL.toLowerCase()) {
+    // Don't confirm/deny which emails are valid.
+    return jsonOut_({ status: 'error', message: 'Not authorized.' });
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  CacheService.getScriptCache().put('code_' + email, code, LOGIN_CODE_TTL_SECONDS);
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Driver Log — your admin login code',
+    body: 'Your one-time login code is: ' + code +
+      '\n\nThis code expires in 10 minutes. If you did not request this, you can ignore this email.'
+  });
+  return jsonOut_({ status: 'ok' });
+}
+
+function handleVerifyCode_(payload) {
+  const email = String(payload.email || '').trim().toLowerCase();
+  const code = String(payload.code || '').trim();
+  if (email !== ADMIN_EMAIL.toLowerCase()) {
+    return jsonOut_({ status: 'error', message: 'Not authorized.' });
+  }
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get('code_' + email);
+  if (!cached || cached !== code) {
+    return jsonOut_({ status: 'error', message: 'Invalid or expired code.' });
+  }
+  const token = Utilities.getUuid();
+  cache.put('token_' + token, email, SESSION_TOKEN_TTL_SECONDS);
+  cache.remove('code_' + email);
+  return jsonOut_({ status: 'ok', token: token });
+}
+
+function requireAdmin_(token) {
+  const email = CacheService.getScriptCache().get('token_' + String(token || ''));
+  if (!email) throw new Error('Session expired. Please log in again.');
+  return email;
+}
+
+function handleListProfiles_(payload) {
+  try {
+    requireAdmin_(payload.token);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err.message || err) });
+  }
+  const sheet = profilesSheet_();
+  const data = sheet.getDataRange().getValues();
+  const rows = [];
+  for (let i = 1; i < data.length; i++) {
+    if (!data[i][0]) continue;
+    const expiry = data[i][3];
+    rows.push({
+      name: data[i][0],
+      phone: data[i][1],
+      licenceNo: data[i][2],
+      licenceExpiry: expiry ? Utilities.formatDate(new Date(expiry), TIMEZONE, 'yyyy-MM-dd') : '',
+      company: data[i][4],
+      emergencyName: data[i][5],
+      emergencyPhone: data[i][6],
+      photoUrl: data[i][7]
+    });
+  }
+  rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  return jsonOut_({ status: 'ok', profiles: rows });
+}
+
+function handleSaveProfile_(payload) {
+  try {
+    requireAdmin_(payload.token);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err.message || err) });
+  }
+  const name = String(payload.name || '').trim();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+
+  let photoUrl = payload.existingPhotoUrl || '';
+  if (payload.photoDataUrl) {
+    photoUrl = saveProfilePhoto_(payload.photoDataUrl, name);
+  }
+
+  const sheet = profilesSheet_();
+  const data = sheet.getDataRange().getValues();
+  let rowIndex = -1;
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toLowerCase() === name.toLowerCase()) { rowIndex = i + 1; break; }
+  }
+  const rowValues = [
+    name,
+    payload.phone || '',
+    payload.licenceNo || '',
+    payload.licenceExpiry || '',
+    payload.company || '',
+    payload.emergencyName || '',
+    payload.emergencyPhone || '',
+    photoUrl,
+    new Date()
+  ];
+  if (rowIndex > 0) {
+    sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    sheet.appendRow(rowValues);
+  }
+
+  // Keep the recency-sorted driver picker (Drivers sheet) in sync so a
+  // newly-added profile shows up there immediately.
+  upsertDriver_(name);
+
+  return jsonOut_({ status: 'ok', photoUrl: photoUrl });
+}
+
+function saveProfilePhoto_(dataUrl, name) {
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z+]+);base64,(.*)$/);
+  if (!match) return '';
+  const mimeType = match[1];
+  const base64 = match[2];
+  const ext = mimeType.split('/')[1] === 'jpeg' ? 'jpg' : mimeType.split('/')[1];
+  const bytes = Utilities.base64Decode(base64);
+  const safeName = (name || 'driver').replace(/[^a-zA-Z0-9]+/g, '-');
+  const blob = Utilities.newBlob(bytes, mimeType, safeName + '_' + new Date().getTime() + '.' + ext);
+  const folder = getOrCreateProfilePhotoFolder_();
+  const file = folder.createFile(blob);
+  // Needs to render as an <img> in the admin panel, so make it viewable by link.
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return 'https://drive.google.com/uc?export=view&id=' + file.getId();
 }
 
 function jsonOut_(obj) {
