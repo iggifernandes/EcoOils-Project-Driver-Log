@@ -7,7 +7,7 @@
 
 <!-- Installable as an app (Android/Chrome "Install app", iOS "Add to Home Screen", desktop install) -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#DD1D21">
+<meta name="theme-color" content="#44a276">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
@@ -20,18 +20,22 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --shell-red:#DD1D21;
-    --shell-red-dark:#B5181B;
-    --shell-yellow:#FBCE07;
-    --ink:#1A1A1A;
-    --grey-title:#6E6E6E;
-    --grey-mid:#8C8C8C;
-    --grey-line:#E3E3E3;
-    --grey-bg:#F7F7F6;
-    --pass-green:#1E8A3C;
-    --warn-amber:#B3760C;
-    --fail-red:#DD1D21;
-    --radius:10px;
+    /* standard EcoOils app skin — same palette/type as the other apps
+       (Disciplinary Record, Security Patrol, etc.); this app keeps no
+       logo/branding, just the shared colours and typography */
+    --shell-red:#44a276;
+    --shell-red-dark:#357f5c;
+    --shell-yellow:#FFC600;
+    --ink:#231f20;
+    --grey-title:#6e6b6c;
+    --grey-mid:#aaaaaa;
+    --grey-line:#dcdcdc;
+    --grey-bg:#ffffff;
+    --chip:#f4f4f4;
+    --pass-green:#44a276;
+    --warn-amber:#a37a00;
+    --fail-red:#b3261e;
+    --radius:8px;
     --maxw:620px;
   }
   *{box-sizing:border-box;}
@@ -45,11 +49,17 @@
   }
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 18px 64px;}
 
-  /* top bar */
+  /* top bar — same header pattern as the other EcoOils apps (title left,
+     version + language tabs right), just with no logo/brand name here */
   .topbar{
+    position:relative;
     display:flex; align-items:flex-start; justify-content:space-between;
     padding:22px 0 14px; border-bottom:1px solid var(--grey-line);
     margin-bottom:22px;
+  }
+  .topbar:after{
+    content:""; position:absolute; left:0; bottom:-1px; width:44px; height:4px;
+    background:var(--shell-red);
   }
   .brand{display:flex; flex-direction:column; gap:7px; min-width:0;}
   .logo-lockup{display:flex; align-items:baseline; gap:7px; line-height:1;}
@@ -61,19 +71,20 @@
   }
   .brand-mark .dot{width:9px; height:9px; border-radius:50%; background:var(--shell-red); flex:none;}
   .brand-title{
-    font-weight:300; font-size:17px; letter-spacing:.11em; text-transform:uppercase;
+    font-weight:300; font-size:18px; letter-spacing:.14em; text-transform:uppercase;
     color:var(--grey-title); line-height:1.3;
   }
   .brand-sub{font-size:12.5px; color:var(--grey-mid); margin-left:18px; letter-spacing:.02em;}
-  .topbar-right{display:flex; flex-direction:column; align-items:flex-end; gap:8px;}
-  .version{font-size:11px; color:var(--grey-mid); letter-spacing:.06em;}
-  .langtoggle{display:flex; border:1px solid var(--grey-line); border-radius:7px; overflow:hidden;}
+  .topbar-right{display:flex; flex-direction:column; align-items:flex-end; gap:6px;}
+  .version{font-size:12px; color:var(--grey-title); letter-spacing:.06em; font-variant-numeric:tabular-nums;}
+  .langtoggle{display:flex; gap:0;}
   .langtoggle button{
-    border:none; background:#fff; color:var(--grey-mid); font-family:'Jost',sans-serif;
-    font-size:12px; font-weight:500; letter-spacing:.04em; padding:6px 10px; cursor:pointer;
+    border:none; background:none; color:var(--grey-title); font-family:'Jost',sans-serif;
+    font-size:14px; font-weight:400; letter-spacing:.06em; padding:4px 8px; cursor:pointer;
+    border-bottom:3px solid transparent; min-height:30px;
   }
-  .langtoggle button.active{background:var(--shell-red); color:#fff;}
-  .langtoggle button + button{border-left:1px solid var(--grey-line);}
+  .langtoggle button.active{color:var(--ink); font-weight:600; border-bottom-color:var(--shell-red); background:none;}
+  .langtoggle button + button{border-left:none;}
 
   .induction-link{
     display:inline-flex; align-items:center; gap:7px;
@@ -127,7 +138,7 @@
   .name-suggest.show{display:block;}
   .name-suggest .opt{padding:11px 14px; font-size:14.5px; cursor:pointer; border-bottom:1px solid var(--grey-line);}
   .name-suggest .opt:last-child{border-bottom:none;}
-  .name-suggest .opt:hover, .name-suggest .opt.hi{background:var(--grey-bg);}
+  .name-suggest .opt:hover, .name-suggest .opt.hi{background:var(--chip);}
   .name-suggest .opt .recent-tag{float:right; font-size:10.5px; color:var(--grey-mid); letter-spacing:.04em; text-transform:uppercase;}
 
   /* choice buttons */
@@ -141,17 +152,17 @@
     color:var(--ink); cursor:pointer; text-align:center; line-height:1.3; transition:border-color .12s, background .12s;
   }
   .choice-btn .sub{display:block; font-size:11.5px; font-weight:400; color:var(--grey-mid); margin-top:2px;}
-  .choice-btn.selected{border-color:var(--shell-red); background:#FDF0EF; color:var(--shell-red-dark);}
-  .choice-btn.pass.selected{border-color:var(--pass-green); background:#EDF8F0; color:var(--pass-green);}
-  .choice-btn.fail.selected{border-color:var(--fail-red); background:#FDF0EF; color:var(--fail-red);}
-  .choice-btn.warn.selected{border-color:var(--warn-amber); background:#FDF5E7; color:var(--warn-amber);}
+  .choice-btn.selected{border-color:var(--shell-red); background:#EAF6F0; color:var(--shell-red-dark);}
+  .choice-btn.pass.selected{border-color:var(--pass-green); background:#EAF6F0; color:var(--shell-red-dark);}
+  .choice-btn.fail.selected{border-color:var(--fail-red); background:#FBEAE9; color:var(--fail-red);}
+  .choice-btn.warn.selected{border-color:var(--warn-amber); background:#FFF7D6; color:var(--warn-amber);}
 
   .vehicle-list{display:flex; flex-direction:column; gap:9px;}
   .vehicle-option{
     display:flex; align-items:center; gap:13px; border:1.5px solid var(--grey-line);
     border-radius:9px; padding:11px 14px; cursor:pointer; background:#fff;
   }
-  .vehicle-option.selected{border-color:var(--shell-red); background:#FDF0EF;}
+  .vehicle-option.selected{border-color:var(--shell-red); background:#EAF6F0;}
   .vehicle-option .v-icon{width:26px; height:26px; flex:none; color:var(--grey-mid);}
   .vehicle-option.selected .v-icon{color:var(--shell-red-dark);}
   .vehicle-option .v-text{display:flex; flex-direction:column; gap:1px;}
@@ -165,7 +176,7 @@
     padding:18px; cursor:pointer; display:flex; align-items:center; gap:14px;
   }
   .activity-card .icon{
-    width:42px; height:42px; border-radius:50%; background:var(--grey-bg); flex:none;
+    width:42px; height:42px; border-radius:50%; background:var(--chip); flex:none;
     display:flex; align-items:center; justify-content:center; font-size:19px;
   }
   .activity-card .label{font-size:15.5px; font-weight:600;}
@@ -173,11 +184,11 @@
   .activity-card:hover{border-color:var(--shell-red);}
 
   .note-box{
-    border-left:3px solid var(--warn-amber); background:#FDF5E7; border-radius:6px;
-    padding:12px 14px; font-size:13px; line-height:1.55; color:#6B4A05; margin:10px 0 0;
+    border-left:3px solid var(--warn-amber); background:#FFF7D6; border-radius:6px;
+    padding:12px 14px; font-size:13px; line-height:1.55; color:#5c4400; margin:10px 0 0;
   }
-  .note-box.danger{border-left-color:var(--fail-red); background:#FDF0EF; color:#8E1215;}
-  .note-box.info{border-left-color:var(--shell-red); background:#FDF0EF; color:#5a0f11;}
+  .note-box.danger{border-left-color:var(--fail-red); background:#FBEAE9; color:#7a1a14;}
+  .note-box.info{border-left-color:var(--shell-red); background:#EAF6F0; color:#1f4d38;}
 
   /* photo upload */
   .photo-upload{
@@ -197,10 +208,10 @@
   }
   .btn-primary{background:var(--shell-red); color:#fff;}
   .btn-primary:hover{background:var(--shell-red-dark);}
-  .btn-primary:disabled{background:#E7A6A7; cursor:not-allowed;}
+  .btn-primary:disabled{background:#A9D2BE; cursor:not-allowed;}
   .btn-secondary{background:#fff; color:var(--ink); border:1.5px solid var(--grey-line); flex:0 0 auto; padding:14px 18px;}
 
-  .declaration{font-size:13px; line-height:1.6; color:var(--grey-mid); background:var(--grey-bg); border-radius:8px; padding:14px 16px; margin-top:4px;}
+  .declaration{font-size:13px; line-height:1.6; color:var(--grey-title); background:var(--chip); border-radius:8px; padding:14px 16px; margin-top:4px;}
   .declaration b{color:var(--ink);}
 
   .confirm-wrap{text-align:center; padding:50px 16px;}
@@ -248,7 +259,7 @@
 
   /* driver profiles admin */
   .install-row{
-    display:flex; align-items:center; gap:10px; background:var(--grey-bg); border:1px solid var(--grey-line);
+    display:flex; align-items:center; gap:10px; background:var(--chip); border:1px solid var(--grey-line);
     border-radius:9px; padding:11px 14px; margin-top:18px; font-size:12.5px; color:var(--grey-mid); line-height:1.5;
   }
   .install-row span{flex:1;}
@@ -279,7 +290,7 @@
   }
   .admin-title{font-size:15px; font-weight:600; letter-spacing:.03em;}
   .admin-close{
-    width:30px; height:30px; border-radius:50%; background:var(--grey-bg); border:none;
+    width:30px; height:30px; border-radius:50%; background:var(--chip); border:none;
     font-size:16px; cursor:pointer; color:var(--ink); display:flex; align-items:center; justify-content:center;
   }
   .admin-body{padding:20px;}
@@ -293,7 +304,7 @@
   }
   .driver-list-item:last-child{border-bottom:none;}
   .driver-avatar{
-    width:40px; height:40px; border-radius:50%; background:var(--grey-bg); flex:none;
+    width:40px; height:40px; border-radius:50%; background:var(--chip); flex:none;
     display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:600; color:var(--grey-mid);
     overflow:hidden;
   }
@@ -391,7 +402,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.2.0</span>
+      <span class="version">v1.3.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
