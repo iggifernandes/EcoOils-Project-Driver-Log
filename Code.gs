@@ -1,4 +1,4 @@
-// VERSION: 1.8.0
+// VERSION: 1.9.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -9,11 +9,19 @@ const PROFILES_SHEET_NAME = 'Driver Profiles';
 const PHOTO_ROOT_FOLDER_NAME = 'Driver Log - Odometer Photos';
 const PROFILE_PHOTO_FOLDER_NAME = 'Driver Profile Photos';
 
-// Only this address can manage driver profiles. There is no stored
-// password/PIN anywhere in this script or the Sheet — access is granted
-// only via a one-time code emailed to this address (MailApp), per the
-// "PIN/passwords only via email reset" standard.
-const ADMIN_EMAIL = 'Ignatius.Ambrosio@ecooils.com.my';
+// Two admin tiers, both logging in the same way — a one-time code emailed
+// to their own address, never a stored/typed password (per the standing
+// "PIN/passwords only via email reset" rule):
+//  - FULL_ADMIN_EMAILS: everything — register new drivers, edit any
+//    existing driver, set a PIN directly.
+//  - LIMITED_ADMIN_EMAILS (e.g. Tino, the coordinator): first-time driver
+//    registration only. Cannot edit an already-registered driver's details
+//    and cannot set a PIN for anyone — a PIN is only ever set by the
+//    driver themselves, via their own "forgot PIN" reset (emailed to their
+//    own registered address, handled separately below).
+const FULL_ADMIN_EMAILS = ['Ignatius.Ambrosio@ecooils.com.my'];
+const LIMITED_ADMIN_EMAILS = ['vsinaga67@gmail.com']; // Tino — confirm/replace with the address he should log in with
+const ALL_ADMIN_EMAILS = FULL_ADMIN_EMAILS.concat(LIMITED_ADMIN_EMAILS);
 const LOGIN_CODE_TTL_SECONDS = 600;      // 10 minutes
 const SESSION_TOKEN_TTL_SECONDS = 7200;  // 2 hours
 
@@ -262,7 +270,7 @@ function savePhoto_(dataUrl, driverName, dateStr) {
 
 function handleRequestCode_(payload) {
   const email = String(payload.email || '').trim().toLowerCase();
-  if (email !== ADMIN_EMAIL.toLowerCase()) {
+  if (ALL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(email) === -1) {
     // Don't confirm/deny which emails are valid.
     return jsonOut_({ status: 'error', message: 'Not authorized.' });
   }
@@ -280,7 +288,7 @@ function handleRequestCode_(payload) {
 function handleVerifyCode_(payload) {
   const email = String(payload.email || '').trim().toLowerCase();
   const code = String(payload.code || '').trim();
-  if (email !== ADMIN_EMAIL.toLowerCase()) {
+  if (ALL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(email) === -1) {
     return jsonOut_({ status: 'error', message: 'Not authorized.' });
   }
   const cache = CacheService.getScriptCache();
@@ -331,24 +339,37 @@ function handleListProfiles_(payload) {
 }
 
 function handleSaveProfile_(payload) {
+  let adminEmail;
   try {
-    requireAdmin_(payload.token);
+    adminEmail = requireAdmin_(payload.token);
   } catch (err) {
     return jsonOut_({ status: 'error', message: String(err.message || err) });
   }
+  const isFullAdmin = FULL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(String(adminEmail).toLowerCase()) !== -1;
+
   const name = String(payload.name || '').trim();
   if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
-
-  let photoUrl = payload.existingPhotoUrl || '';
-  if (payload.photoDataUrl) {
-    photoUrl = saveProfilePhoto_(payload.photoDataUrl, name);
-  }
 
   const sheet = profilesSheet_();
   const data = sheet.getDataRange().getValues();
   let rowIndex = -1;
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]).trim().toLowerCase() === name.toLowerCase()) { rowIndex = i + 1; break; }
+  }
+
+  // A limited-admin login (e.g. Tino) may only register a brand-new driver —
+  // never edit an already-registered one, and never set a PIN. PINs are set
+  // only by the driver themselves via their own reset flow.
+  if (!isFullAdmin && rowIndex > 0) {
+    return jsonOut_({ status: 'error', message: 'This login can only register new drivers. Editing an existing driver needs the main admin.' });
+  }
+  if (!isFullAdmin && payload.pin) {
+    return jsonOut_({ status: 'error', message: 'PINs can only be set by the driver themselves, via their own PIN reset.' });
+  }
+
+  let photoUrl = payload.existingPhotoUrl || '';
+  if (payload.photoDataUrl) {
+    photoUrl = saveProfilePhoto_(payload.photoDataUrl, name);
   }
 
   // PIN: only touched when the admin typed a new one. Leaving it blank keeps
