@@ -224,6 +224,7 @@
 
   .err-msg{color:var(--fail-red); font-size:12.5px; margin-top:6px; display:none;}
   .err-msg.show{display:block;}
+  .ocr-hint{color:var(--grey-mid); font-size:12px; margin-top:6px;}
 
   .spinner{display:inline-block; width:15px; height:15px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-2px; margin-right:7px;}
   @keyframes spin{to{transform:rotate(360deg);}}
@@ -402,7 +403,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.4.1</span>
+      <span class="version">v1.5.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -579,6 +580,7 @@ en:{
   camDenied:"Camera access is needed to photograph the odometer. Please allow camera access and try again.",
   camUnavailable:"Camera isn't available on this device/browser.",
   locUnavailable:"Location unavailable",
+  ocrReading:"Reading the odometer number…",
   secFitness:"Fitness to Drive",
   lblPretrip:"Pre-trip check completed?", yes:"Yes", no:"No",
   lblFit:"Fit to drive today?", fitYes:"Yes", fitUnwell:"Feeling unwell",
@@ -665,6 +667,7 @@ id:{
   camDenied:"Akses kamera diperlukan untuk memotret odometer. Mohon izinkan akses kamera dan coba lagi.",
   camUnavailable:"Kamera tidak tersedia di perangkat/browser ini.",
   locUnavailable:"Lokasi tidak tersedia",
+  ocrReading:"Membaca angka odometer…",
   secFitness:"Kelayakan Mengemudi",
   lblPretrip:"Apakah pemeriksaan pra-perjalanan sudah dilakukan?", yes:"Ya", no:"Tidak",
   lblFit:"Apakah Anda layak untuk mengemudi hari ini?", fitYes:"Ya", fitUnwell:"Kurang sehat",
@@ -748,6 +751,7 @@ ms:{
   camHint:"Halakan ke odometer dan ketik butang rana",
   camDenied:"Akses kamera diperlukan untuk memotret odometer. Sila benarkan akses kamera dan cuba lagi.",
   camUnavailable:"Kamera tidak tersedia pada peranti/pelayar ini.",
+  ocrReading:"Membaca nombor odometer…",
   locUnavailable:"Lokasi tidak tersedia",
   secFitness:"Kelayakan Memandu",
   lblPretrip:"Pemeriksaan pra-perjalanan telah dilakukan?", yes:"Ya", no:"Tidak",
@@ -1026,6 +1030,7 @@ function renderFormStep(){
         <div class="field">
           <label>${t('lblOdoKm')}</label>
           <input type="number" id="odoKm" inputmode="numeric" placeholder="${t('phOdoKm')}" value="${state.odoKm}">
+          <div class="ocr-hint" id="odoOcrHint" style="display:none;">${t('ocrReading')}</div>
           <div class="err-msg" id="err-odoKm">${t('errRequired')}</div>
         </div>
         <div class="field">
@@ -1081,6 +1086,7 @@ function renderFormStep(){
         <div class="field">
           <label>${t('lblOdoKm')}</label>
           <input type="number" id="odoKm" inputmode="numeric" placeholder="${t('phOdoKm')}" value="${state.odoKm}">
+          <div class="ocr-hint" id="odoOcrHint" style="display:none;">${t('ocrReading')}</div>
           <div class="err-msg" id="err-odoKm">${t('errRequired')}</div>
         </div>
         <div class="field">
@@ -1224,6 +1230,7 @@ document.getElementById('camShutter').addEventListener('click', ()=>{
   camCanvas.height = camVideo.videoHeight * scale;
   const ctx = camCanvas.getContext('2d');
   ctx.drawImage(camVideo, 0, 0, camCanvas.width, camCanvas.height);
+  const rawPhotoForOcr = camCanvas.toDataURL('image/jpeg', 0.92); // pre-stamp frame, so OCR never reads the date/time/location text
 
   // burn a visible timestamp + GPS location into the photo itself (two lines)
   const now = new Date();
@@ -1246,7 +1253,51 @@ document.getElementById('camShutter').addEventListener('click', ()=>{
   state.odoLng = camCoords ? camCoords.lng : '';
   closeCamera();
   renderFormStep();
+  runOdometerOCR(rawPhotoForOcr); // best-effort, async — only ever fills the field if it's still empty
 });
+
+/* ============== ODOMETER OCR (best-effort autofill, free/on-device) ==============
+   Runs entirely in the browser via Tesseract.js — no cloud API, no per-call
+   cost. It only ever pre-fills the km field when it's still empty; the
+   driver can always see and correct the number before submitting, and the
+   photo itself (not the OCR guess) remains the actual verification record. */
+let tesseractLoadPromise = null;
+function loadTesseractScript(){
+  if(window.Tesseract) return Promise.resolve();
+  if(tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js';
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return tesseractLoadPromise;
+}
+
+async function runOdometerOCR(photoDataUrl){
+  const hintEl = document.getElementById('odoOcrHint');
+  try{
+    if(hintEl) hintEl.style.display = 'block';
+    await loadTesseractScript();
+    if(!window.Tesseract) throw new Error('Tesseract failed to load');
+    const worker = await Tesseract.createWorker('eng');
+    await worker.setParameters({ tessedit_char_whitelist: '0123456789' });
+    const { data } = await worker.recognize(photoDataUrl);
+    await worker.terminate();
+    const digits = (data.text || '').replace(/[^0-9]/g, '');
+    const odoKmEl = document.getElementById('odoKm');
+    if(odoKmEl && !odoKmEl.value && digits.length >= 3 && digits.length <= 7){
+      odoKmEl.value = digits;
+      state.odoKm = digits;
+    }
+  }catch(err){
+    // best-effort only — OCR failing (slow network, old browser, unclear
+    // photo) never blocks the driver; manual entry still works as always
+  }finally{
+    if(hintEl) hintEl.style.display = 'none';
+  }
+}
 
 function captureCurrentFormValues(){
   const odoKmEl = document.getElementById('odoKm');
