@@ -196,7 +196,7 @@
     padding:20px; text-align:center; cursor:pointer; background:#fff;
   }
   .photo-upload.has-photo{border-style:solid; border-color:var(--pass-green); padding:0; overflow:hidden;}
-  .photo-upload img{width:100%; display:block; max-height:260px; object-fit:cover;}
+  .photo-upload img{width:100%; display:block; max-height:340px; object-fit:contain; background:#111;}
   .photo-upload .ph-label{font-size:13.5px; color:var(--grey-mid); font-weight:500;}
   .photo-upload .ph-sub{font-size:11.5px; color:var(--grey-mid); margin-top:4px;}
   .photo-retake{font-size:12.5px; color:var(--shell-red-dark); text-align:center; margin-top:8px; cursor:pointer; font-weight:500;}
@@ -402,7 +402,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.3.0</span>
+      <span class="version">v1.4.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -573,11 +573,12 @@ en:{
   // Start of shift
   secOdo:"Odometer", lblOdoKm:"Odometer reading (km)", phOdoKm:"e.g. 48213",
   lblOdoPhoto:"Photo of odometer", phUploadLabel:"Tap to take a photo", phUploadSub:"Taken live with your camera — the photo is time-stamped automatically",
-  photoDisclosure:"This photo of the odometer is required to verify kilometers driven, and is stored only for mileage verification and fleet records. It must be taken live in the app — uploading an existing photo isn't allowed.",
+  photoDisclosure:"This photo of the odometer is required to verify kilometers driven. The date, time and GPS location of the photo are stamped on the image itself and recorded with your entry, and are stored only for mileage verification and fleet records. It must be taken live in the app — uploading an existing photo isn't allowed.",
   retakePhoto:"Retake photo",
   camHint:"Point at the odometer and tap the shutter",
   camDenied:"Camera access is needed to photograph the odometer. Please allow camera access and try again.",
   camUnavailable:"Camera isn't available on this device/browser.",
+  locUnavailable:"Location unavailable",
   secFitness:"Fitness to Drive",
   lblPretrip:"Pre-trip check completed?", yes:"Yes", no:"No",
   lblFit:"Fit to drive today?", fitYes:"Yes", fitUnwell:"Feeling unwell",
@@ -658,11 +659,12 @@ id:{
   recent:"Terbaru",
   secOdo:"Odometer", lblOdoKm:"Pembacaan odometer (km)", phOdoKm:"cth: 48213",
   lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketuk untuk memotret", phUploadSub:"Diambil langsung dengan kamera — foto diberi stempel waktu otomatis",
-  photoDisclosure:"Foto odometer ini diperlukan untuk memverifikasi kilometer yang ditempuh, dan hanya disimpan untuk verifikasi jarak tempuh dan catatan armada. Foto harus diambil langsung di aplikasi — mengunggah foto yang sudah ada tidak diperbolehkan.",
+  photoDisclosure:"Foto odometer ini diperlukan untuk memverifikasi kilometer yang ditempuh. Tanggal, waktu, dan lokasi GPS saat foto diambil tercetak pada gambar itu sendiri dan dicatat bersama entri Anda, dan hanya disimpan untuk verifikasi jarak tempuh dan catatan armada. Foto harus diambil langsung di aplikasi — mengunggah foto yang sudah ada tidak diperbolehkan.",
   retakePhoto:"Ambil ulang foto",
   camHint:"Arahkan ke odometer dan ketuk tombol rana",
   camDenied:"Akses kamera diperlukan untuk memotret odometer. Mohon izinkan akses kamera dan coba lagi.",
   camUnavailable:"Kamera tidak tersedia di perangkat/browser ini.",
+  locUnavailable:"Lokasi tidak tersedia",
   secFitness:"Kelayakan Mengemudi",
   lblPretrip:"Apakah pemeriksaan pra-perjalanan sudah dilakukan?", yes:"Ya", no:"Tidak",
   lblFit:"Apakah Anda layak untuk mengemudi hari ini?", fitYes:"Ya", fitUnwell:"Kurang sehat",
@@ -741,11 +743,12 @@ ms:{
   recent:"Terkini",
   secOdo:"Odometer", lblOdoKm:"Bacaan odometer (km)", phOdoKm:"cth: 48213",
   lblOdoPhoto:"Foto odometer", phUploadLabel:"Ketik untuk ambil foto", phUploadSub:"Diambil secara langsung dengan kamera — foto dicap masa secara automatik",
-  photoDisclosure:"Foto odometer ini diperlukan untuk mengesahkan kilometer yang dipandu, dan hanya disimpan untuk pengesahan jarak dan rekod armada. Foto mesti diambil secara langsung dalam aplikasi — memuat naik foto sedia ada tidak dibenarkan.",
+  photoDisclosure:"Foto odometer ini diperlukan untuk mengesahkan kilometer yang dipandu. Tarikh, masa dan lokasi GPS foto dicetak pada imej itu sendiri dan direkodkan bersama entri anda, dan hanya disimpan untuk pengesahan jarak dan rekod armada. Foto mesti diambil secara langsung dalam aplikasi — memuat naik foto sedia ada tidak dibenarkan.",
   retakePhoto:"Ambil semula foto",
   camHint:"Halakan ke odometer dan ketik butang rana",
   camDenied:"Akses kamera diperlukan untuk memotret odometer. Sila benarkan akses kamera dan cuba lagi.",
   camUnavailable:"Kamera tidak tersedia pada peranti/pelayar ini.",
+  locUnavailable:"Lokasi tidak tersedia",
   secFitness:"Kelayakan Memandu",
   lblPretrip:"Pemeriksaan pra-perjalanan telah dilakukan?", yes:"Ya", no:"Tidak",
   lblFit:"Layak untuk memandu hari ini?", fitYes:"Ya", fitUnwell:"Kurang sihat",
@@ -829,7 +832,7 @@ document.querySelectorAll('.langtoggle button').forEach(b=>{
 /* ============== STATE ============== */
 const state = {
   driverName:'', vehicle:'', date:'', time:'', activity:'',
-  odoKm:'', odoPhotoDataUrl:'', odoPhotoBlob:null,
+  odoKm:'', odoPhotoDataUrl:'', odoPhotoBlob:null, odoLat:'', odoLng:'',
   pretrip:'', fit:'', sleep:'',
   chkTyres:'', chkLights:'', chkWindscreen:'', chkBrakes:'', chkFluids:'', chkFireAid:'',
   seatbeltDriver:'', seatbeltPax:'', failedItems:'', safeOperate:'',
@@ -1174,6 +1177,17 @@ let camStream = null;
 const cameraModal = document.getElementById('cameraModal');
 const camVideo = document.getElementById('camVideo');
 const camCanvas = document.getElementById('camCanvas');
+let camCoords = null; // {lat, lng} for the photo about to be taken, if available
+
+function requestCamLocation(){
+  camCoords = null;
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(
+    pos=>{ camCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+    ()=>{ /* denied/unavailable — photo still proceeds without coordinates */ },
+    { enableHighAccuracy:true, timeout:8000, maximumAge:60000 }
+  );
+}
 
 function openCamera(){
   if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
@@ -1182,6 +1196,7 @@ function openCamera(){
   }
   cameraModal.classList.add('show');
   document.getElementById('camHint').textContent = t('camHint');
+  requestCamLocation(); // ask in parallel so coordinates are ready by the time the shutter is tapped
   navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' } }, audio:false })
     .then(stream=>{
       camStream = stream;
@@ -1210,19 +1225,25 @@ document.getElementById('camShutter').addEventListener('click', ()=>{
   const ctx = camCanvas.getContext('2d');
   ctx.drawImage(camVideo, 0, 0, camCanvas.width, camCanvas.height);
 
-  // burn a visible timestamp into the photo itself
+  // burn a visible timestamp + GPS location into the photo itself (two lines)
   const now = new Date();
   const stamp = now.toLocaleString('en-GB', { day:'2-digit', month:'short', year:'numeric' }) + '  ' +
     now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
-  const barH = Math.max(26, camCanvas.height * 0.05);
+  const locLine = camCoords ? `${camCoords.lat.toFixed(5)}, ${camCoords.lng.toFixed(5)}` : t('locUnavailable');
+
+  const lineH = Math.max(24, camCanvas.height * 0.042);
+  const barH = lineH * 2 + 10;
   ctx.fillStyle = 'rgba(0,0,0,0.55)';
   ctx.fillRect(0, camCanvas.height - barH, camCanvas.width, barH);
   ctx.fillStyle = '#ffffff';
-  ctx.font = `${Math.floor(barH * 0.52)}px sans-serif`;
+  ctx.font = `${Math.floor(lineH * 0.6)}px sans-serif`;
   ctx.textBaseline = 'middle';
-  ctx.fillText(stamp, 10, camCanvas.height - barH / 2);
+  ctx.fillText(stamp, 10, camCanvas.height - barH + lineH * 0.5 + 5);
+  ctx.fillText(locLine, 10, camCanvas.height - barH + lineH * 1.5 + 5);
 
   state.odoPhotoDataUrl = camCanvas.toDataURL('image/jpeg', 0.78);
+  state.odoLat = camCoords ? camCoords.lat : '';
+  state.odoLng = camCoords ? camCoords.lng : '';
   closeCamera();
   renderFormStep();
 });
@@ -1267,6 +1288,7 @@ function onSubmit(){
   const payload = {
     driverName: state.driverName, vehicle: state.vehicle, date: state.date, time: state.time,
     activity: state.activity, odoKm: state.odoKm, odoPhotoDataUrl: state.odoPhotoDataUrl,
+    odoLat: state.odoLat || '', odoLng: state.odoLng || '',
     pretrip: state.pretrip, fit: state.fit, sleep: state.sleep,
     chkTyres: state.chkTyres, chkLights: state.chkLights, chkWindscreen: state.chkWindscreen,
     chkBrakes: state.chkBrakes, chkFluids: state.chkFluids, chkFireAid: state.chkFireAid,

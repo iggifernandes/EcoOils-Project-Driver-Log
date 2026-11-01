@@ -1,4 +1,4 @@
-// VERSION: 1.5.0
+// VERSION: 1.6.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -42,7 +42,8 @@ function submissionsSheet_() {
     'Tyres', 'Lights', 'Windscreen & Mirrors', 'Brakes & Handbrake',
     'Oil/Coolant/Fuel', 'Fire Ext. & First Aid',
     'Driver Seatbelt', 'Passenger Seatbelt', 'Failed Items', 'Safe to Operate',
-    'Incident/Near-Miss', 'Fatigue Level (1-5)'
+    'Incident/Near-Miss', 'Fatigue Level (1-5)',
+    'Odometer Photo Latitude', 'Odometer Photo Longitude'
   ]);
 }
 
@@ -149,7 +150,9 @@ function handleSubmission_(payload) {
       payload.failedItems || '',
       payload.safeOperate || '',
       payload.incident || '',
-      payload.fatigue || ''
+      payload.fatigue || '',
+      payload.odoLat || '',
+      payload.odoLng || ''
     ]);
 
     upsertDriver_(payload.driverName);
@@ -372,6 +375,23 @@ function saveProfilePhoto_(dataUrl, name) {
   // Needs to render as an <img> in the admin panel, so make it viewable by link.
   file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
   return 'https://drive.google.com/uc?export=view&id=' + file.getId();
+}
+
+/* ============== ONE-TIME: add the new location columns to an existing
+   Submissions sheet (run manually from the Apps Script editor) ============== */
+// getOrCreateSheet_() only writes headers the first time a sheet is created,
+// so your live Submissions sheet still has its original header row. This
+// just appends the two new header labels at the end of row 1 if they're not
+// already there — existing rows and columns are untouched. Safe to re-run.
+function addLocationColumns_() {
+  const sheet = getOrCreateSheet_(SUBMISSIONS_SHEET_NAME, []);
+  const lastCol = sheet.getLastColumn();
+  const headerRow = sheet.getRange(1, 1, 1, Math.max(lastCol, 1)).getValues()[0];
+  const wanted = ['Odometer Photo Latitude', 'Odometer Photo Longitude'];
+  const missing = wanted.filter(h => headerRow.indexOf(h) === -1);
+  if (missing.length === 0) { Logger.log('Location columns already present.'); return; }
+  sheet.getRange(1, lastCol + 1, 1, missing.length).setValues([missing]);
+  Logger.log('Added columns: ' + missing.join(', '));
 }
 
 /* ============== ONE-TIME SEED (run manually from the Apps Script editor) ============== */
