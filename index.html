@@ -403,7 +403,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.5.0</span>
+      <span class="version">v1.6.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -539,6 +539,19 @@
   </div>
 </div>
 
+<!-- PIN gate: confirms identity before a registered driver can proceed, if
+     the admin has set a PIN for that name. No PIN set = no gate, unchanged
+     from before. -->
+<div class="admin-modal" id="pinModal">
+  <div class="admin-panel">
+    <div class="admin-panel-top">
+      <span class="admin-title" data-i18n="pinModalTitle">Confirm it's you</span>
+      <button type="button" class="admin-close" id="pinClose">&times;</button>
+    </div>
+    <div class="admin-body" id="pinBody"></div>
+  </div>
+</div>
+
 <script>
 /* ============== CONFIG ============== */
 const CONFIG = {
@@ -559,6 +572,19 @@ en:{
   selfProfileTitle:"My Profile",
   selfNotFoundMsg:"We couldn't find a profile under this name yet. Ask your HSSE manager to add you first, then try again.",
   selfNameNeeded:"Type your name above first.",
+  pinModalTitle:"Confirm it's you",
+  pinEnterLabel:"Your PIN",
+  pinContinueBtn:"Continue",
+  pinWrong:"Wrong PIN. Try again.",
+  pinForgotLink:"Forgot your PIN?",
+  pinSendingCode:"Sending a reset code to your registered email…",
+  pinResetSentMsg:"A reset code has been sent to your registered email.",
+  pinResetCodeLabel:"Reset code (from your email)",
+  pinResetNewLabel:"New PIN (4-6 digits)",
+  pinResetSubmitBtn:"Set new PIN",
+  pinResetBackLink:"Back to PIN entry",
+  pinNoEmailMsg:"No email on file for you — ask your HSSE admin to reset your PIN.",
+  pinInvalidMsg:"Enter a 4 to 6 digit PIN.",
   lblVehicle:"Vehicle", other:"Other", phVehicleOther:"Enter vehicle plate number",
   lblDate:"Date", lblTime:"Time",
   lblActivity:"Activity",
@@ -625,6 +651,10 @@ en:{
   adminFieldCompany:"Company",
   adminFieldEmergencyName:"Emergency contact — name",
   adminFieldEmergencyPhone:"Emergency contact — phone",
+  adminFieldPin:"PIN",
+  adminFieldPinSet:"PIN is set",
+  adminFieldPinNotSet:"No PIN set yet",
+  adminFieldPinHint:"4-6 digits. Leave blank to keep the current PIN unchanged.",
   adminSaveBtn:"Save profile",
   adminSaving:"Saving…",
   adminSavedNotice:"Profile saved.",
@@ -647,6 +677,19 @@ id:{
   selfProfileTitle:"Profil Saya",
   selfNotFoundMsg:"Kami belum menemukan profil dengan nama ini. Minta HSSE Manager Anda untuk menambahkan Anda terlebih dahulu, lalu coba lagi.",
   selfNameNeeded:"Ketik nama Anda terlebih dahulu di atas.",
+  pinModalTitle:"Konfirmasi identitas Anda",
+  pinEnterLabel:"PIN Anda",
+  pinContinueBtn:"Lanjutkan",
+  pinWrong:"PIN salah. Coba lagi.",
+  pinForgotLink:"Lupa PIN?",
+  pinSendingCode:"Mengirim kode reset ke email terdaftar Anda…",
+  pinResetSentMsg:"Kode reset telah dikirim ke email terdaftar Anda.",
+  pinResetCodeLabel:"Kode reset (dari email Anda)",
+  pinResetNewLabel:"PIN baru (4-6 digit)",
+  pinResetSubmitBtn:"Atur PIN baru",
+  pinResetBackLink:"Kembali ke entri PIN",
+  pinNoEmailMsg:"Tidak ada email terdaftar untuk Anda — minta admin HSSE mengatur ulang PIN Anda.",
+  pinInvalidMsg:"Masukkan PIN 4 hingga 6 digit.",
   lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"Masukkan nomor plat kendaraan",
   lblDate:"Tanggal", lblTime:"Jam",
   lblActivity:"Aktivitas",
@@ -710,6 +753,10 @@ id:{
   adminFieldCompany:"Perusahaan",
   adminFieldEmergencyName:"Kontak darurat — nama",
   adminFieldEmergencyPhone:"Kontak darurat — telepon",
+  adminFieldPin:"PIN",
+  adminFieldPinSet:"PIN sudah diatur",
+  adminFieldPinNotSet:"Belum ada PIN",
+  adminFieldPinHint:"4-6 digit. Kosongkan untuk tetap menggunakan PIN saat ini.",
   adminSaveBtn:"Simpan profil",
   adminSaving:"Menyimpan…",
   adminSavedNotice:"Profil tersimpan.",
@@ -732,6 +779,19 @@ ms:{
   selfProfileTitle:"Profil Saya",
   selfNotFoundMsg:"Kami tidak menjumpai profil dengan nama ini. Minta Pengurus HSSE anda menambah anda dahulu, kemudian cuba lagi.",
   selfNameNeeded:"Taip nama anda dahulu di atas.",
+  pinModalTitle:"Sahkan identiti anda",
+  pinEnterLabel:"PIN anda",
+  pinContinueBtn:"Teruskan",
+  pinWrong:"PIN salah. Cuba lagi.",
+  pinForgotLink:"Lupa PIN?",
+  pinSendingCode:"Menghantar kod set semula ke emel berdaftar anda…",
+  pinResetSentMsg:"Kod set semula telah dihantar ke emel berdaftar anda.",
+  pinResetCodeLabel:"Kod set semula (dari emel anda)",
+  pinResetNewLabel:"PIN baharu (4-6 digit)",
+  pinResetSubmitBtn:"Tetapkan PIN baharu",
+  pinResetBackLink:"Kembali ke kemasukan PIN",
+  pinNoEmailMsg:"Tiada emel berdaftar untuk anda — minta admin HSSE menetapkan semula PIN anda.",
+  pinInvalidMsg:"Masukkan PIN 4 hingga 6 digit.",
   lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"Masukkan nombor plat kenderaan",
   lblDate:"Tarikh", lblTime:"Masa",
   lblActivity:"Aktiviti",
@@ -795,6 +855,10 @@ ms:{
   adminFieldCompany:"Syarikat",
   adminFieldEmergencyName:"Hubungan kecemasan — nama",
   adminFieldEmergencyPhone:"Hubungan kecemasan — telefon",
+  adminFieldPin:"PIN",
+  adminFieldPinSet:"PIN telah ditetapkan",
+  adminFieldPinNotSet:"Belum ada PIN",
+  adminFieldPinHint:"4-6 digit. Biarkan kosong untuk mengekalkan PIN semasa.",
   adminSaveBtn:"Simpan profil",
   adminSaving:"Menyimpan…",
   adminSavedNotice:"Profil disimpan.",
@@ -836,7 +900,7 @@ document.querySelectorAll('.langtoggle button').forEach(b=>{
 /* ============== STATE ============== */
 const state = {
   driverName:'', vehicle:'', date:'', time:'', activity:'',
-  odoKm:'', odoPhotoDataUrl:'', odoPhotoBlob:null, odoLat:'', odoLng:'',
+  odoKm:'', odoPhotoDataUrl:'', odoPhotoBlob:null, odoLat:'', odoLng:'', odoLocStatus:'', odoCapturedAt:'',
   pretrip:'', fit:'', sleep:'',
   chkTyres:'', chkLights:'', chkWindscreen:'', chkBrakes:'', chkFluids:'', chkFireAid:'',
   seatbeltDriver:'', seatbeltPax:'', failedItems:'', safeOperate:'',
@@ -995,11 +1059,15 @@ document.getElementById('toStep2').addEventListener('click', ()=>{
   if(!state.vehicle){ showErr('err-vehicle'); ok = false; }
   if(!state.activity){ showErr('err-activity'); ok = false; }
   if(!ok) return;
+  ensureDriverPinVerified(state.driverName, advanceToStep2);
+});
+
+function advanceToStep2(){
   document.getElementById('step-identify').style.display = 'none';
   document.getElementById('step-form').style.display = 'block';
   renderFormStep();
   window.scrollTo(0,0);
-});
+}
 
 /* ============== STEP 2: DYNAMIC FORM ============== */
 function choiceGroup(name, options, selectedVal, cols){
@@ -1184,13 +1252,19 @@ const cameraModal = document.getElementById('cameraModal');
 const camVideo = document.getElementById('camVideo');
 const camCanvas = document.getElementById('camCanvas');
 let camCoords = null; // {lat, lng} for the photo about to be taken, if available
+let camLocStatus = ''; // 'granted' | 'denied' | 'unavailable' | 'timeout' | 'unsupported'
 
 function requestCamLocation(){
   camCoords = null;
-  if(!navigator.geolocation) return;
+  camLocStatus = '';
+  if(!navigator.geolocation){ camLocStatus = 'unsupported'; return; }
   navigator.geolocation.getCurrentPosition(
-    pos=>{ camCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
-    ()=>{ /* denied/unavailable — photo still proceeds without coordinates */ },
+    pos=>{ camCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude }; camLocStatus = 'granted'; },
+    err=>{
+      // 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+      camLocStatus = err && err.code === 1 ? 'denied' : err && err.code === 3 ? 'timeout' : 'unavailable';
+      // denied/unavailable/timeout — photo still proceeds without coordinates
+    },
     { enableHighAccuracy:true, timeout:8000, maximumAge:60000 }
   );
 }
@@ -1251,6 +1325,8 @@ document.getElementById('camShutter').addEventListener('click', ()=>{
   state.odoPhotoDataUrl = camCanvas.toDataURL('image/jpeg', 0.78);
   state.odoLat = camCoords ? camCoords.lat : '';
   state.odoLng = camCoords ? camCoords.lng : '';
+  state.odoLocStatus = camLocStatus;
+  state.odoCapturedAt = now.toISOString();
   closeCamera();
   renderFormStep();
   runOdometerOCR(rawPhotoForOcr); // best-effort, async — only ever fills the field if it's still empty
@@ -1340,6 +1416,7 @@ function onSubmit(){
     driverName: state.driverName, vehicle: state.vehicle, date: state.date, time: state.time,
     activity: state.activity, odoKm: state.odoKm, odoPhotoDataUrl: state.odoPhotoDataUrl,
     odoLat: state.odoLat || '', odoLng: state.odoLng || '',
+    odoLocStatus: state.odoLocStatus || '', capturedAtClient: state.odoCapturedAt || '',
     pretrip: state.pretrip, fit: state.fit, sleep: state.sleep,
     chkTyres: state.chkTyres, chkLights: state.chkLights, chkWindscreen: state.chkWindscreen,
     chkBrakes: state.chkBrakes, chkFluids: state.chkFluids, chkFireAid: state.chkFireAid,
@@ -1575,6 +1652,11 @@ function renderAdminProfileForm(profile){
       <label>${t('adminFieldEmergencyPhone')}</label>
       <input type="text" id="pfEmPhone" value="${escapeHtml(p.emergencyPhone||'')}">
     </div>
+    <div class="field">
+      <label>${t('adminFieldPin')} — <span style="font-weight:400; color:${p.hasPin?'var(--pass-green)':'var(--grey-mid)'};">${p.hasPin ? t('adminFieldPinSet') : t('adminFieldPinNotSet')}</span></label>
+      <input type="password" id="pfPin" inputmode="numeric" maxlength="6" placeholder="••••">
+      <div class="hint">${t('adminFieldPinHint')}</div>
+    </div>
     <div class="btn-row">
       <button type="button" class="btn btn-secondary" id="pfBackBtn">${t('adminBackBtn')}</button>
       <button type="button" class="btn btn-primary" id="pfSaveBtn">${t('adminSaveBtn')}</button>
@@ -1615,7 +1697,8 @@ function renderAdminProfileForm(profile){
         emergencyName: document.getElementById('pfEmName').value.trim(),
         emergencyPhone: document.getElementById('pfEmPhone').value.trim(),
         photoDataUrl: admin.photoDataUrl || '',
-        existingPhotoUrl: p.photoUrl || ''
+        existingPhotoUrl: p.photoUrl || '',
+        pin: document.getElementById('pfPin').value.trim()
       });
       if(res.status === 'ok'){
         statusEl.className = 'admin-status';
@@ -1766,6 +1849,131 @@ function renderSelfForm(name, p){
       statusEl.className = 'admin-status error';
       statusEl.textContent = t('adminGenericError');
       btn.disabled = false; btn.textContent = t('adminSaveBtn');
+    }
+  });
+}
+
+/* ============== DRIVER PIN GATE ==============
+   Confirms identity before a driver can proceed past Step 1, but only for
+   names the admin has set a PIN for — everyone else works exactly as
+   before. Verified names are remembered on this device (like the existing
+   "remember me" convenience) so this isn't repeated every entry. */
+const pinModal = document.getElementById('pinModal');
+const pinBody = document.getElementById('pinBody');
+document.getElementById('pinClose').addEventListener('click', ()=> pinModal.classList.remove('show'));
+
+function pinVerifiedKey(name){ return 'driverlog_pin_ok_' + name.trim().toLowerCase(); }
+
+function isPinVerifiedOnDevice(name){
+  try{ return localStorage.getItem(pinVerifiedKey(name)) === '1'; }catch(e){ return false; }
+}
+function markPinVerifiedOnDevice(name){
+  try{ localStorage.setItem(pinVerifiedKey(name), '1'); }catch(e){}
+}
+
+// Resolves true if the driver may proceed immediately. If a PIN challenge is
+// needed, shows the modal and resolves false — the modal itself advances the
+// flow (via onPass) once the PIN or PIN reset succeeds.
+function ensureDriverPinVerified(name, onPass){
+  if(!name || isPinVerifiedOnDevice(name)){ onPass(); return; }
+  adminFetch({ action:'getOwnProfile', name: name }).then(res=>{
+    if(res.status === 'ok' && res.hasPin){
+      renderPinEntry(name, onPass);
+      pinModal.classList.add('show');
+    } else {
+      onPass(); // no profile, or no PIN set yet — unchanged behaviour
+    }
+  }).catch(()=> onPass()); // never block entry on a network hiccup
+}
+
+function renderPinEntry(name, onPass){
+  pinBody.innerHTML = `
+    <div class="admin-notice"><b>${escapeHtml(name)}</b></div>
+    <div class="field"><label>${t('pinEnterLabel')}</label><input type="password" inputmode="numeric" maxlength="6" id="pinInput"></div>
+    <div class="btn-row"><button type="button" class="btn btn-primary" id="pinSubmitBtn" style="width:100%;">${t('pinContinueBtn')}</button></div>
+    <div class="admin-status" id="pinStatus"></div>
+    <div class="admin-link-wrap" style="margin-top:10px;"><button type="button" class="admin-link" id="pinForgotBtn">${t('pinForgotLink')}</button></div>
+  `;
+  const input = document.getElementById('pinInput');
+  input.focus();
+  const statusEl = document.getElementById('pinStatus');
+  const submit = async ()=>{
+    const btn = document.getElementById('pinSubmitBtn');
+    const pin = input.value.trim();
+    if(!pin){ return; }
+    btn.disabled = true;
+    try{
+      const res = await adminFetch({ action:'verifyDriverPin', name: name, pin: pin });
+      if(res.status === 'ok'){
+        markPinVerifiedOnDevice(name);
+        pinModal.classList.remove('show');
+        onPass();
+      } else if(res.status === 'no_pin'){
+        pinModal.classList.remove('show');
+        onPass(); // PIN was removed/never set — don't block
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = t('pinWrong');
+        btn.disabled = false;
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false;
+    }
+  };
+  document.getElementById('pinSubmitBtn').addEventListener('click', submit);
+  input.addEventListener('keydown', e=>{ if(e.key === 'Enter') submit(); });
+  document.getElementById('pinForgotBtn').addEventListener('click', ()=> renderPinResetRequest(name, onPass));
+}
+
+function renderPinResetRequest(name, onPass){
+  pinBody.innerHTML = `<div class="admin-notice">${t('pinSendingCode')}</div>`;
+  adminFetch({ action:'requestDriverPinReset', name: name }).then(res=>{
+    if(res.status === 'ok'){
+      renderPinResetForm(name, onPass);
+    } else if(res.status === 'not_found'){
+      pinBody.innerHTML = `<div class="admin-status error">${t('selfNotFoundMsg')}</div>`;
+    } else {
+      pinBody.innerHTML = `<div class="admin-status error">${res.message || t('adminGenericError')}</div>`;
+    }
+  }).catch(()=>{ pinBody.innerHTML = `<div class="admin-status error">${t('adminGenericError')}</div>`; });
+}
+
+function renderPinResetForm(name, onPass){
+  pinBody.innerHTML = `
+    <div class="admin-notice">${t('pinResetSentMsg')}</div>
+    <div class="field"><label>${t('pinResetCodeLabel')}</label><input type="text" inputmode="numeric" id="pinResetCode"></div>
+    <div class="field"><label>${t('pinResetNewLabel')}</label><input type="password" inputmode="numeric" maxlength="6" id="pinResetNewPin"></div>
+    <div class="btn-row"><button type="button" class="btn btn-primary" id="pinResetSubmitBtn" style="width:100%;">${t('pinResetSubmitBtn')}</button></div>
+    <div class="admin-status" id="pinResetStatus"></div>
+    <div class="admin-link-wrap" style="margin-top:10px;"><button type="button" class="admin-link" id="pinResetBackBtn">${t('pinResetBackLink')}</button></div>
+  `;
+  document.getElementById('pinResetBackBtn').addEventListener('click', ()=> renderPinEntry(name, onPass));
+  document.getElementById('pinResetSubmitBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('pinResetSubmitBtn');
+    const statusEl = document.getElementById('pinResetStatus');
+    const code = document.getElementById('pinResetCode').value.trim();
+    const newPin = document.getElementById('pinResetNewPin').value.trim();
+    if(!/^[0-9]{4,6}$/.test(newPin)){
+      statusEl.className = 'admin-status error'; statusEl.textContent = t('pinInvalidMsg'); return;
+    }
+    btn.disabled = true;
+    try{
+      const res = await adminFetch({ action:'verifyDriverPinReset', name: name, code: code, newPin: newPin });
+      if(res.status === 'ok'){
+        markPinVerifiedOnDevice(name);
+        pinModal.classList.remove('show');
+        onPass();
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false;
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false;
     }
   });
 }

@@ -1,4 +1,4 @@
-// VERSION: 1.7.0
+// VERSION: 1.8.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -16,6 +16,14 @@ const PROFILE_PHOTO_FOLDER_NAME = 'Driver Profile Photos';
 const ADMIN_EMAIL = 'Ignatius.Ambrosio@ecooils.com.my';
 const LOGIN_CODE_TTL_SECONDS = 600;      // 10 minutes
 const SESSION_TOKEN_TTL_SECONDS = 7200;  // 2 hours
+
+// Project site reference point, used only to flag odometer photos taken
+// implausibly far away (possible GPS spoofing or a genuinely wrong reading).
+// TODO: set these to the actual Sei Mangkei site coordinates (drop a pin on
+// Google Maps at the site, right-click it, and copy the lat/lng shown).
+const PROJECT_SITE_LAT = 0;
+const PROJECT_SITE_LNG = 0;
+const GEOFENCE_RADIUS_KM = 5;
 
 function getSS_() {
   return SpreadsheetApp.getActiveSpreadsheet();
@@ -43,7 +51,9 @@ function submissionsSheet_() {
     'Oil/Coolant/Fuel', 'Fire Ext. & First Aid',
     'Driver Seatbelt', 'Passenger Seatbelt', 'Failed Items', 'Safe to Operate',
     'Incident/Near-Miss', 'Fatigue Level (1-5)',
-    'Odometer Photo Latitude', 'Odometer Photo Longitude', 'Odometer Photo Map Link'
+    'Odometer Photo Latitude', 'Odometer Photo Longitude', 'Odometer Photo Map Link',
+    'Odometer Photo Clock Offset (min)', 'Odometer Location Status',
+    'Distance from Site (km)', 'Location Flag'
   ]);
 }
 
@@ -54,8 +64,13 @@ function driversSheet_() {
 function profilesSheet_() {
   return getOrCreateSheet_(PROFILES_SHEET_NAME, [
     'Full Name', 'Phone', 'Email', 'Assigned Vehicle', 'Licence No', 'Licence Expiry', 'Company',
-    'Emergency Contact Name', 'Emergency Contact Phone', 'Photo URL', 'Last Updated'
+    'Emergency Contact Name', 'Emergency Contact Phone', 'Photo URL', 'Last Updated', 'PIN Hash'
   ]);
+}
+
+function hashPin_(pin) {
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(pin));
+  return bytes.map(b => ((b < 0 ? b + 256 : b).toString(16)).padStart(2, '0')).join('');
 }
 
 function getOrCreatePhotoFolder_() {
@@ -106,6 +121,9 @@ function doPost(e) {
     if (action === 'saveDriverProfile') return handleSaveProfile_(payload);
     if (action === 'getOwnProfile') return handleGetOwnProfile_(payload);
     if (action === 'updateOwnProfile') return handleUpdateOwnProfile_(payload);
+    if (action === 'verifyDriverPin') return handleVerifyDriverPin_(payload);
+    if (action === 'requestDriverPinReset') return handleRequestDriverPinReset_(payload);
+    if (action === 'verifyDriverPinReset') return handleVerifyDriverPinReset_(payload);
 
     return handleSubmission_(payload);
   } catch (err) {
@@ -135,6 +153,31 @@ function handleSubmission_(payload) {
       ? '=HYPERLINK("https://www.google.com/maps?q=' + lat + ',' + lng + '","View on map")'
       : '';
 
+    // How far the phone's own clock (at the moment the photo was taken) was
+    // from the server's real clock — flags a tampered device clock, since
+    // the burned-in stamp on the photo uses the phone's clock, not this one.
+    let clockOffsetMin = '';
+    if (payload.capturedAtClient) {
+      const clientTime = new Date(payload.capturedAtClient);
+      if (!isNaN(clientTime.getTime())) {
+        clockOffsetMin = Math.round((new Date().getTime() - clientTime.getTime()) / 60000);
+      }
+    }
+
+    // Why coordinates are blank, when they are: denied by the driver, no GPS
+    // on the device, timed out, or simply granted (coordinates present).
+    const locStatus = payload.odoLocStatus || (lat !== '' ? 'granted' : '');
+
+    // Flag entries taken implausibly far from the project site (possible GPS
+    // spoofing, or just a genuinely wrong reading) — only once the site's
+    // real coordinates are filled in above.
+    let distanceKm = '';
+    let locationFlag = '';
+    if (lat !== '' && lng !== '' && (PROJECT_SITE_LAT || PROJECT_SITE_LNG)) {
+      distanceKm = Math.round(haversineKm_(Number(lat), Number(lng), PROJECT_SITE_LAT, PROJECT_SITE_LNG) * 10) / 10;
+      locationFlag = distanceKm > GEOFENCE_RADIUS_KM ? 'FAR FROM SITE' : '';
+    }
+
     const sheet = submissionsSheet_();
     sheet.appendRow([
       autoTimestamp,
@@ -162,7 +205,11 @@ function handleSubmission_(payload) {
       payload.fatigue || '',
       lat,
       lng,
-      mapLink
+      mapLink,
+      clockOffsetMin,
+      locStatus,
+      distanceKm,
+      locationFlag
     ]);
 
     upsertDriver_(payload.driverName);
@@ -171,6 +218,16 @@ function handleSubmission_(payload) {
   } catch (err) {
     return jsonOut_({ status: 'error', message: String(err) });
   }
+}
+
+function haversineKm_(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function upsertDriver_(name) {
@@ -265,7 +322,8 @@ function handleListProfiles_(payload) {
       company: data[i][6],
       emergencyName: data[i][7],
       emergencyPhone: data[i][8],
-      photoUrl: data[i][9]
+      photoUrl: data[i][9],
+      hasPin: !!data[i][11]
     });
   }
   rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
@@ -292,6 +350,17 @@ function handleSaveProfile_(payload) {
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]).trim().toLowerCase() === name.toLowerCase()) { rowIndex = i + 1; break; }
   }
+
+  // PIN: only touched when the admin typed a new one. Leaving it blank keeps
+  // whatever was already set (or stays unset, for a brand-new profile).
+  let pinHash = rowIndex > 0 ? (data[rowIndex - 1][11] || '') : '';
+  if (payload.pin) {
+    if (!/^[0-9]{4,6}$/.test(String(payload.pin))) {
+      return jsonOut_({ status: 'error', message: 'PIN must be 4 to 6 digits.' });
+    }
+    pinHash = hashPin_(payload.pin);
+  }
+
   const rowValues = [
     name,
     payload.phone || '',
@@ -303,7 +372,8 @@ function handleSaveProfile_(payload) {
     payload.emergencyName || '',
     payload.emergencyPhone || '',
     photoUrl,
-    new Date()
+    new Date(),
+    pinHash
   ];
   if (rowIndex > 0) {
     sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
@@ -347,8 +417,67 @@ function handleGetOwnProfile_(payload) {
       emergencyName: row[7],
       emergencyPhone: row[8],
       photoUrl: row[9]
-    }
+    },
+    hasPin: !!row[11]
   });
+}
+
+/* ============== DRIVER PIN (identity check, no admin login) ==============
+   A 4-6 digit PIN per driver, set by the admin (saveDriverProfile, already
+   OTP-gated) and otherwise changeable only via a code emailed to that
+   driver's own registered email — never typed in by the person resetting
+   it, so it can't be redirected to someone else's inbox. Until the admin
+   sets a PIN for a name, that name works exactly as before (no gate). */
+
+function handleVerifyDriverPin_(payload) {
+  const name = String(payload.name || '').trim();
+  const pin = String(payload.pin || '').trim();
+  if (!name || !pin) return jsonOut_({ status: 'error', message: 'Name and PIN are required.' });
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+  const storedHash = found.row[11] || '';
+  if (!storedHash) return jsonOut_({ status: 'no_pin' });
+  if (hashPin_(pin) !== storedHash) return jsonOut_({ status: 'error', message: 'Wrong PIN.' });
+  return jsonOut_({ status: 'ok' });
+}
+
+function handleRequestDriverPinReset_(payload) {
+  const name = String(payload.name || '').trim();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+  const email = String(found.row[2] || '').trim();
+  if (!email) {
+    return jsonOut_({ status: 'error', message: 'No email on file for this driver — ask your HSSE admin to reset your PIN.' });
+  }
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  CacheService.getScriptCache().put('pincode_' + name.toLowerCase(), code, LOGIN_CODE_TTL_SECONDS);
+  MailApp.sendEmail({
+    to: email,
+    subject: 'Driver Log — your PIN reset code',
+    body: 'Your one-time PIN reset code is: ' + code +
+      '\n\nThis code expires in 10 minutes. If you did not request this, you can ignore this email.'
+  });
+  return jsonOut_({ status: 'ok' });
+}
+
+function handleVerifyDriverPinReset_(payload) {
+  const name = String(payload.name || '').trim();
+  const code = String(payload.code || '').trim();
+  const newPin = String(payload.newPin || '').trim();
+  if (!name || !code || !/^[0-9]{4,6}$/.test(newPin)) {
+    return jsonOut_({ status: 'error', message: 'A 4 to 6 digit PIN and a valid code are required.' });
+  }
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+  const cache = CacheService.getScriptCache();
+  const key = 'pincode_' + name.toLowerCase();
+  const cached = cache.get(key);
+  if (!cached || cached !== code) return jsonOut_({ status: 'error', message: 'Invalid or expired code.' });
+  cache.remove(key);
+  found.sheet.getRange(found.rowIndex, 12).setValue(hashPin_(newPin));
+  found.sheet.getRange(found.rowIndex, 11).setValue(new Date());
+  return jsonOut_({ status: 'ok' });
 }
 
 function handleUpdateOwnProfile_(payload) {
@@ -402,6 +531,37 @@ function addLocationColumns_() {
   if (missing.length === 0) { Logger.log('Location columns already present.'); return; }
   sheet.getRange(1, lastCol + 1, 1, missing.length).setValues([missing]);
   Logger.log('Added columns: ' + missing.join(', '));
+}
+
+/* ============== ONE-TIME: add the new fraud-check columns to an existing
+   Submissions sheet (run manually from the Apps Script editor) ============== */
+// Same pattern as addLocationColumns_ above, for the clock-offset,
+// location-status, distance-from-site and location-flag columns. Safe to
+// re-run, and safe to run whether or not you've already run
+// addLocationColumns_.
+function addSecurityColumns_() {
+  const sheet = getOrCreateSheet_(SUBMISSIONS_SHEET_NAME, []);
+  const lastCol = sheet.getLastColumn();
+  const headerRow = sheet.getRange(1, 1, 1, Math.max(lastCol, 1)).getValues()[0];
+  const wanted = [
+    'Odometer Photo Clock Offset (min)', 'Odometer Location Status',
+    'Distance from Site (km)', 'Location Flag'
+  ];
+  const missing = wanted.filter(h => headerRow.indexOf(h) === -1);
+  if (missing.length === 0) { Logger.log('Security columns already present.'); return; }
+  sheet.getRange(1, lastCol + 1, 1, missing.length).setValues([missing]);
+  Logger.log('Added columns: ' + missing.join(', '));
+}
+
+/* ============== ONE-TIME: add the PIN Hash column to an existing Driver
+   Profiles sheet (run manually from the Apps Script editor) ============== */
+function addPinColumn_() {
+  const sheet = getOrCreateSheet_(PROFILES_SHEET_NAME, []);
+  const lastCol = sheet.getLastColumn();
+  const headerRow = sheet.getRange(1, 1, 1, Math.max(lastCol, 1)).getValues()[0];
+  if (headerRow.indexOf('PIN Hash') !== -1) { Logger.log('PIN Hash column already present.'); return; }
+  sheet.getRange(1, lastCol + 1).setValue('PIN Hash');
+  Logger.log('Added column: PIN Hash');
 }
 
 /* ============== ONE-TIME SEED (run manually from the Apps Script editor) ============== */
