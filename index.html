@@ -403,7 +403,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.6.0</span>
+      <span class="version">v1.7.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -416,6 +416,12 @@
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
     <span data-i18n="inductionLink">New to site? Complete your HSSE induction first</span>
   </a>
+
+  <a class="induction-link" href="induction/" style="padding-top:0">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>
+    <span data-i18n="driverInductionLink">Driver induction (required for all drivers)</span>
+  </a>
+  <div id="indBanner" class="note-box" style="display:none;margin:0 0 16px;"></div>
 
   <!-- STEP 1: IDENTIFY -->
   <section id="step-identify" class="step">
@@ -563,6 +569,8 @@ const I18N = {
 en:{
   appTitle:"Driver's Log &amp; Pre-Use Checklist",
   inductionLink:"New to site? Complete your HSSE induction first",
+  driverInductionLink:"Driver induction (required for all drivers)",
+  indReady:"Driver induction valid until {d}.", indSoon:"Driver induction expires on {d}. Renew it soon.", indPending:"Driver induction passed. Please see an HSSE officer for your sign-off.", indExpired:"Your driver induction has expired. Please complete it again.", indNone:"No driver induction on record for this name. Please complete the driver induction.",
   s1title:"Step 1 — Who's driving",
   lblName:"Driver name", phName:"Type your full name",
   rememberedAs:"Remembered as", switchDriverBtn:"Not you? Switch driver",
@@ -668,6 +676,8 @@ en:{
 id:{
   appTitle:"Log Pengemudi &amp; Daftar Periksa Kendaraan",
   inductionLink:"Baru di lokasi? Selesaikan induksi HSSE Anda terlebih dahulu",
+  driverInductionLink:"Induksi pengemudi (wajib untuk semua pengemudi)",
+  indReady:"Induksi pengemudi berlaku sampai {d}.", indSoon:"Induksi pengemudi berakhir pada {d}. Segera perpanjang.", indPending:"Induksi pengemudi lulus. Silakan temui petugas HSSE untuk persetujuan.", indExpired:"Induksi pengemudi Anda sudah kedaluwarsa. Silakan ulangi.", indNone:"Belum ada induksi pengemudi atas nama ini. Silakan selesaikan induksi pengemudi.",
   s1title:"Langkah 1 — Siapa yang mengemudi",
   lblName:"Nama Pengemudi", phName:"Ketik nama lengkap Anda",
   rememberedAs:"Diingat sebagai", switchDriverBtn:"Bukan Anda? Ganti pengemudi",
@@ -770,6 +780,8 @@ id:{
 ms:{
   appTitle:"Log Pemandu &amp; Senarai Semak Kenderaan",
   inductionLink:"Baru di tapak? Lengkapkan induksi HSSE anda dahulu",
+  driverInductionLink:"Induksi pemandu (wajib untuk semua pemandu)",
+  indReady:"Induksi pemandu sah sehingga {d}.", indSoon:"Induksi pemandu tamat pada {d}. Sila perbaharui segera.", indPending:"Induksi pemandu lulus. Sila berjumpa pegawai HSSE untuk kelulusan.", indExpired:"Induksi pemandu anda telah tamat tempoh. Sila ulang semula.", indNone:"Tiada induksi pemandu atas nama ini. Sila lengkapkan induksi pemandu.",
   s1title:"Langkah 1 — Siapa yang memandu",
   lblName:"Nama Pemandu", phName:"Taip nama penuh anda",
   rememberedAs:"Diingati sebagai", switchDriverBtn:"Bukan anda? Tukar pemandu",
@@ -1062,7 +1074,23 @@ document.getElementById('toStep2').addEventListener('click', ()=>{
   ensureDriverPinVerified(state.driverName, advanceToStep2);
 });
 
+/* Driver induction status (from the Driver Induction tab). Informational only: it never blocks a log entry. */
+function showInductionBanner(){
+  const el = document.getElementById('indBanner'); if(!el || !CONFIG.APPS_SCRIPT_URL) return;
+  fetch(CONFIG.APPS_SCRIPT_URL + '?action=driverInductionStatus&name=' + encodeURIComponent(state.driverName))
+    .then(r=>r.json()).then(j=>{
+      if(!j || j.status !== 'ok') return;
+      let key = 'indNone', cls = 'note-box danger';
+      if(j.state === 'ready'){ key = (j.daysLeft != null && j.daysLeft <= 30) ? 'indSoon' : 'indReady'; cls = key === 'indSoon' ? 'note-box' : 'note-box info'; }
+      else if(j.state === 'pending'){ key = 'indPending'; cls = 'note-box'; }
+      else if(j.state === 'expired'){ key = 'indExpired'; cls = 'note-box danger'; }
+      el.className = cls; el.style.display = 'block'; el.style.margin = '0 0 16px';
+      el.textContent = t(key).replace('{d}', j.validUntil || '');
+    }).catch(()=>{});
+}
+
 function advanceToStep2(){
+  showInductionBanner();
   document.getElementById('step-identify').style.display = 'none';
   document.getElementById('step-form').style.display = 'block';
   renderFormStep();
