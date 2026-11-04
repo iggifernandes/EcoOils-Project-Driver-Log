@@ -1660,13 +1660,22 @@ document.getElementById('newEntryBtn').addEventListener('click', ()=>{
 });
 
 /* ============== DRIVER PROFILES ADMIN ============== */
-const admin = { token: null, email: '', isFullAdmin: false, profiles: [], editing: null, photoDataUrl: '' };
+const admin = { token: null, email: (function(){ try{ return localStorage.getItem('driverlog_admin_last_email') || ''; }catch(e){ return ''; } })(), isFullAdmin: false, profiles: [], editing: null, photoDataUrl: '' };
 
 const adminModal = document.getElementById('adminModal');
 const adminBody = document.getElementById('adminBody');
 
 document.getElementById('adminOpenBtn').addEventListener('click', openAdmin);
 document.getElementById('adminClose').addEventListener('click', closeAdmin);
+
+// Hidden shortcut to open Admin — same login flow as the visible button,
+// just a faster way in on a laptop (Shift+Ctrl+Alt+M).
+document.addEventListener('keydown', e=>{
+  if(e.shiftKey && e.ctrlKey && e.altKey && e.code === 'KeyM'){
+    e.preventDefault();
+    openAdmin();
+  }
+});
 
 function openAdmin(){
   adminModal.classList.add('show');
@@ -1732,6 +1741,7 @@ function renderAdminLogin(){
     const email = document.getElementById('adminEmailInput').value.trim();
     if(!email){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
     admin.email = email;
+    try{ localStorage.setItem('driverlog_admin_last_email', email); }catch(e){}
     btn.disabled = true; btn.textContent = t('adminRequestingCode');
     try{
       const res = await adminFetch({ action:'requestCode', email: admin.email });
@@ -1810,6 +1820,7 @@ function renderAdminPinLogin(){
     const pin = document.getElementById('adminPinInput').value.trim();
     if(!email || !pin){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
     admin.email = email;
+    try{ localStorage.setItem('driverlog_admin_last_email', email); }catch(e){}
     btn.disabled = true; btn.textContent = t('adminVerifying');
     try{
       const res = await adminFetch({ action:'adminPinLogin', email: email, pin: pin });
