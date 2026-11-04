@@ -1,4 +1,4 @@
-// VERSION: 2.0.0
+// VERSION: 2.1.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -8,6 +8,9 @@ const DRIVERS_SHEET_NAME = 'Drivers';
 const PROFILES_SHEET_NAME = 'Driver Profiles';
 const PHOTO_ROOT_FOLDER_NAME = 'Driver Log - Odometer Photos';
 const PROFILE_PHOTO_FOLDER_NAME = 'Driver Profile Photos';
+const INDUCTION_SHEET_NAME = 'Driver Induction';
+const INDUCTION_PASS_MARK = 12;   // of 15 (80%)
+const INDUCTION_VALID_MONTHS = 12;
 
 // Two admin tiers, both logging in the same way — a one-time code emailed
 // to their own address, never a stored/typed password (per the standing
@@ -123,7 +126,9 @@ function doGet(e) {
     drivers.sort((a, b) => b.lastUsed - a.lastUsed);
     return jsonOut_({ drivers: drivers });
   }
-  return jsonOut_({ status: 'ok', message: 'Driver Log backend is running.' });
+  if (action === 'driverInductionVerify') return handleInductionVerify_(e.parameter.code);
+  if (action === 'driverInductionStatus') return handleInductionStatus_(e.parameter.name);
+  return jsonOut_({ status: 'ok', message: 'Driver Log backend is running.', version: '1.10.0' });
 }
 
 function doPost(e) {
@@ -142,6 +147,9 @@ function doPost(e) {
     if (action === 'verifyDriverPinReset') return handleVerifyDriverPinReset_(payload);
     if (action === 'deleteDriverProfile') return handleDeleteDriverProfile_(payload);
     if (action === 'getDashboardData') return handleGetDashboardData_(payload);
+    if (action === 'driverInduction') return handleInductionSubmit_(payload);
+    if (action === 'listDriverInductions') return handleInductionList_(payload);
+    if (action === 'signoffDriverInduction') return handleInductionSignoff_(payload);
 
     return handleSubmission_(payload);
   } catch (err) {
@@ -777,6 +785,143 @@ function seedDriverProfiles_() {
   });
 
   Logger.log('Seeded ' + drivers.length + ' driver profiles.');
+}
+
+/* ============== DRIVER INDUCTION (pass-through / commuter drivers) ==============
+   Public: driverInduction (submit result), driverInductionVerify (QR page),
+   driverInductionStatus (Driver Log banner).
+   Admin (same email one-time-code login as driver profiles): list + officer
+   sign-off. A driver is "ready" only when passed AND signed off AND not expired. */
+
+const IND_HEADERS = [
+  'Timestamp', 'Cert No', 'Verify Code', 'Name', 'Company', 'Phone', 'Licence No', 'Licence Type',
+  'Licence Expiry', 'ID Last 4', 'Vehicle Plate', 'Language', 'Attempt', 'Score', 'Out Of', 'Result',
+  'Valid Until', 'Sign-off', 'Signed By', 'Signed At', 'SIM Sighted', 'Vehicle Checked', 'Route Briefed',
+  'Officer Notes', 'Client ID'
+];
+const IND_COL = {}; IND_HEADERS.forEach(function (h, i) { IND_COL[h] = i; });
+
+function inductionSheet_() { return getOrCreateSheet_(INDUCTION_SHEET_NAME, IND_HEADERS); }
+
+function indDate_(d) { return d ? Utilities.formatDate(new Date(d), TIMEZONE, 'yyyy-MM-dd') : ''; }
+
+function handleInductionSubmit_(p) {
+  const name = String(p.name || '').trim().slice(0, 80);
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+  const score = Number(p.score), outOf = Number(p.outOf) || 15;
+  if (!(score >= 0 && score <= outOf)) return jsonOut_({ status: 'error', message: 'Invalid score.' });
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const sheet = inductionSheet_();
+    const data = sheet.getDataRange().getValues();
+    const clientId = String(p.clientId || '').slice(0, 40);
+    let attempt = 1;
+    for (let i = 1; i < data.length; i++) {
+      const r = data[i];
+      if (clientId && r[IND_COL['Client ID']] === clientId) {   // retry of an upload already saved
+        return jsonOut_({ status: 'ok', certNo: r[1], code: r[2], result: r[IND_COL['Result']], validUntil: indDate_(r[IND_COL['Valid Until']]), duplicate: true });
+      }
+      if (String(r[IND_COL['Name']]).trim().toLowerCase() === name.toLowerCase() &&
+          String(r[IND_COL['Licence No']]).trim().toLowerCase() === String(p.licenceNo || '').trim().toLowerCase()) attempt++;
+    }
+    const pass = score >= INDUCTION_PASS_MARK;
+    const now = new Date();
+    let certNo = '', code = '', valid = '';
+    if (pass) {
+      const day = Utilities.formatDate(now, TIMEZONE, 'yyMMdd');
+      let n = 1; for (let i = 1; i < data.length; i++) if (String(data[i][1]).indexOf('DRV-IND-' + day) === 0) n++;
+      certNo = 'DRV-IND-' + day + '-' + ('00' + n).slice(-3);
+      const alpha = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+      do { code = ''; for (let k = 0; k < 8; k++) code += alpha.charAt(Math.floor(Math.random() * alpha.length)); }
+      while (data.some(function (r) { return r[2] === code; }));
+      const v = new Date(now); v.setMonth(v.getMonth() + INDUCTION_VALID_MONTHS);
+      valid = indDate_(v);
+    }
+    const row = [
+      now, certNo, code, name, String(p.company || '').slice(0, 80), String(p.phone || '').slice(0, 20),
+      String(p.licenceNo || '').slice(0, 30), String(p.licenceType || '').slice(0, 10), String(p.licenceExpiry || '').slice(0, 10),
+      String(p.idLast4 || '').slice(0, 4), String(p.plate || '').slice(0, 20), String(p.lang || '').slice(0, 3),
+      attempt, score, outOf, pass ? 'PASS' : 'FAIL', valid, pass ? 'Pending' : '', '', '', '', '', '', '', clientId
+    ];
+    const target = sheet.getLastRow() + 1;
+    [IND_COL['Phone'], IND_COL['Licence No'], IND_COL['ID Last 4']].forEach(function (c) { sheet.getRange(target, c + 1).setNumberFormat('@'); });
+    sheet.getRange(target, 1, 1, row.length).setValues([row]);
+    return jsonOut_({ status: 'ok', certNo: certNo, code: code, result: pass ? 'PASS' : 'FAIL', validUntil: valid, attempt: attempt });
+  } finally { lock.releaseLock(); }
+}
+
+function handleInductionVerify_(code) {
+  code = String(code || '').trim().toUpperCase();
+  if (!code) return jsonOut_({ status: 'error', message: 'No code.' });
+  const data = inductionSheet_().getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][2]).toUpperCase() === code) {
+      const r = data[i], valid = indDate_(r[IND_COL['Valid Until']]);
+      return jsonOut_({
+        status: 'ok', certNo: r[1], name: r[IND_COL['Name']], company: r[IND_COL['Company']],
+        date: indDate_(r[0]), validUntil: valid, signoff: r[IND_COL['Sign-off']],
+        expired: !!valid && valid < indDate_(new Date())
+      });
+    }
+  }
+  return jsonOut_({ status: 'not_found' });
+}
+
+// Latest PASS for a name -> ready / pending signoff / expired / none (used by the Driver Log banner).
+function handleInductionStatus_(name) {
+  name = String(name || '').trim().toLowerCase();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+  const data = inductionSheet_().getDataRange().getValues();
+  let best = null;
+  for (let i = 1; i < data.length; i++) {
+    const r = data[i];
+    if (String(r[IND_COL['Name']]).trim().toLowerCase() !== name || r[IND_COL['Result']] !== 'PASS') continue;
+    if (!best || new Date(r[0]) > new Date(best[0])) best = r;
+  }
+  if (!best) return jsonOut_({ status: 'ok', state: 'none' });
+  const valid = indDate_(best[IND_COL['Valid Until']]), today = indDate_(new Date());
+  const signed = best[IND_COL['Sign-off']] === 'Signed';
+  let state = 'ready';
+  if (valid && valid < today) state = 'expired';
+  else if (!signed) state = 'pending';
+  const days = valid ? Math.round((new Date(valid) - new Date(today)) / 86400000) : null;
+  return jsonOut_({ status: 'ok', state: state, validUntil: valid, daysLeft: days });
+}
+
+function handleInductionList_(p) {
+  try { requireAdmin_(p.token); } catch (err) { return jsonOut_({ status: 'error', message: String(err.message || err) }); }
+  const data = inductionSheet_().getDataRange().getValues(), out = [];
+  for (let i = data.length - 1; i >= 1 && out.length < 150; i--) {
+    const r = data[i];
+    if (r[IND_COL['Result']] !== 'PASS') continue;
+    out.push({
+      code: r[2], certNo: r[1], name: r[IND_COL['Name']], company: r[IND_COL['Company']], phone: r[IND_COL['Phone']],
+      licenceNo: r[IND_COL['Licence No']], licenceType: r[IND_COL['Licence Type']], licenceExpiry: r[IND_COL['Licence Expiry']],
+      plate: r[IND_COL['Vehicle Plate']], date: indDate_(r[0]), score: r[IND_COL['Score']], outOf: r[IND_COL['Out Of']],
+      validUntil: indDate_(r[IND_COL['Valid Until']]), signoff: r[IND_COL['Sign-off']], signedBy: r[IND_COL['Signed By']]
+    });
+  }
+  return jsonOut_({ status: 'ok', rows: out });
+}
+
+function handleInductionSignoff_(p) {
+  let email;
+  try { email = requireAdmin_(p.token); } catch (err) { return jsonOut_({ status: 'error', message: String(err.message || err) }); }
+  if (!(p.sim === true && p.vehicle === true && p.route === true)) {
+    return jsonOut_({ status: 'error', message: 'All three checks must be ticked.' });
+  }
+  const code = String(p.code || '').trim().toUpperCase();
+  const sheet = inductionSheet_(), data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][2]).toUpperCase() === code) {
+      const row = i + 1;
+      sheet.getRange(row, IND_COL['Sign-off'] + 1, 1, 7).setValues([[
+        'Signed', email, new Date(), 'Yes', 'Yes', 'Yes', String(p.notes || '').slice(0, 200)
+      ]]);
+      return jsonOut_({ status: 'ok' });
+    }
+  }
+  return jsonOut_({ status: 'not_found' });
 }
 
 function jsonOut_(obj) {

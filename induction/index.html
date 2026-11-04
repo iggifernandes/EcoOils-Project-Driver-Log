@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Driver Induction</title>
+<meta name="theme-color" content="#44a276">
+<link rel="icon" href="../icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --green:#44a276; --green-dark:#357f5c; --green-bg:#EAF6F0; --yellow:#FFC600;
+  --ink:#231f20; --grey-title:#6e6b6c; --grey-mid:#8a8788; --grey-line:#dcdcdc; --chip:#f4f4f4;
+  --fail:#b3261e; --amber:#a37a00; --radius:8px;
+  --maxw:620px;
+}
+@media (min-width:1100px){:root{--maxw:760px;}}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Jost',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#fff;color:var(--ink);-webkit-font-smoothing:antialiased;min-height:100vh;}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 18px 64px;}
+.topbar{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:22px 0 14px;border-bottom:1px solid var(--grey-line);margin-bottom:22px;}
+.topbar:after{content:"";position:absolute;left:0;bottom:-1px;width:44px;height:4px;background:var(--green);}
+.brand{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.brand-top{font-weight:700;font-size:15px;letter-spacing:.05em;color:var(--green);}
+.brand-title{font-weight:300;font-size:18px;letter-spacing:.14em;text-transform:uppercase;color:var(--grey-title);line-height:1.3;}
+.brand-sub{font-size:12.5px;color:var(--grey-mid);letter-spacing:.02em;}
+.topbar-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none;}
+.version{font-size:12px;color:var(--grey-title);letter-spacing:.06em;}
+.langtoggle{display:flex;}
+.langtoggle button{border:none;background:none;color:var(--grey-title);font-family:inherit;font-size:14px;letter-spacing:.06em;padding:4px 8px;cursor:pointer;border-bottom:3px solid transparent;min-height:30px;}
+.langtoggle button.active{color:var(--ink);font-weight:600;border-bottom-color:var(--green);}
+.card{background:#fff;border:1px solid var(--grey-line);border-radius:var(--radius);padding:22px 20px;margin-bottom:16px;}
+.step-title{font-size:13px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--grey-title);margin:0 0 6px;}
+h2{font-weight:500;font-size:20px;margin:0 0 14px;line-height:1.3;}
+p{line-height:1.6;font-size:15px;margin:0 0 12px;}
+.muted{color:var(--grey-mid);font-size:13px;}
+.progress{height:4px;background:var(--chip);border-radius:3px;margin:0 0 18px;overflow:hidden;}
+.progress i{display:block;height:100%;background:var(--green);transition:width .25s;}
+.bullets{list-style:none;padding:0;margin:0;}
+.bullets li{position:relative;padding:0 0 12px 22px;font-size:15px;line-height:1.55;}
+.bullets li:before{content:"";position:absolute;left:2px;top:9px;width:7px;height:7px;border-radius:50%;background:var(--green);}
+.bullets li b{font-weight:600;}
+.tbc{color:var(--amber);font-style:italic;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:14.5px;font-weight:500;margin-bottom:7px;}
+.field .req{color:var(--fail);}
+.field input,.field select{width:100%;padding:12px 13px;border:1px solid var(--grey-line);border-radius:8px;font-family:inherit;font-size:15px;background:#fff;color:var(--ink);}
+.field input:focus,.field select:focus{outline:2px solid var(--green);outline-offset:1px;border-color:var(--green);}
+.field .hint{font-size:12px;color:var(--grey-mid);margin-top:5px;line-height:1.5;}
+.field .err{font-size:12.5px;color:var(--fail);margin-top:5px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media (max-width:420px){.row2{grid-template-columns:1fr;}}
+.confirm-gate{display:flex;gap:11px;align-items:flex-start;padding:13px 14px;border:1.5px solid var(--grey-line);border-radius:9px;margin-top:10px;cursor:pointer;font-size:14px;line-height:1.5;}
+.confirm-gate input{width:20px;height:20px;margin-top:1px;flex:none;accent-color:var(--green);}
+.confirm-gate a{color:#0A5C9E;text-decoration:underline;font-weight:600;}
+.btn-row{display:flex;gap:10px;margin-top:20px;}
+.btn{flex:1;padding:14px 16px;border-radius:9px;border:none;font-family:inherit;font-size:15px;font-weight:600;letter-spacing:.02em;cursor:pointer;}
+.btn-primary{background:var(--green);color:#fff;}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-primary:disabled{background:#A9D2BE;cursor:not-allowed;}
+.btn-secondary{background:#fff;color:var(--ink);border:1.5px solid var(--grey-line);flex:0 0 auto;padding:14px 18px;}
+.note{border-left:3px solid var(--amber);background:#FFF7D6;border-radius:6px;padding:12px 14px;font-size:13.5px;line-height:1.55;color:#5c4400;margin:12px 0;}
+.note.info{border-left-color:var(--green);background:var(--green-bg);color:#1f4d38;}
+.note.danger{border-left-color:var(--fail);background:#FBEAE9;color:#7a1a14;}
+.opt{display:block;width:100%;text-align:left;border:1.5px solid var(--grey-line);background:#fff;border-radius:9px;padding:13px 14px;font-family:inherit;font-size:15px;line-height:1.45;color:var(--ink);cursor:pointer;margin-bottom:10px;}
+.opt.sel{border-color:var(--green);background:var(--green-bg);color:var(--green-dark);font-weight:500;}
+.photo-box{border:1.5px dashed var(--grey-line);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;}
+.photo-box.has{border-style:solid;border-color:var(--green);padding:0;overflow:hidden;}
+.photo-box img{width:100%;display:block;max-height:300px;object-fit:contain;background:#111;}
+.big{font-size:44px;font-weight:300;letter-spacing:.04em;}
+.pass{color:var(--green-dark);} .failc{color:var(--fail);}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90;display:flex;align-items:center;justify-content:center;padding:18px;}
+.modal .box{background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:85vh;overflow:auto;padding:22px 20px;}
+.modal h3{margin:0 0 10px;font-weight:600;font-size:17px;}
+.camera-modal{position:fixed;inset:0;background:#000;z-index:100;display:flex;align-items:center;justify-content:center;}
+.camera-modal video{width:100%;height:100%;object-fit:cover;}
+.cam-top{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 18px;z-index:2;}
+.cam-x{width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;font-size:18px;cursor:pointer;}
+.cam-hint{color:#fff;font-size:12.5px;background:rgba(0,0,0,.5);padding:6px 12px;border-radius:20px;}
+.cam-bottom{position:absolute;bottom:0;left:0;right:0;padding:28px 0 34px;display:flex;justify-content:center;z-index:2;background:linear-gradient(transparent,rgba(0,0,0,.45));}
+.shutter{width:68px;height:68px;border-radius:50%;background:#fff;border:4px solid rgba(255,255,255,.4);cursor:pointer;}
+table.t{width:100%;border-collapse:collapse;font-size:13.5px;}
+table.t td,table.t th{padding:8px 6px;border-bottom:1px solid var(--grey-line);text-align:left;vertical-align:top;}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11.5px;font-weight:600;letter-spacing:.03em;}
+.tag.ok{background:var(--green-bg);color:var(--green-dark);} .tag.wait{background:#FFF7D6;color:var(--amber);} .tag.bad{background:#FBEAE9;color:var(--fail);}
+footer{text-align:center;font-size:12px;color:var(--grey-mid);padding-top:14px;line-height:1.9;}
+footer a{color:var(--green-dark);cursor:pointer;text-decoration:underline;}
+canvas#certCv{width:100%;height:auto;border:1px solid var(--grey-line);border-radius:6px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-top">ECOOILS</div>
+      <div class="brand-title" id="ttl"></div>
+      <div class="brand-sub" id="sub"></div>
+    </div>
+    <div class="topbar-right">
+      <div class="version" id="verTag">v1</div>
+      <div class="langtoggle" id="lang"></div>
+    </div>
+  </div>
+  <div id="app"></div>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const QRCodeLib = (function(){ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],f={},c=function(t,r){o=function(t){for(var r=new Array(t),e=0;e<t;e+=1){r[e]=new Array(t);for(var n=0;n<t;n+=1)r[e][n]=null}return r}(i=4*e+17),l(0,0),l(i-7,0),l(0,i-7),s(),h(),d(t,r),e>=7&&v(t),null==a&&(a=p(e,n,u)),w(a,r)},l=function(t,r){for(var e=-1;e<=7;e+=1)if(!(t+e<=-1||i<=t+e))for(var n=-1;n<=7;n+=1)r+n<=-1||i<=r+n||(o[t+e][r+n]=0<=e&&e<=6&&(0==n||6==n)||0<=n&&n<=6&&(0==e||6==e)||2<=e&&e<=4&&2<=n&&n<=4)},h=function(){for(var t=8;t<i-8;t+=1)null==o[t][6]&&(o[t][6]=t%2==0);for(var r=8;r<i-8;r+=1)null==o[6][r]&&(o[6][r]=r%2==0)},s=function(){for(var t=B.getPatternPosition(e),r=0;r<t.length;r+=1)for(var n=0;n<t.length;n+=1){var i=t[r],a=t[n];if(null==o[i][a])for(var u=-2;u<=2;u+=1)for(var f=-2;f<=2;f+=1)o[i+u][a+f]=-2==u||2==u||-2==f||2==f||0==u&&0==f}},v=function(t){for(var r=B.getBCHTypeNumber(e),n=0;n<18;n+=1){var a=!t&&1==(r>>n&1);o[Math.floor(n/3)][n%3+i-8-3]=a}for(n=0;n<18;n+=1){a=!t&&1==(r>>n&1);o[n%3+i-8-3][Math.floor(n/3)]=a}},d=function(t,r){for(var e=n<<3|r,a=B.getBCHTypeInfo(e),u=0;u<15;u+=1){var f=!t&&1==(a>>u&1);u<6?o[u][8]=f:u<8?o[u+1][8]=f:o[i-15+u][8]=f}for(u=0;u<15;u+=1){f=!t&&1==(a>>u&1);u<8?o[8][i-u-1]=f:u<9?o[8][15-u-1+1]=f:o[8][15-u-1]=f}o[i-8][8]=!t},w=function(t,r){for(var e=-1,n=i-1,a=7,u=0,f=B.getMaskFunction(r),c=i-1;c>0;c-=2)for(6==c&&(c-=1);;){for(var g=0;g<2;g+=1)if(null==o[n][c-g]){var l=!1;u<t.length&&(l=1==(t[u]>>>a&1)),f(n,c-g)&&(l=!l),o[n][c-g]=l,-1==(a-=1)&&(u+=1,a=7)}if((n+=e)<0||i<=n){n-=e,e=-e;break}}},p=function(t,r,e){for(var n=A.getRSBlocks(t,r),o=b(),i=0;i<e.length;i+=1){var a=e[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var u=0;for(i=0;i<n.length;i+=1)u+=n[i].dataCount;if(o.getLengthInBits()>8*u)throw"code length overflow. ("+o.getLengthInBits()+">"+8*u+")";for(o.getLengthInBits()+4<=8*u&&o.put(0,4);o.getLengthInBits()%8!=0;)o.putBit(!1);for(;!(o.getLengthInBits()>=8*u||(o.put(236,8),o.getLengthInBits()>=8*u));)o.put(17,8);return function(t,r){for(var e=0,n=0,o=0,i=new Array(r.length),a=new Array(r.length),u=0;u<r.length;u+=1){var f=r[u].dataCount,c=r[u].totalCount-f;n=Math.max(n,f),o=Math.max(o,c),i[u]=new Array(f);for(var g=0;g<i[u].length;g+=1)i[u][g]=255&t.getBuffer()[g+e];e+=f;var l=B.getErrorCorrectPolynomial(c),h=k(i[u],l.getLength()-1).mod(l);for(a[u]=new Array(l.getLength()-1),g=0;g<a[u].length;g+=1){var s=g+h.getLength()-a[u].length;a[u][g]=s>=0?h.getAt(s):0}}var v=0;for(g=0;g<r.length;g+=1)v+=r[g].totalCount;var d=new Array(v),w=0;for(g=0;g<n;g+=1)for(u=0;u<r.length;u+=1)g<i[u].length&&(d[w]=i[u][g],w+=1);for(g=0;g<o;g+=1)for(u=0;u<r.length;u+=1)g<a[u].length&&(d[w]=a[u][g],w+=1);return d}(o,n)};f.addData=function(t,r){var e=null;switch(r=r||"Byte"){case"Numeric":e=M(t);break;case"Alphanumeric":e=x(t);break;case"Byte":e=m(t);break;case"Kanji":e=L(t);break;default:throw"mode:"+r}u.push(e),a=null},f.isDark=function(t,r){if(t<0||i<=t||r<0||i<=r)throw t+","+r;return o[t][r]},f.getModuleCount=function(){return i},f.make=function(){if(e<1){for(var t=1;t<40;t++){for(var r=A.getRSBlocks(t,n),o=b(),i=0;i<u.length;i++){var a=u[i];o.put(a.getMode(),4),o.put(a.getLength(),B.getLengthInBits(a.getMode(),t)),a.write(o)}var g=0;for(i=0;i<r.length;i++)g+=r[i].dataCount;if(o.getLengthInBits()<=8*g)break}e=t}c(!1,function(){for(var t=0,r=0,e=0;e<8;e+=1){c(!0,e);var n=B.getLostPoint(f);(0==e||t>n)&&(t=n,r=e)}return r}())},f.createTableTag=function(t,r){t=t||2;var e="";e+='<table style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: "+(r=void 0===r?4*t:r)+"px;",e+='">',e+="<tbody>";for(var n=0;n<f.getModuleCount();n+=1){e+="<tr>";for(var o=0;o<f.getModuleCount();o+=1)e+='<td style="',e+=" border-width: 0px; border-style: none;",e+=" border-collapse: collapse;",e+=" padding: 0px; margin: 0px;",e+=" width: "+t+"px;",e+=" height: "+t+"px;",e+=" background-color: ",e+=f.isDark(n,o)?"#000000":"#ffffff",e+=";",e+='"/>';e+="</tr>"}return e+="</tbody>",e+="</table>"},f.createSvgTag=function(t,r,e,n){var o={};"object"==typeof arguments[0]&&(t=(o=arguments[0]).cellSize,r=o.margin,e=o.alt,n=o.title),t=t||2,r=void 0===r?4*t:r,(e="string"==typeof e?{text:e}:e||{}).text=e.text||null,e.id=e.text?e.id||"qrcode-description":null,(n="string"==typeof n?{text:n}:n||{}).text=n.text||null,n.id=n.text?n.id||"qrcode-title":null;var i,a,u,c,g=f.getModuleCount()*t+2*r,l="";for(c="l"+t+",0 0,"+t+" -"+t+",0 0,-"+t+"z ",l+='<svg version="1.1" xmlns="http://www.w3.org/2000/svg"',l+=o.scalable?"":' width="'+g+'px" height="'+g+'px"',l+=' viewBox="0 0 '+g+" "+g+'" ',l+=' preserveAspectRatio="xMinYMin meet"',l+=n.text||e.text?' role="img" aria-labelledby="'+y([n.id,e.id].join(" ").trim())+'"':"",l+=">",l+=n.text?'<title id="'+y(n.id)+'">'+y(n.text)+"</title>":"",l+=e.text?'<description id="'+y(e.id)+'">'+y(e.text)+"</description>":"",l+='<rect width="100%" height="100%" fill="white" cx="0" cy="0"/>',l+='<path d="',a=0;a<f.getModuleCount();a+=1)for(u=a*t+r,i=0;i<f.getModuleCount();i+=1)f.isDark(a,i)&&(l+="M"+(i*t+r)+","+u+c);return l+='" stroke="transparent" fill="black"/>',l+="</svg>"},f.createDataURL=function(t,r){t=t||2,r=void 0===r?4*t:r;var e=f.getModuleCount()*t+2*r,n=r,o=e-r;return I(e,e,function(r,e){if(n<=r&&r<o&&n<=e&&e<o){var i=Math.floor((r-n)/t),a=Math.floor((e-n)/t);return f.isDark(a,i)?0:1}return 1})},f.createImgTag=function(t,r,e){t=t||2,r=void 0===r?4*t:r;var n=f.getModuleCount()*t+2*r,o="";return o+="<img",o+=' src="',o+=f.createDataURL(t,r),o+='"',o+=' width="',o+=n,o+='"',o+=' height="',o+=n,o+='"',e&&(o+=' alt="',o+=y(e),o+='"'),o+="/>"};var y=function(t){for(var r="",e=0;e<t.length;e+=1){var n=t.charAt(e);switch(n){case"<":r+="&lt;";break;case">":r+="&gt;";break;case"&":r+="&amp;";break;case'"':r+="&quot;";break;default:r+=n}}return r};return f.createASCII=function(t,r){if((t=t||1)<2)return function(t){t=void 0===t?2:t;var r,e,n,o,i,a=1*f.getModuleCount()+2*t,u=t,c=a-t,g={"██":"█","█ ":"▀"," █":"▄","  ":" "},l={"██":"▀","█ ":"▀"," █":" ","  ":" "},h="";for(r=0;r<a;r+=2){for(n=Math.floor((r-u)/1),o=Math.floor((r+1-u)/1),e=0;e<a;e+=1)i="█",u<=e&&e<c&&u<=r&&r<c&&f.isDark(n,Math.floor((e-u)/1))&&(i=" "),u<=e&&e<c&&u<=r+1&&r+1<c&&f.isDark(o,Math.floor((e-u)/1))?i+=" ":i+="█",h+=t<1&&r+1>=c?l[i]:g[i];h+="\n"}return a%2&&t>0?h.substring(0,h.length-a-1)+Array(a+1).join("▀"):h.substring(0,h.length-1)}(r);t-=1,r=void 0===r?2*t:r;var e,n,o,i,a=f.getModuleCount()*t+2*r,u=r,c=a-r,g=Array(t+1).join("██"),l=Array(t+1).join("  "),h="",s="";for(e=0;e<a;e+=1){for(o=Math.floor((e-u)/t),s="",n=0;n<a;n+=1)i=1,u<=n&&n<c&&u<=e&&e<c&&f.isDark(o,Math.floor((n-u)/t))&&(i=0),s+=i?g:l;for(o=0;o<t;o+=1)h+=s+"\n"}return h.substring(0,h.length-1)},f.renderTo2dContext=function(t,r){r=r||2;for(var e=f.getModuleCount(),n=0;n<e;n++)for(var o=0;o<e;o++)t.fillStyle=f.isDark(n,o)?"black":"white",t.fillRect(o*r,n*r,r,r)},f};t.stringToBytes=(t.stringToBytesFuncs={default:function(t){for(var r=[],e=0;e<t.length;e+=1){var n=t.charCodeAt(e);r.push(255&n)}return r}}).default,t.createStringToBytes=function(t,r){var e=function(){for(var e=S(t),n=function(){var t=e.read();if(-1==t)throw"eof";return t},o=0,i={};;){var a=e.read();if(-1==a)break;var u=n(),f=n()<<8|n();i[String.fromCharCode(a<<8|u)]=f,o+=1}if(o!=r)throw o+" != "+r;return i}(),n="?".charCodeAt(0);return function(t){for(var r=[],o=0;o<t.length;o+=1){var i=t.charCodeAt(o);if(i<128)r.push(i);else{var a=e[t.charAt(o)];"number"==typeof a?(255&a)==a?r.push(a):(r.push(a>>>8),r.push(255&a)):r.push(n)}}return r}};var r,e,n,o,i,a=1,u=2,f=4,c=8,g={L:1,M:0,Q:3,H:2},l=0,h=1,s=2,v=3,d=4,w=5,p=6,y=7,B=(r=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]],e=1335,n=7973,i=function(t){for(var r=0;0!=t;)r+=1,t>>>=1;return r},(o={}).getBCHTypeInfo=function(t){for(var r=t<<10;i(r)-i(e)>=0;)r^=e<<i(r)-i(e);return 21522^(t<<10|r)},o.getBCHTypeNumber=function(t){for(var r=t<<12;i(r)-i(n)>=0;)r^=n<<i(r)-i(n);return t<<12|r},o.getPatternPosition=function(t){return r[t-1]},o.getMaskFunction=function(t){switch(t){case l:return function(t,r){return(t+r)%2==0};case h:return function(t,r){return t%2==0};case s:return function(t,r){return r%3==0};case v:return function(t,r){return(t+r)%3==0};case d:return function(t,r){return(Math.floor(t/2)+Math.floor(r/3))%2==0};case w:return function(t,r){return t*r%2+t*r%3==0};case p:return function(t,r){return(t*r%2+t*r%3)%2==0};case y:return function(t,r){return(t*r%3+(t+r)%2)%2==0};default:throw"bad maskPattern:"+t}},o.getErrorCorrectPolynomial=function(t){for(var r=k([1],0),e=0;e<t;e+=1)r=r.multiply(k([1,C.gexp(e)],0));return r},o.getLengthInBits=function(t,r){if(1<=r&&r<10)switch(t){case a:return 10;case u:return 9;case f:case c:return 8;default:throw"mode:"+t}else if(r<27)switch(t){case a:return 12;case u:return 11;case f:return 16;case c:return 10;default:throw"mode:"+t}else{if(!(r<41))throw"type:"+r;switch(t){case a:return 14;case u:return 13;case f:return 16;case c:return 12;default:throw"mode:"+t}}},o.getLostPoint=function(t){for(var r=t.getModuleCount(),e=0,n=0;n<r;n+=1)for(var o=0;o<r;o+=1){for(var i=0,a=t.isDark(n,o),u=-1;u<=1;u+=1)if(!(n+u<0||r<=n+u))for(var f=-1;f<=1;f+=1)o+f<0||r<=o+f||0==u&&0==f||a==t.isDark(n+u,o+f)&&(i+=1);i>5&&(e+=3+i-5)}for(n=0;n<r-1;n+=1)for(o=0;o<r-1;o+=1){var c=0;t.isDark(n,o)&&(c+=1),t.isDark(n+1,o)&&(c+=1),t.isDark(n,o+1)&&(c+=1),t.isDark(n+1,o+1)&&(c+=1),0!=c&&4!=c||(e+=3)}for(n=0;n<r;n+=1)for(o=0;o<r-6;o+=1)t.isDark(n,o)&&!t.isDark(n,o+1)&&t.isDark(n,o+2)&&t.isDark(n,o+3)&&t.isDark(n,o+4)&&!t.isDark(n,o+5)&&t.isDark(n,o+6)&&(e+=40);for(o=0;o<r;o+=1)for(n=0;n<r-6;n+=1)t.isDark(n,o)&&!t.isDark(n+1,o)&&t.isDark(n+2,o)&&t.isDark(n+3,o)&&t.isDark(n+4,o)&&!t.isDark(n+5,o)&&t.isDark(n+6,o)&&(e+=40);var g=0;for(o=0;o<r;o+=1)for(n=0;n<r;n+=1)t.isDark(n,o)&&(g+=1);return e+=Math.abs(100*g/r/r-50)/5*10},o),C=function(){for(var t=new Array(256),r=new Array(256),e=0;e<8;e+=1)t[e]=1<<e;for(e=8;e<256;e+=1)t[e]=t[e-4]^t[e-5]^t[e-6]^t[e-8];for(e=0;e<255;e+=1)r[t[e]]=e;var n={glog:function(t){if(t<1)throw"glog("+t+")";return r[t]},gexp:function(r){for(;r<0;)r+=255;for(;r>=256;)r-=255;return t[r]}};return n}();function k(t,r){if(void 0===t.length)throw t.length+"/"+r;var e=function(){for(var e=0;e<t.length&&0==t[e];)e+=1;for(var n=new Array(t.length-e+r),o=0;o<t.length-e;o+=1)n[o]=t[o+e];return n}(),n={getAt:function(t){return e[t]},getLength:function(){return e.length},multiply:function(t){for(var r=new Array(n.getLength()+t.getLength()-1),e=0;e<n.getLength();e+=1)for(var o=0;o<t.getLength();o+=1)r[e+o]^=C.gexp(C.glog(n.getAt(e))+C.glog(t.getAt(o)));return k(r,0)},mod:function(t){if(n.getLength()-t.getLength()<0)return n;for(var r=C.glog(n.getAt(0))-C.glog(t.getAt(0)),e=new Array(n.getLength()),o=0;o<n.getLength();o+=1)e[o]=n.getAt(o);for(o=0;o<t.getLength();o+=1)e[o]^=C.gexp(C.glog(t.getAt(o))+r);return k(e,0).mod(t)}};return n}var A=function(){var t=[[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12,7,37,13],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]],r=function(t,r){var e={};return e.totalCount=t,e.dataCount=r,e},e={};return e.getRSBlocks=function(e,n){var o=function(r,e){switch(e){case g.L:return t[4*(r-1)+0];case g.M:return t[4*(r-1)+1];case g.Q:return t[4*(r-1)+2];case g.H:return t[4*(r-1)+3];default:return}}(e,n);if(void 0===o)throw"bad rs block @ typeNumber:"+e+"/errorCorrectionLevel:"+n;for(var i=o.length/3,a=[],u=0;u<i;u+=1)for(var f=o[3*u+0],c=o[3*u+1],l=o[3*u+2],h=0;h<f;h+=1)a.push(r(c,l));return a},e}(),b=function(){var t=[],r=0,e={getBuffer:function(){return t},getAt:function(r){var e=Math.floor(r/8);return 1==(t[e]>>>7-r%8&1)},put:function(t,r){for(var n=0;n<r;n+=1)e.putBit(1==(t>>>r-n-1&1))},getLengthInBits:function(){return r},putBit:function(e){var n=Math.floor(r/8);t.length<=n&&t.push(0),e&&(t[n]|=128>>>r%8),r+=1}};return e},M=function(t){var r=a,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+2<r.length;)t.put(o(r.substring(n,n+3)),10),n+=3;n<r.length&&(r.length-n==1?t.put(o(r.substring(n,n+1)),4):r.length-n==2&&t.put(o(r.substring(n,n+2)),7))}},o=function(t){for(var r=0,e=0;e<t.length;e+=1)r=10*r+i(t.charAt(e));return r},i=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);throw"illegal char :"+t};return n},x=function(t){var r=u,e=t,n={getMode:function(){return r},getLength:function(t){return e.length},write:function(t){for(var r=e,n=0;n+1<r.length;)t.put(45*o(r.charAt(n))+o(r.charAt(n+1)),11),n+=2;n<r.length&&t.put(o(r.charAt(n)),6)}},o=function(t){if("0"<=t&&t<="9")return t.charCodeAt(0)-"0".charCodeAt(0);if("A"<=t&&t<="Z")return t.charCodeAt(0)-"A".charCodeAt(0)+10;switch(t){case" ":return 36;case"$":return 37;case"%":return 38;case"*":return 39;case"+":return 40;case"-":return 41;case".":return 42;case"/":return 43;case":":return 44;default:throw"illegal char :"+t}};return n},m=function(r){var e=f,n=t.stringToBytes(r),o={getMode:function(){return e},getLength:function(t){return n.length},write:function(t){for(var r=0;r<n.length;r+=1)t.put(n[r],8)}};return o},L=function(r){var e=c,n=t.stringToBytesFuncs.SJIS;if(!n)throw"sjis not supported.";!function(){var t=n("友");if(2!=t.length||38726!=(t[0]<<8|t[1]))throw"sjis not supported."}();var o=n(r),i={getMode:function(){return e},getLength:function(t){return~~(o.length/2)},write:function(t){for(var r=o,e=0;e+1<r.length;){var n=(255&r[e])<<8|255&r[e+1];if(33088<=n&&n<=40956)n-=33088;else{if(!(57408<=n&&n<=60351))throw"illegal char at "+(e+1)+"/"+n;n-=49472}n=192*(n>>>8&255)+(255&n),t.put(n,13),e+=2}if(e<r.length)throw"illegal char at "+(e+1)}};return i},D=function(){var t=[],r={writeByte:function(r){t.push(255&r)},writeShort:function(t){r.writeByte(t),r.writeByte(t>>>8)},writeBytes:function(t,e,n){e=e||0,n=n||t.length;for(var o=0;o<n;o+=1)r.writeByte(t[o+e])},writeString:function(t){for(var e=0;e<t.length;e+=1)r.writeByte(t.charCodeAt(e))},toByteArray:function(){return t},toString:function(){var r="";r+="[";for(var e=0;e<t.length;e+=1)e>0&&(r+=","),r+=t[e];return r+="]"}};return r},S=function(t){var r=t,e=0,n=0,o=0,i={read:function(){for(;o<8;){if(e>=r.length){if(0==o)return-1;throw"unexpected end of file./"+o}var t=r.charAt(e);if(e+=1,"="==t)return o=0,-1;t.match(/^\s$/)||(n=n<<6|a(t.charCodeAt(0)),o+=6)}var i=n>>>o-8&255;return o-=8,i}},a=function(t){if(65<=t&&t<=90)return t-65;if(97<=t&&t<=122)return t-97+26;if(48<=t&&t<=57)return t-48+52;if(43==t)return 62;if(47==t)return 63;throw"c:"+t};return i},I=function(t,r,e){for(var n=function(t,r){var e=t,n=r,o=new Array(t*r),i={setPixel:function(t,r,n){o[r*e+t]=n},write:function(t){t.writeString("GIF87a"),t.writeShort(e),t.writeShort(n),t.writeByte(128),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(0),t.writeByte(255),t.writeByte(255),t.writeByte(255),t.writeString(","),t.writeShort(0),t.writeShort(0),t.writeShort(e),t.writeShort(n),t.writeByte(0);var r=a(2);t.writeByte(2);for(var o=0;r.length-o>255;)t.writeByte(255),t.writeBytes(r,o,255),o+=255;t.writeByte(r.length-o),t.writeBytes(r,o,r.length-o),t.writeByte(0),t.writeString(";")}},a=function(t){for(var r=1<<t,e=1+(1<<t),n=t+1,i=u(),a=0;a<r;a+=1)i.add(String.fromCharCode(a));i.add(String.fromCharCode(r)),i.add(String.fromCharCode(e));var f,c,g,l=D(),h=(f=l,c=0,g=0,{write:function(t,r){if(t>>>r!=0)throw"length over";for(;c+r>=8;)f.writeByte(255&(t<<c|g)),r-=8-c,t>>>=8-c,g=0,c=0;g|=t<<c,c+=r},flush:function(){c>0&&f.writeByte(g)}});h.write(r,n);var s=0,v=String.fromCharCode(o[s]);for(s+=1;s<o.length;){var d=String.fromCharCode(o[s]);s+=1,i.contains(v+d)?v+=d:(h.write(i.indexOf(v),n),i.size()<4095&&(i.size()==1<<n&&(n+=1),i.add(v+d)),v=d)}return h.write(i.indexOf(v),n),h.write(e,n),h.flush(),l.toByteArray()},u=function(){var t={},r=0,e={add:function(n){if(e.contains(n))throw"dup key:"+n;t[n]=r,r+=1},size:function(){return r},indexOf:function(r){return t[r]},contains:function(r){return void 0!==t[r]}};return e};return i}(t,r),o=0;o<r;o+=1)for(var i=0;i<t;i+=1)n.setPixel(i,o,e(i,o));var a=D();n.write(a);for(var u=function(){var t=0,r=0,e=0,n="",o={},i=function(t){n+=String.fromCharCode(a(63&t))},a=function(t){if(t<0);else{if(t<26)return 65+t;if(t<52)return t-26+97;if(t<62)return t-52+48;if(62==t)return 43;if(63==t)return 47}throw"n:"+t};return o.writeByte=function(n){for(t=t<<8|255&n,r+=8,e+=1;r>=6;)i(t>>>r-6),r-=6},o.flush=function(){if(r>0&&(i(t<<6-r),t=0,r=0),e%3!=0)for(var o=3-e%3,a=0;a<o;a+=1)n+="="},o.toString=function(){return n},o}(),f=a.toByteArray(),c=0;c<f.length;c+=1)u.writeByte(f[c]);return u.flush(),"data:image/gif;base64,"+u};return t}();qrcode.stringToBytesFuncs["UTF-8"]=function(t){return function(t){for(var r=[],e=0;e<t.length;e++){var n=t.charCodeAt(e);n<128?r.push(n):n<2048?r.push(192|n>>6,128|63&n):n<55296||n>=57344?r.push(224|n>>12,128|n>>6&63,128|63&n):(e++,n=65536+((1023&n)<<10|1023&t.charCodeAt(e)),r.push(240|n>>18,128|n>>12&63,128|n>>6&63,128|63&n))}return r}(t)};; return qrcode; })();
+</script>
+<script>
+'use strict';
+/* =============================== CONFIG =============================== */
+const VERSION = 'v1';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwBJWwYaHduQMRlRGJcIjnzQcV6vrtIzU6-T3aMx0ICX3X4-ARWeFGADd7iY5JxaLw/exec';
+const PASS_MARK = 12, QUIZ_N = 15;
+/* Site facts HSSE must confirm. Leave '' to show "to be confirmed by the HSSE officer". */
+const SITE = { gate:'', route:'', pickup:'', speed:'', assembly:'', emergency:'' };
+const COMPANIES = ['KKS','PBS','WEN','GSB','MPE','EcoOils','Other'];
+const LIC_TYPES = ['A','B1','B1 Umum','B2','B2 Umum','Other'];
+const VERIFY_BASE = location.origin + location.pathname;
+
+/* =============================== TEXT =============================== */
+const UI = {
+ en:{
+  title:'Driver Induction', sub:'Commuter & pass-through drivers · Sei Mangkei',
+  wTitle:'Welcome, driver', wBody:['This induction is for contractor drivers who transport EcoOils employees and visitors to and from site, the airport and other places. You pass through the site; you do not work on it.','It takes about 25 minutes: site information, life saving rules, defensive driving, odometer and kilometre logging, incident reporting, then a 15-question check (pass mark 12).'],
+  start:'Start', next:'Next', back:'Back',
+  dTitle:'Your details', name:'Full name', company:'Company', companyOther:'Company name', phone:'Mobile number',
+  licNo:'Driving licence (SIM) number', licType:'SIM type', licExp:'SIM expiry date', id4:'Last 4 characters of KTP / passport',
+  id4Hint:'Only the last 4 are collected. The full number is checked in person at the gate.', plate:'Vehicle plate (optional)',
+  choose:'Choose…', errName:'Enter your full name.', errCompany:'Choose your company.', errPhone:'Enter a valid mobile number.',
+  errLic:'Enter your SIM number.', errLicType:'Choose your SIM type.', errExp:'Your SIM has expired. You cannot continue until it is renewed.', errExpMissing:'Enter your SIM expiry date.', errId:'Enter the last 4 characters.',
+  privAgree:'I have read and agree to the', privLink:'Privacy Notice',
+  privTitle:'Privacy Notice', priv:'Your name, phone, SIM details and the last 4 characters of your ID are collected only to confirm you are a qualified, inducted driver. They are stored confidentially in the EcoOils HSSE driver register, accessible only to authorised HSSE and coordinator personnel, and not shared with third parties. Only your name, company and validity dates appear on the certificate verification page. By continuing you agree to this.',
+  certify:'I certify that all details entered above are correct and not falsified.', close:'Close',
+  modLabel:'Module', of:'of', ready:'I have read and understood this module',
+  qIntro:'Final check', qIntroBody:'15 questions. You need 12 correct (80%). Questions and answers change on every attempt. Take your time.', qStart:'Start the check',
+  question:'Question', finish:'Finish',
+  pass:'PASSED', fail:'NOT PASSED', score:'Score', retryBody:'You need 12 of 15. Review the modules and try again. A new set of questions will be given.', retry:'Try again', review:'Review the modules',
+  saving:'Saving your result…', saved:'Result saved.', saveFail:'Could not reach the register. Your result is kept on this phone.', retrySave:'Send again',
+  certTitle:'Your certificate', dl:'Download certificate', signNote:'Next step: meet an HSSE officer for the in-person check (SIM, vehicle, route briefing). Your induction is complete only after the officer signs you off.',
+  odoTitle:'Practice: odometer photo', odoBody:'Now practise what you will do every shift. Take a photo of an odometer (any vehicle) so that all the digits are clear, then type the reading exactly as shown. This practice photo is not saved.',
+  odoTake:'Take practice photo', odoRetake:'Retake', odoRead:'Odometer reading (km)', odoHint:'Digits only. Do not use the trip meter.', odoDone:'Good. You will do this at the start and end of every shift in the Driver Log.',
+  camErr:'Camera not available. Allow camera access, or use the phone camera when asked.', camHint:'Show all odometer digits',
+  verTitle:'Certificate check', verChecking:'Checking…', verNo:'No certificate found for this code.', verOk:'Valid driver induction', verExpired:'EXPIRED', verSigned:'Officer sign-off complete', verPending:'Awaiting officer sign-off', verName:'Name', verCo:'Company', verDate:'Induction date', verUntil:'Valid until', verNum:'Certificate no.',
+  officer:'HSSE officer sign-off', home:'Back to Driver Log',
+  oEmail:'Your officer email', oSend:'Email me a code', oCode:'Code from email', oLogin:'Log in', oPending:'Pending sign-off', oAll:'All passed drivers', oSearch:'Search name…',
+  oSim:'Driving licence (SIM) sighted and valid', oVeh:'Vehicle and documents checked', oRoute:'Route, gate and drop-off briefing given', oNotes:'Notes (optional)', oSign:'Sign off driver', oNone:'Nothing to show.', oDone:'Signed off.', oBackList:'Back to list',
+  offline:'No connection. Try again.'
+ },
+ id:{
+  title:'Induksi Pengemudi', sub:'Pengemudi antar-jemput & lintas · Sei Mangkei',
+  wTitle:'Selamat datang, pengemudi', wBody:['Induksi ini untuk pengemudi kontraktor yang mengantar karyawan dan tamu EcoOils dari/ke lokasi proyek, bandara dan tempat lain. Anda hanya melintas di lokasi; Anda tidak bekerja di lokasi.','Durasi sekitar 25 menit: informasi lokasi, aturan keselamatan jiwa, mengemudi defensif, odometer dan pencatatan kilometer, pelaporan insiden, lalu 15 soal (nilai lulus 12).'],
+  start:'Mulai', next:'Lanjut', back:'Kembali',
+  dTitle:'Data Anda', name:'Nama lengkap', company:'Perusahaan', companyOther:'Nama perusahaan', phone:'Nomor HP',
+  licNo:'Nomor SIM', licType:'Golongan SIM', licExp:'Masa berlaku SIM', id4:'4 karakter terakhir KTP / paspor',
+  id4Hint:'Hanya 4 karakter terakhir yang dicatat. Nomor lengkap diperiksa langsung di gerbang.', plate:'Nomor polisi kendaraan (opsional)',
+  choose:'Pilih…', errName:'Isi nama lengkap Anda.', errCompany:'Pilih perusahaan Anda.', errPhone:'Isi nomor HP yang valid.',
+  errLic:'Isi nomor SIM Anda.', errLicType:'Pilih golongan SIM.', errExp:'SIM Anda sudah kedaluwarsa. Anda tidak dapat melanjutkan sebelum diperpanjang.', errExpMissing:'Isi masa berlaku SIM.', errId:'Isi 4 karakter terakhir.',
+  privAgree:'Saya telah membaca dan menyetujui', privLink:'Pemberitahuan Privasi',
+  privTitle:'Pemberitahuan Privasi', priv:'Nama, telepon, data SIM, dan 4 karakter terakhir identitas Anda dikumpulkan hanya untuk memastikan Anda adalah pengemudi yang memenuhi syarat dan telah diinduksi. Data disimpan secara rahasia di register pengemudi HSSE EcoOils, hanya dapat diakses personel HSSE dan koordinator yang berwenang, dan tidak dibagikan kepada pihak ketiga. Hanya nama, perusahaan, dan tanggal berlaku yang tampil pada halaman verifikasi sertifikat. Dengan melanjutkan, Anda menyetujui hal ini.',
+  certify:'Saya menyatakan bahwa semua data di atas benar dan tidak dipalsukan.', close:'Tutup',
+  modLabel:'Modul', of:'dari', ready:'Saya telah membaca dan memahami modul ini',
+  qIntro:'Pemeriksaan akhir', qIntroBody:'15 soal. Anda harus benar 12 (80%). Soal dan jawaban berubah setiap percobaan. Jawab dengan tenang.', qStart:'Mulai pemeriksaan',
+  question:'Soal', finish:'Selesai',
+  pass:'LULUS', fail:'BELUM LULUS', score:'Nilai', retryBody:'Anda perlu 12 dari 15. Pelajari kembali modul dan coba lagi. Soal baru akan diberikan.', retry:'Coba lagi', review:'Pelajari modul',
+  saving:'Menyimpan hasil…', saved:'Hasil tersimpan.', saveFail:'Tidak dapat terhubung ke register. Hasil Anda disimpan di HP ini.', retrySave:'Kirim lagi',
+  certTitle:'Sertifikat Anda', dl:'Unduh sertifikat', signNote:'Langkah berikut: temui petugas HSSE untuk pemeriksaan langsung (SIM, kendaraan, briefing rute). Induksi selesai setelah petugas menandatangani.',
+  odoTitle:'Latihan: foto odometer', odoBody:'Sekarang latih apa yang akan Anda lakukan setiap shift. Foto odometer (kendaraan apa saja) sampai semua angka jelas, lalu ketik angka persis seperti yang tampak. Foto latihan ini tidak disimpan.',
+  odoTake:'Ambil foto latihan', odoRetake:'Ulangi', odoRead:'Angka odometer (km)', odoHint:'Hanya angka. Jangan gunakan trip meter.', odoDone:'Bagus. Ini akan Anda lakukan di awal dan akhir setiap shift di Driver Log.',
+  camErr:'Kamera tidak tersedia. Izinkan akses kamera, atau gunakan kamera HP saat diminta.', camHint:'Tampilkan semua angka odometer',
+  verTitle:'Cek sertifikat', verChecking:'Memeriksa…', verNo:'Sertifikat tidak ditemukan untuk kode ini.', verOk:'Induksi pengemudi valid', verExpired:'KEDALUWARSA', verSigned:'Tanda tangan petugas lengkap', verPending:'Menunggu tanda tangan petugas', verName:'Nama', verCo:'Perusahaan', verDate:'Tanggal induksi', verUntil:'Berlaku sampai', verNum:'No. sertifikat',
+  officer:'Persetujuan petugas HSSE', home:'Kembali ke Driver Log',
+  oEmail:'Email petugas Anda', oSend:'Kirim kode ke email', oCode:'Kode dari email', oLogin:'Masuk', oPending:'Menunggu persetujuan', oAll:'Semua pengemudi lulus', oSearch:'Cari nama…',
+  oSim:'SIM terlihat dan masih berlaku', oVeh:'Kendaraan dan dokumen sudah diperiksa', oRoute:'Briefing rute, gerbang dan titik turun sudah diberikan', oNotes:'Catatan (opsional)', oSign:'Setujui pengemudi', oNone:'Tidak ada data.', oDone:'Sudah disetujui.', oBackList:'Kembali ke daftar',
+  offline:'Tidak ada koneksi. Coba lagi.'
+ },
+ ms:{
+  title:'Induksi Pemandu', sub:'Pemandu ulang-alik & lintasan · Sei Mangkei',
+  wTitle:'Selamat datang, pemandu', wBody:['Induksi ini untuk pemandu kontraktor yang membawa pekerja dan tetamu EcoOils ke dan dari tapak, lapangan terbang dan tempat lain. Anda hanya melalui tapak; anda tidak bekerja di tapak.','Ia mengambil masa kira-kira 25 minit: maklumat tapak, peraturan menyelamatkan nyawa, pemanduan defensif, odometer dan rekod kilometer, pelaporan insiden, kemudian 15 soalan (markah lulus 12).'],
+  start:'Mula', next:'Seterusnya', back:'Kembali',
+  dTitle:'Butiran anda', name:'Nama penuh', company:'Syarikat', companyOther:'Nama syarikat', phone:'Nombor telefon',
+  licNo:'Nombor lesen memandu (SIM)', licType:'Jenis SIM', licExp:'Tarikh tamat SIM', id4:'4 aksara terakhir KTP / pasport',
+  id4Hint:'Hanya 4 aksara terakhir dikumpul. Nombor penuh disemak di pintu pagar.', plate:'Nombor plat kenderaan (pilihan)',
+  choose:'Pilih…', errName:'Masukkan nama penuh.', errCompany:'Pilih syarikat anda.', errPhone:'Masukkan nombor telefon yang sah.',
+  errLic:'Masukkan nombor SIM.', errLicType:'Pilih jenis SIM.', errExp:'SIM anda telah tamat tempoh. Anda tidak boleh meneruskan sehingga diperbaharui.', errExpMissing:'Masukkan tarikh tamat SIM.', errId:'Masukkan 4 aksara terakhir.',
+  privAgree:'Saya telah membaca dan bersetuju dengan', privLink:'Notis Privasi',
+  privTitle:'Notis Privasi', priv:'Nama, telefon, butiran SIM dan 4 aksara terakhir ID anda dikumpul hanya untuk mengesahkan anda pemandu yang layak dan telah diinduksi. Ia disimpan secara sulit dalam daftar pemandu HSSE EcoOils, hanya boleh dicapai oleh kakitangan HSSE dan penyelaras yang dibenarkan, dan tidak dikongsi dengan pihak ketiga. Hanya nama, syarikat dan tarikh sah dipaparkan pada halaman pengesahan sijil. Dengan meneruskan, anda bersetuju.',
+  certify:'Saya mengesahkan bahawa semua butiran di atas adalah betul dan tidak dipalsukan.', close:'Tutup',
+  modLabel:'Modul', of:'daripada', ready:'Saya telah membaca dan memahami modul ini',
+  qIntro:'Semakan akhir', qIntroBody:'15 soalan. Anda perlu betul 12 (80%). Soalan dan jawapan berubah setiap percubaan. Ambil masa anda.', qStart:'Mula semakan',
+  question:'Soalan', finish:'Selesai',
+  pass:'LULUS', fail:'BELUM LULUS', score:'Markah', retryBody:'Anda perlu 12 daripada 15. Ulang kaji modul dan cuba lagi. Soalan baharu akan diberikan.', retry:'Cuba lagi', review:'Ulang kaji modul',
+  saving:'Menyimpan keputusan…', saved:'Keputusan disimpan.', saveFail:'Tidak dapat menghubungi daftar. Keputusan anda disimpan pada telefon ini.', retrySave:'Hantar semula',
+  certTitle:'Sijil anda', dl:'Muat turun sijil', signNote:'Langkah seterusnya: berjumpa pegawai HSSE untuk semakan secara bersemuka (SIM, kenderaan, taklimat laluan). Induksi lengkap hanya selepas pegawai menandatangani.',
+  odoTitle:'Latihan: gambar odometer', odoBody:'Sekarang berlatih apa yang anda akan buat setiap syif. Ambil gambar odometer (mana-mana kenderaan) supaya semua digit jelas, kemudian taip bacaan tepat seperti dipaparkan. Gambar latihan ini tidak disimpan.',
+  odoTake:'Ambil gambar latihan', odoRetake:'Ambil semula', odoRead:'Bacaan odometer (km)', odoHint:'Digit sahaja. Jangan guna trip meter.', odoDone:'Bagus. Anda akan melakukan ini pada awal dan akhir setiap syif dalam Driver Log.',
+  camErr:'Kamera tidak tersedia. Benarkan akses kamera, atau guna kamera telefon apabila diminta.', camHint:'Tunjukkan semua digit odometer',
+  verTitle:'Semakan sijil', verChecking:'Menyemak…', verNo:'Tiada sijil dijumpai untuk kod ini.', verOk:'Induksi pemandu sah', verExpired:'TAMAT TEMPOH', verSigned:'Tandatangan pegawai lengkap', verPending:'Menunggu tandatangan pegawai', verName:'Nama', verCo:'Syarikat', verDate:'Tarikh induksi', verUntil:'Sah sehingga', verNum:'No. sijil',
+  officer:'Kelulusan pegawai HSSE', home:'Kembali ke Driver Log',
+  oEmail:'E-mel pegawai anda', oSend:'E-mel kod kepada saya', oCode:'Kod daripada e-mel', oLogin:'Log masuk', oPending:'Menunggu kelulusan', oAll:'Semua pemandu lulus', oSearch:'Cari nama…',
+  oSim:'SIM dilihat dan sah', oVeh:'Kenderaan dan dokumen disemak', oRoute:'Taklimat laluan, pintu pagar dan tempat turun diberi', oNotes:'Catatan (pilihan)', oSign:'Luluskan pemandu', oNone:'Tiada data.', oDone:'Telah diluluskan.', oBackList:'Kembali ke senarai',
+  offline:'Tiada sambungan. Cuba lagi.'
+ }
+};
+
+const TBC = {en:'to be confirmed by the HSSE officer', id:'akan dikonfirmasi petugas HSSE', ms:'akan disahkan oleh pegawai HSSE'};
+
+/* modules: t = title, i = bullets. {{key}} is replaced from SITE. **bold** supported. */
+const MODS = {
+ en:[
+  {t:'Site information for pass-through drivers', i:[
+   '**Your role:** you carry employees and visitors to and from the Mentari site, the airport and other places. You pass through the site. You do **not** work on it.',
+   '**Gate:** stop at the security gate, show your ID, SIM and vehicle documents, and follow the guard. Entry gate: {{gate}}.',
+   '**Route:** use only the approved route: {{route}}. No shortcuts. Never enter construction areas or barricaded zones.',
+   '**Drop-off / pick-up point:** {{pickup}}. Never park under cranes or lifting areas, or block roads and emergency access.',
+   '**Speed on site:** {{speed}}. Give way to trucks, cranes and heavy equipment, and stay where the operator can see you.',
+   '**Passengers** leave the vehicle only at the drop-off point and follow the PPE rule given at the gate.',
+   '**Alcohol and drugs:** zero tolerance, before or during driving. Smoking only in designated areas.',
+   '**Emergency alarm:** stop safely clear of the road, take your passengers to the assembly point {{assembly}} and wait for HSSE instructions. Emergency contact: {{emergency}}.']},
+  {t:'Life Saving Rules that apply to you', i:[
+   '**Driving:** everyone wears a seatbelt before the vehicle moves. Obey speed limits. No phone use while driving, hands-free included. No alcohol or drugs. Never drive tired.',
+   '**Safe position (line of fire):** keep out of the path of moving vehicles, equipment and loads. If you must stop, stop where you can be seen and are clear of the path.',
+   '**Suspended loads:** never drive, park or stand under a load being lifted. Stop well clear and wait.',
+   '**Controlled areas:** do not enter anything marked with barriers, tape or hazard signs (permit areas, confined spaces, excavations, gas areas), even to save time.',
+   '**Stop and report:** you have the authority to stop any unsafe situation and tell security or HSSE. You will never be punished for stopping safely.']},
+  {t:'Defensive driving', i:[
+   '**Look ahead:** scan far ahead, check mirrors every 5–8 seconds, and expect that other road users have not seen you.',
+   '**Following distance:** keep at least 3 seconds from the vehicle ahead. Make it 4 seconds or more in rain, at night, or behind trucks.',
+   '**Wet roads:** slow down early, brake gently and early, avoid sudden steering. Never drive through floodwater; turn back.',
+   '**Night:** dip your lights, do not drive faster than you can stop in your headlight range. If you are dazzled, slow down and look to the left edge of the road.',
+   '**Motorbikes and pedestrians:** check blind spots, give space, and never turn without looking twice.',
+   '**Oil-palm and heavy trucks:** stay out of their blind spots, never overtake on bends or hill crests, expect wide turns, and watch for fruit or oil on the road.',
+   '**Fatigue:** sleep at least 7 hours before a long run. Take a break at least every 2 hours. If sleepy, pull over safely, rest or swap, and tell your supervisor. Do not rush to meet a flight.',
+   '**Passengers:** seatbelts on before moving, no overloading, no loose heavy items.',
+   '**Breakdown:** hazard lights on, move passengers to a safe place away from traffic, set the warning triangle, and call your supervisor.']},
+  {t:'Odometer familiarisation', i:[
+   'In the Driver Log you take an odometer photo at the **start** of your shift and at the **end** of the day.',
+   'The photo must be taken **live in the app** with the camera. Gallery photos are not accepted. The photo carries the date and time, and the app shows a disclaimer about it.',
+   'Show **all the digits** clearly. No glare, no blur, and do not cover the display.',
+   'Type the reading **exactly as shown**, in whole kilometres. The **trip meter is not the odometer**. Never reset anything.',
+   'If the odometer is broken, stuck or replaced, report it to your coordinator before driving.']},
+  {t:'Kilometre tracking', i:[
+   'Distance for the shift = **end reading − start reading**. Example: start 45,210 and end 45,298 means 88 km.',
+   'Log **every shift** and every vehicle you use, with the correct vehicle plate.',
+   'Today\'s start reading should equal yesterday\'s end reading. A gap means a trip that was not logged. Tell your coordinator; do not change the numbers.',
+   'Use the vehicle only for the work assigned to you (site shuttle, airport and other approved trips).',
+   'Wrong entry by mistake? Tell your coordinator straight away. Honest corrections are fine; hidden ones are not.']},
+  {t:'Incident reporting', i:[
+   '**Report everything:** crashes, near misses, any vehicle damage (even a scratch), injuries, unsafe roads or site conditions, and any security event.',
+   '**First actions after an incident:** 1) stop and make the scene safe (hazard lights, engine off, triangle); 2) check people and call the emergency number {{emergency}}; 3) do not move the vehicle unless it is unsafe to leave it; 4) call your supervisor and the HSSE/security contact immediately; 5) give facts only and take photos if safe.',
+   '**Then record it** in the Driver Log (Incident / near-miss field) at the end of the shift. The phone call comes first, within minutes, not hours.',
+   'Reporting is never punished. **Hiding an incident is.**']}
+ ],
+ id:[
+  {t:'Informasi lokasi untuk pengemudi lintas', i:[
+   '**Peran Anda:** Anda mengantar karyawan dan tamu dari/ke lokasi Mentari, bandara dan tempat lain. Anda hanya melintas di lokasi. Anda **tidak** bekerja di lokasi.',
+   '**Gerbang:** berhenti di pos keamanan, tunjukkan KTP, SIM dan dokumen kendaraan, dan ikuti arahan petugas. Gerbang masuk: {{gate}}.',
+   '**Rute:** gunakan hanya rute yang disetujui: {{route}}. Tidak boleh jalan pintas. Jangan masuk area konstruksi atau zona berpagar.',
+   '**Titik turun / jemput:** {{pickup}}. Jangan parkir di bawah crane atau area pengangkatan, dan jangan menghalangi jalan atau akses darurat.',
+   '**Kecepatan di lokasi:** {{speed}}. Beri jalan kepada truk, crane dan alat berat, dan tetap berada di tempat yang terlihat operator.',
+   '**Penumpang** turun hanya di titik turun dan mengikuti aturan APD yang diberikan di gerbang.',
+   '**Alkohol dan narkoba:** toleransi nol, sebelum maupun saat mengemudi. Merokok hanya di area yang ditentukan.',
+   '**Alarm darurat:** berhenti dengan aman jauh dari jalan, bawa penumpang ke titik kumpul {{assembly}} dan tunggu arahan HSSE. Kontak darurat: {{emergency}}.']},
+  {t:'Aturan Keselamatan Jiwa yang berlaku untuk Anda', i:[
+   '**Mengemudi:** semua orang memakai sabuk pengaman sebelum kendaraan berjalan. Patuhi batas kecepatan. Tidak memakai HP saat mengemudi, termasuk hands-free. Tidak alkohol atau narkoba. Jangan mengemudi saat lelah.',
+   '**Posisi aman (garis tembak):** jauhi jalur kendaraan, alat dan beban yang bergerak. Jika harus berhenti, berhentilah di tempat yang terlihat dan di luar jalur.',
+   '**Beban menggantung:** jangan mengemudi, parkir atau berdiri di bawah beban yang sedang diangkat. Berhenti jauh dan tunggu.',
+   '**Area terkontrol:** jangan masuk area yang diberi pembatas, pita atau tanda bahaya (area izin kerja, ruang terbatas, galian, area gas), meski untuk menghemat waktu.',
+   '**Hentikan dan laporkan:** Anda berwenang menghentikan situasi tidak aman dan melapor ke keamanan atau HSSE. Anda tidak akan dihukum karena berhenti dengan aman.']},
+  {t:'Mengemudi defensif', i:[
+   '**Lihat jauh ke depan:** pindai jauh ke depan, cek spion setiap 5–8 detik, dan anggap pengguna jalan lain tidak melihat Anda.',
+   '**Jarak aman:** minimal 3 detik dari kendaraan di depan. Jadikan 4 detik atau lebih saat hujan, malam hari, atau di belakang truk.',
+   '**Jalan basah:** kurangi kecepatan lebih awal, rem pelan dan lebih awal, hindari membelok mendadak. Jangan menerobos banjir; putar balik.',
+   '**Malam hari:** gunakan lampu dekat, jangan melaju lebih cepat dari jarak henti Anda. Jika silau, perlambat dan lihat tepi kiri jalan.',
+   '**Sepeda motor dan pejalan kaki:** cek titik buta, beri ruang, dan jangan berbelok tanpa melihat dua kali.',
+   '**Truk sawit dan kendaraan berat:** jauhi titik butanya, jangan menyalip di tikungan atau puncak tanjakan, antisipasi belokan lebar, dan waspadai buah atau minyak di jalan.',
+   '**Kelelahan:** tidur minimal 7 jam sebelum perjalanan jauh. Istirahat minimal setiap 2 jam. Jika mengantuk, menepi dengan aman, istirahat atau bergantian, dan beri tahu atasan. Jangan terburu-buru mengejar penerbangan.',
+   '**Penumpang:** sabuk pengaman terpasang sebelum jalan, tidak melebihi kapasitas, tidak ada barang berat lepas.',
+   '**Mogok:** nyalakan lampu hazard, pindahkan penumpang ke tempat aman jauh dari lalu lintas, pasang segitiga pengaman, dan hubungi atasan.']},
+  {t:'Pengenalan odometer', i:[
+   'Di Driver Log Anda memotret odometer di **awal** shift dan di **akhir** hari.',
+   'Foto harus diambil **langsung di aplikasi** dengan kamera. Foto dari galeri tidak diterima. Foto memuat tanggal dan jam, dan aplikasi menampilkan pemberitahuan tentang hal ini.',
+   'Tampilkan **semua angka** dengan jelas. Tanpa silau, tanpa blur, dan jangan menutupi layar.',
+   'Ketik angka **persis seperti yang tampak**, dalam kilometer penuh. **Trip meter bukan odometer**. Jangan reset apa pun.',
+   'Jika odometer rusak, macet atau diganti, laporkan ke koordinator sebelum mengemudi.']},
+  {t:'Pencatatan kilometer', i:[
+   'Jarak shift = **angka akhir − angka awal**. Contoh: awal 45.210 dan akhir 45.298 berarti 88 km.',
+   'Catat **setiap shift** dan setiap kendaraan yang Anda pakai, dengan nomor polisi yang benar.',
+   'Angka awal hari ini harus sama dengan angka akhir kemarin. Selisih berarti ada perjalanan yang tidak dicatat. Beri tahu koordinator; jangan ubah angkanya.',
+   'Gunakan kendaraan hanya untuk tugas yang diberikan (antar-jemput lokasi, bandara dan perjalanan resmi lain).',
+   'Salah mengisi? Segera beri tahu koordinator. Koreksi yang jujur tidak masalah; yang disembunyikan tidak boleh.']},
+  {t:'Pelaporan insiden', i:[
+   '**Laporkan semuanya:** tabrakan, nyaris celaka, kerusakan kendaraan sekecil apa pun (termasuk goresan), cedera, jalan atau kondisi lokasi tidak aman, dan kejadian keamanan.',
+   '**Tindakan pertama setelah insiden:** 1) berhenti dan amankan lokasi (lampu hazard, mesin mati, segitiga); 2) cek orang dan hubungi nomor darurat {{emergency}}; 3) jangan pindahkan kendaraan kecuali berbahaya jika ditinggal; 4) segera hubungi atasan dan kontak HSSE/keamanan; 5) sampaikan fakta saja dan ambil foto jika aman.',
+   '**Lalu catat** di Driver Log (kolom Insiden / nyaris celaka) di akhir shift. Telepon dulu, dalam hitungan menit, bukan jam.',
+   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']}
+ ],
+ ms:[
+  {t:'Maklumat tapak untuk pemandu lintasan', i:[
+   '**Peranan anda:** anda membawa pekerja dan tetamu ke dan dari tapak Mentari, lapangan terbang dan tempat lain. Anda hanya melalui tapak. Anda **tidak** bekerja di tapak.',
+   '**Pintu pagar:** berhenti di pos keselamatan, tunjuk ID, SIM dan dokumen kenderaan, dan ikut arahan pengawal. Pintu masuk: {{gate}}.',
+   '**Laluan:** guna hanya laluan yang diluluskan: {{route}}. Tiada jalan pintas. Jangan masuk kawasan pembinaan atau zon berpagar.',
+   '**Tempat turun / ambil:** {{pickup}}. Jangan letak kenderaan di bawah kren atau kawasan angkat, dan jangan halang jalan atau akses kecemasan.',
+   '**Kelajuan di tapak:** {{speed}}. Beri laluan kepada lori, kren dan jentera berat, dan kekal di tempat yang operator boleh nampak.',
+   '**Penumpang** turun hanya di tempat turun dan mengikut peraturan PPE yang diberi di pintu pagar.',
+   '**Alkohol dan dadah:** toleransi sifar, sebelum atau semasa memandu. Merokok hanya di kawasan yang ditetapkan.',
+   '**Penggera kecemasan:** berhenti dengan selamat jauh dari jalan, bawa penumpang ke tempat berkumpul {{assembly}} dan tunggu arahan HSSE. Hubungan kecemasan: {{emergency}}.']},
+  {t:'Peraturan Menyelamatkan Nyawa yang terpakai kepada anda', i:[
+   '**Memandu:** semua orang memakai tali pinggang keledar sebelum kenderaan bergerak. Patuhi had laju. Tiada telefon semasa memandu, termasuk hands-free. Tiada alkohol atau dadah. Jangan memandu ketika letih.',
+   '**Kedudukan selamat (garis tembakan):** jauhi laluan kenderaan, jentera dan beban yang bergerak. Jika perlu berhenti, berhenti di tempat yang boleh dilihat dan di luar laluan.',
+   '**Beban tergantung:** jangan memandu, letak kenderaan atau berdiri di bawah beban yang sedang diangkat. Berhenti jauh dan tunggu.',
+   '**Kawasan terkawal:** jangan masuk kawasan yang berpagar, bertape atau bertanda bahaya (kawasan permit, ruang terkurung, korekan, kawasan gas), walaupun untuk jimat masa.',
+   '**Henti dan lapor:** anda berkuasa menghentikan keadaan tidak selamat dan memberitahu keselamatan atau HSSE. Anda tidak akan dihukum kerana berhenti dengan selamat.']},
+  {t:'Pemanduan defensif', i:[
+   '**Lihat ke hadapan:** imbas jauh ke hadapan, semak cermin setiap 5–8 saat, dan anggap pengguna jalan lain tidak nampak anda.',
+   '**Jarak mengekor:** sekurang-kurangnya 3 saat dari kenderaan di hadapan. Jadikan 4 saat atau lebih ketika hujan, waktu malam, atau di belakang lori.',
+   '**Jalan basah:** perlahan awal, brek perlahan dan awal, elak pusing stereng mengejut. Jangan redah air banjir; berpatah balik.',
+   '**Malam:** guna lampu dekat, jangan laju melebihi jarak berhenti anda. Jika silau, perlahankan dan pandang tepi kiri jalan.',
+   '**Motosikal dan pejalan kaki:** semak tempat buta, beri ruang, dan jangan membelok tanpa melihat dua kali.',
+   '**Lori sawit dan kenderaan berat:** jauhi tempat butanya, jangan memotong di selekoh atau puncak bukit, jangkakan belokan luas, dan awasi buah atau minyak di jalan.',
+   '**Keletihan:** tidur sekurang-kurangnya 7 jam sebelum perjalanan jauh. Rehat sekurang-kurangnya setiap 2 jam. Jika mengantuk, berhenti dengan selamat, berehat atau bertukar pemandu, dan beritahu penyelia. Jangan tergesa-gesa mengejar penerbangan.',
+   '**Penumpang:** tali pinggang dipasang sebelum bergerak, jangan lebih muatan, tiada barang berat yang longgar.',
+   '**Rosak:** pasang lampu kecemasan, pindahkan penumpang ke tempat selamat jauh dari lalu lintas, letak segi tiga amaran, dan hubungi penyelia.']},
+  {t:'Pengenalan odometer', i:[
+   'Dalam Driver Log anda mengambil gambar odometer pada **awal** syif dan pada **akhir** hari.',
+   'Gambar mesti diambil **terus dalam aplikasi** dengan kamera. Gambar daripada galeri tidak diterima. Gambar membawa tarikh dan masa, dan aplikasi memaparkan penafian mengenainya.',
+   'Tunjukkan **semua digit** dengan jelas. Tiada silau, tiada kabur, dan jangan tutup paparan.',
+   'Taip bacaan **tepat seperti dipaparkan**, dalam kilometer penuh. **Trip meter bukan odometer**. Jangan set semula apa-apa.',
+   'Jika odometer rosak, tersangkut atau diganti, laporkan kepada penyelaras sebelum memandu.']},
+  {t:'Rekod kilometer', i:[
+   'Jarak syif = **bacaan akhir − bacaan awal**. Contoh: awal 45,210 dan akhir 45,298 bermakna 88 km.',
+   'Rekod **setiap syif** dan setiap kenderaan yang anda guna, dengan nombor plat yang betul.',
+   'Bacaan awal hari ini mesti sama dengan bacaan akhir semalam. Jurang bermakna ada perjalanan yang tidak direkod. Beritahu penyelaras; jangan ubah nombor.',
+   'Guna kenderaan hanya untuk tugas yang diberi (ulang-alik tapak, lapangan terbang dan perjalanan rasmi lain).',
+   'Tersalah isi? Beritahu penyelaras segera. Pembetulan yang jujur tidak mengapa; yang disorokkan tidak boleh.']},
+  {t:'Pelaporan insiden', i:[
+   '**Laporkan semuanya:** kemalangan, nyaris celaka, sebarang kerosakan kenderaan (walaupun calar), kecederaan, jalan atau keadaan tapak yang tidak selamat, dan sebarang kejadian keselamatan.',
+   '**Tindakan pertama selepas insiden:** 1) berhenti dan selamatkan tempat kejadian (lampu kecemasan, enjin dimatikan, segi tiga); 2) semak orang dan hubungi nombor kecemasan {{emergency}}; 3) jangan alihkan kenderaan kecuali tidak selamat untuk ditinggalkan; 4) hubungi penyelia dan HSSE/keselamatan dengan segera; 5) beri fakta sahaja dan ambil gambar jika selamat.',
+   '**Kemudian rekod** dalam Driver Log (ruangan Insiden / nyaris celaka) pada akhir syif. Telefon dahulu, dalam beberapa minit, bukan jam.',
+   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']}
+ ]
+};
+
+/* Question bank: a[0] is the correct answer, the rest are wrong; options are shuffled at run time. */
+const QB = {
+ en:[
+  {q:'What is your role when you drive to the Mentari site?',a:['Carry people to and from site; I pass through and do not work on site','Help the contractor with site work while I wait','Park anywhere near the work area','Collect materials from the construction area']},
+  {q:'A passenger asks you to drop them inside the construction area to save time. You:',a:['Refuse and drop them only at the approved point','Drive in slowly with hazard lights on','Agree if they are a manager','Drop them at the edge of the excavation']},
+  {q:'A crane is lifting a load close to your route. You:',a:['Stop well clear and wait; never pass under the load','Pass quickly under the load','Overtake the crane on the left','Park under the boom to wait in the shade']},
+  {q:'When must seatbelts be fastened?',a:['By the driver and every passenger before the vehicle moves','Only by the driver on the highway','Only when the vehicle is on site','Only when a guard is watching']},
+  {q:'Is a hands-free phone call while driving acceptable?',a:['No; park safely first','Yes, if you keep it short','Yes, on straight roads','Yes, if the passenger agrees']},
+  {q:'One hour into a three-hour airport run you feel very sleepy. You:',a:['Pull over safely, rest or swap driver, and tell your supervisor','Open the window and continue','Drive faster to arrive sooner','Turn the music up']},
+  {q:'What following distance should you keep in the rain?',a:['At least 4 seconds','1 second','2 car lengths','Whatever feels comfortable']},
+  {q:'The road is wet and you need to slow down. You:',a:['Brake early and gently; avoid sudden steering','Brake hard at the last moment','Steer sharply around the vehicle ahead','Shift to neutral and coast']},
+  {q:'You are behind a loaded oil-palm truck on a blind bend. You:',a:['Stay back and do not overtake','Overtake quickly on the bend','Tailgate to stay out of the wind','Flash your lights and overtake']},
+  {q:'Floodwater covers the road ahead. You:',a:['Do not drive through it; turn back or choose another route','Drive through slowly','Follow the vehicle in front','Speed through to clear it']},
+  {q:'At night an oncoming vehicle dazzles you with its high beams. You:',a:['Slow down and look to the left edge of the road','Stare at the lights','Close your eyes briefly and keep speed','Switch to high beam as well']},
+  {q:'How must the odometer photo in the Driver Log be taken?',a:['Live in the app with the camera, showing all digits clearly','Choose a photo from the gallery','Send a photo taken yesterday','Photograph the trip meter']},
+  {q:'Start reading 45,210 km and end reading 45,298 km. Distance driven?',a:['88 km','98 km','78 km','45,298 km']},
+  {q:'Today\'s start reading is 40 km higher than yesterday\'s end reading. You:',a:['Tell your coordinator about the unlogged trip and do not change the numbers','Change yesterday\'s reading to match','Ignore it','Enter a lower number']},
+  {q:'You scratch a gate post while reversing. Nobody is hurt. You:',a:['Report it, even though the damage is minor','Say nothing because it is minor','Report it only if someone saw','Fix it yourself first']},
+  {q:'After a crash with an injured person, what comes first?',a:['Make the scene safe and call the emergency number','Photograph the vehicles','Move the vehicle to the gate','Call the vehicle owner']},
+  {q:'You had a near miss and nobody was hurt. You:',a:['Report it; near misses help prevent crashes','Do not report it because there was no damage','Report it only after it happens twice','Tell only your passengers']},
+  {q:'The site alarm sounds while you are waiting for passengers. You:',a:['Take everyone to the assembly point and wait for HSSE instructions','Keep waiting in the vehicle','Drive out of the gate immediately','Go and look for the cause']},
+  {q:'What is the rule on alcohol and drugs for drivers?',a:['Zero tolerance, before and during driving','A little is fine off site','Allowed on rest days before driving','Allowed if you feel fine']},
+  {q:'The gate guard asks to see your documents. You:',a:['Stop, show ID, SIM and vehicle documents, and follow instructions','Slow down and wave','Show them only if asked twice','Pass them through the window without stopping']}
+ ],
+ id:[
+  {q:'Apa peran Anda saat mengemudi ke lokasi Mentari?',a:['Mengantar orang dari/ke lokasi; saya hanya melintas dan tidak bekerja di lokasi','Membantu kontraktor bekerja sambil menunggu','Parkir di mana saja dekat area kerja','Mengambil material dari area konstruksi']},
+  {q:'Penumpang meminta diturunkan di dalam area konstruksi agar cepat. Anda:',a:['Menolak dan menurunkan hanya di titik yang disetujui','Masuk pelan dengan lampu hazard','Setuju jika dia manajer','Menurunkan di tepi galian']},
+  {q:'Crane sedang mengangkat beban di dekat rute Anda. Anda:',a:['Berhenti jauh dan menunggu; jangan lewat di bawah beban','Lewat cepat di bawah beban','Menyalip crane dari kiri','Parkir di bawah lengan crane untuk berteduh']},
+  {q:'Kapan sabuk pengaman harus dipasang?',a:['Oleh pengemudi dan semua penumpang sebelum kendaraan berjalan','Hanya oleh pengemudi di jalan raya','Hanya saat di dalam lokasi','Hanya saat ada petugas yang melihat']},
+  {q:'Apakah menelepon dengan hands-free saat mengemudi boleh?',a:['Tidak; menepi dengan aman dulu','Ya, asal singkat','Ya, di jalan lurus','Ya, jika penumpang setuju']},
+  {q:'Satu jam dalam perjalanan bandara 3 jam, Anda sangat mengantuk. Anda:',a:['Menepi dengan aman, istirahat atau ganti pengemudi, dan beri tahu atasan','Membuka jendela dan lanjut','Mengebut agar cepat sampai','Mengeraskan musik']},
+  {q:'Berapa jarak aman saat hujan?',a:['Minimal 4 detik','1 detik','2 panjang mobil','Sesuka rasa nyaman']},
+  {q:'Jalan basah dan Anda perlu memperlambat. Anda:',a:['Mengerem lebih awal dan pelan; hindari membelok mendadak','Mengerem keras di detik terakhir','Membelok tajam menghindari kendaraan depan','Memindah ke netral dan meluncur']},
+  {q:'Anda di belakang truk sawit bermuatan di tikungan buta. Anda:',a:['Menjaga jarak dan tidak menyalip','Menyalip cepat di tikungan','Menempel agar terlindung angin','Menyalakan lampu dan menyalip']},
+  {q:'Banjir menutupi jalan di depan. Anda:',a:['Tidak menerobos; putar balik atau pilih rute lain','Menerobos pelan-pelan','Mengikuti kendaraan di depan','Menerobos cepat agar cepat lewat']},
+  {q:'Malam hari, kendaraan dari depan menyilaukan dengan lampu jauh. Anda:',a:['Memperlambat dan melihat tepi kiri jalan','Menatap lampunya','Menutup mata sebentar dan tetap melaju','Menyalakan lampu jauh juga']},
+  {q:'Bagaimana foto odometer di Driver Log harus diambil?',a:['Langsung di aplikasi dengan kamera, semua angka terlihat jelas','Memilih foto dari galeri','Mengirim foto kemarin','Memotret trip meter']},
+  {q:'Angka awal 45.210 km dan angka akhir 45.298 km. Jarak tempuh?',a:['88 km','98 km','78 km','45.298 km']},
+  {q:'Angka awal hari ini 40 km lebih tinggi dari angka akhir kemarin. Anda:',a:['Memberi tahu koordinator tentang perjalanan yang tidak dicatat dan tidak mengubah angka','Mengubah angka kemarin agar cocok','Mengabaikannya','Mengisi angka yang lebih kecil']},
+  {q:'Anda menggores tiang gerbang saat mundur. Tidak ada yang cedera. Anda:',a:['Melapor, walau kerusakan kecil','Diam saja karena kecil','Melapor hanya jika ada yang melihat','Memperbaikinya sendiri dulu']},
+  {q:'Setelah tabrakan dengan korban luka, apa yang pertama?',a:['Mengamankan lokasi dan menghubungi nomor darurat','Memotret kendaraan','Memindahkan kendaraan ke gerbang','Menelepon pemilik kendaraan']},
+  {q:'Anda mengalami nyaris celaka dan tidak ada yang cedera. Anda:',a:['Melapor; nyaris celaka membantu mencegah tabrakan','Tidak melapor karena tidak ada kerusakan','Melapor setelah terjadi dua kali','Memberi tahu penumpang saja']},
+  {q:'Alarm lokasi berbunyi saat Anda menunggu penumpang. Anda:',a:['Membawa semua ke titik kumpul dan menunggu arahan HSSE','Tetap menunggu di kendaraan','Langsung keluar gerbang','Mencari penyebabnya']},
+  {q:'Apa aturan alkohol dan narkoba bagi pengemudi?',a:['Toleransi nol, sebelum dan saat mengemudi','Sedikit boleh di luar lokasi','Boleh di hari libur sebelum mengemudi','Boleh jika merasa sehat']},
+  {q:'Petugas gerbang meminta melihat dokumen Anda. Anda:',a:['Berhenti, tunjukkan KTP, SIM dan dokumen kendaraan, ikuti arahan','Memperlambat dan melambai','Menunjukkan jika diminta dua kali','Menyerahkan lewat jendela tanpa berhenti']}
+ ],
+ ms:[
+  {q:'Apakah peranan anda apabila memandu ke tapak Mentari?',a:['Membawa orang ke dan dari tapak; saya hanya melalui dan tidak bekerja di tapak','Membantu kontraktor bekerja sambil menunggu','Letak kenderaan di mana-mana berhampiran kawasan kerja','Mengambil bahan dari kawasan pembinaan']},
+  {q:'Penumpang meminta diturunkan di dalam kawasan pembinaan untuk jimat masa. Anda:',a:['Menolak dan menurunkan hanya di tempat yang diluluskan','Masuk perlahan dengan lampu kecemasan','Setuju jika dia pengurus','Menurunkan di tepi korekan']},
+  {q:'Kren sedang mengangkat beban berhampiran laluan anda. Anda:',a:['Berhenti jauh dan tunggu; jangan lalu di bawah beban','Lalu laju di bawah beban','Memotong kren dari kiri','Letak kenderaan di bawah lengan kren untuk berteduh']},
+  {q:'Bilakah tali pinggang keledar mesti dipasang?',a:['Oleh pemandu dan semua penumpang sebelum kenderaan bergerak','Hanya oleh pemandu di lebuh raya','Hanya semasa di dalam tapak','Hanya apabila pengawal melihat']},
+  {q:'Adakah panggilan telefon hands-free semasa memandu dibenarkan?',a:['Tidak; berhenti dengan selamat dahulu','Ya, jika ringkas','Ya, di jalan lurus','Ya, jika penumpang setuju']},
+  {q:'Sejam dalam perjalanan lapangan terbang tiga jam, anda sangat mengantuk. Anda:',a:['Berhenti dengan selamat, berehat atau tukar pemandu, dan beritahu penyelia','Buka tingkap dan teruskan','Memandu laju supaya cepat sampai','Kuatkan muzik']},
+  {q:'Berapakah jarak mengekor ketika hujan?',a:['Sekurang-kurangnya 4 saat','1 saat','2 panjang kereta','Mengikut keselesaan']},
+  {q:'Jalan basah dan anda perlu memperlahankan kenderaan. Anda:',a:['Brek awal dan perlahan; elak pusing stereng mengejut','Brek kuat pada saat akhir','Pusing tajam mengelak kenderaan di hadapan','Tukar ke neutral dan meluncur']},
+  {q:'Anda di belakang lori sawit bermuatan di selekoh buta. Anda:',a:['Jauhkan diri dan jangan memotong','Memotong laju di selekoh','Mengekor rapat untuk elak angin','Kelipkan lampu dan potong']},
+  {q:'Air banjir menutupi jalan di hadapan. Anda:',a:['Tidak meredah; berpatah balik atau pilih laluan lain','Meredah perlahan','Mengikut kenderaan di hadapan','Meredah laju supaya cepat lepas']},
+  {q:'Waktu malam, kenderaan dari arah bertentangan menyilaukan dengan lampu tinggi. Anda:',a:['Perlahankan dan pandang tepi kiri jalan','Merenung lampu itu','Pejam mata seketika dan kekalkan laju','Pasang lampu tinggi juga']},
+  {q:'Bagaimana gambar odometer dalam Driver Log mesti diambil?',a:['Terus dalam aplikasi dengan kamera, semua digit jelas','Pilih gambar daripada galeri','Hantar gambar semalam','Ambil gambar trip meter']},
+  {q:'Bacaan awal 45,210 km dan bacaan akhir 45,298 km. Jarak dipandu?',a:['88 km','98 km','78 km','45,298 km']},
+  {q:'Bacaan awal hari ini 40 km lebih tinggi daripada bacaan akhir semalam. Anda:',a:['Beritahu penyelaras tentang perjalanan yang tidak direkod dan jangan ubah nombor','Ubah bacaan semalam supaya sama','Abaikan','Masukkan nombor yang lebih rendah']},
+  {q:'Anda menggaris tiang pintu pagar semasa undur. Tiada yang cedera. Anda:',a:['Lapor, walaupun kerosakan kecil','Diam kerana kecil','Lapor hanya jika ada yang nampak','Baiki sendiri dahulu']},
+  {q:'Selepas kemalangan dengan orang cedera, apa yang pertama?',a:['Selamatkan tempat kejadian dan hubungi nombor kecemasan','Ambil gambar kenderaan','Alih kenderaan ke pintu pagar','Telefon pemilik kenderaan']},
+  {q:'Anda mengalami nyaris celaka dan tiada yang cedera. Anda:',a:['Lapor; nyaris celaka membantu mencegah kemalangan','Tidak lapor kerana tiada kerosakan','Lapor selepas berlaku dua kali','Beritahu penumpang sahaja']},
+  {q:'Penggera tapak berbunyi semasa anda menunggu penumpang. Anda:',a:['Bawa semua ke tempat berkumpul dan tunggu arahan HSSE','Terus menunggu dalam kenderaan','Terus keluar pintu pagar','Pergi mencari puncanya']},
+  {q:'Apakah peraturan alkohol dan dadah untuk pemandu?',a:['Toleransi sifar, sebelum dan semasa memandu','Sedikit boleh di luar tapak','Dibenarkan pada hari rehat sebelum memandu','Dibenarkan jika rasa sihat']},
+  {q:'Pengawal pintu pagar meminta melihat dokumen anda. Anda:',a:['Berhenti, tunjuk ID, SIM dan dokumen kenderaan, ikut arahan','Perlahankan dan melambai','Tunjuk jika diminta dua kali','Hulur melalui tingkap tanpa berhenti']}
+ ]
+};
+
+/* =============================== STATE & HELPERS =============================== */
+let lang = 'id';
+try{ const s = localStorage.getItem('drv_lang'); if(s && UI[s]) lang = s; }catch(e){}
+const S = { step:'welcome', mod:0, odoDone:false, odoImg:'', odoVal:'', v:{name:'',company:'',companyOther:'',phone:'',licNo:'',licType:'',licExp:'',id4:'',plate:'',privacy:false,certify:false},
+  quiz:[], qi:0, ans:[], score:0, saveState:'', result:null, touched:false, attempt:0 };
+const $ = id => document.getElementById(id);
+const L = () => UI[lang];
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function fmtItem(t){
+  let h = esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>');
+  h = h.replace(/\{\{(\w+)\}\}/g, (m,k) => SITE[k] ? '<b>'+esc(SITE[k])+'</b>' : '<span class="tbc">('+TBC[lang]+')</span>');
+  return h;
+}
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function companyName(){ return S.v.company === 'Other' ? S.v.companyOther.trim() : S.v.company; }
+function todayStr(){ const d = new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function setLang(l){ lang = l; try{ localStorage.setItem('drv_lang', l); }catch(e){} document.documentElement.lang = l; chrome(); render(); }
+
+function chrome(){
+  const t = L();
+  $('ttl').textContent = t.title; $('sub').textContent = t.sub; document.title = t.title;
+  $('verTag').textContent = VERSION;
+  $('lang').innerHTML = ['en','id','ms'].map(l => '<button data-l="'+l+'" class="'+(l===lang?'active':'')+'">'+l.toUpperCase()+'</button>').join('');
+  $('lang').querySelectorAll('button').forEach(b => b.onclick = () => setLang(b.dataset.l));
+  $('foot').innerHTML = '<a id="offLink">'+esc(t.officer)+'</a><br><a href="../">'+esc(t.home)+'</a>';
+  $('offLink').onclick = () => { S.step = 'officer'; render(); };
+}
+
+/* =============================== RENDER =============================== */
+function render(){
+  const f = { welcome:vWelcome, details:vDetails, mods:vMods, quizIntro:vQuizIntro, quiz:vQuiz, result:vResult, officer:vOfficer, verify:vVerify }[S.step];
+  f(); window.scrollTo(0,0);
+}
+function progress(p){ return '<div class="progress"><i style="width:'+Math.round(p*100)+'%"></i></div>'; }
+
+function vWelcome(){
+  const t = L();
+  $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.title)+'</div><h2>'+esc(t.wTitle)+'</h2>'+t.wBody.map(x=>'<p>'+esc(x)+'</p>').join('')+
+    '<div class="btn-row"><button class="btn btn-primary" id="go">'+esc(t.start)+'</button></div></div>';
+  $('go').onclick = () => { S.step = 'details'; render(); };
+}
+
+function detailErrors(){
+  const v = S.v, t = L(), e = {};
+  if(v.name.trim().length < 3) e.name = t.errName;
+  if(!v.company || (v.company==='Other' && v.companyOther.trim().length<2)) e.company = t.errCompany;
+  if(v.phone.replace(/\D/g,'').length < 8) e.phone = t.errPhone;
+  if(v.licNo.trim().length < 5) e.licNo = t.errLic;
+  if(!v.licType) e.licType = t.errLicType;
+  if(!v.licExp) e.licExp = t.errExpMissing; else if(v.licExp < todayStr()) e.licExp = t.errExp;
+  if(!/^[A-Za-z0-9]{4}$/.test(v.id4.trim())) e.id4 = t.errId;
+  return e;
+}
+
+function vDetails(){
+  const t = L(), v = S.v;
+  const opts = (arr, cur) => '<option value="">'+esc(t.choose)+'</option>'+arr.map(x=>'<option'+(x===cur?' selected':'')+'>'+esc(x)+'</option>').join('');
+  const er = S.touched ? detailErrors() : {};
+  const fld = (k,label,inner,hint) => '<div class="field"><label>'+esc(label)+' <span class="req">*</span></label>'+inner+(hint?'<div class="hint">'+esc(hint)+'</div>':'')+(er[k]?'<div class="err">'+esc(er[k])+'</div>':'')+'</div>';
+  $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.dTitle)+'</div>'+
+    fld('name',t.name,'<input id="f_name" autocomplete="name" value="'+esc(v.name)+'">')+
+    '<div class="row2">'+fld('company',t.company,'<select id="f_company">'+opts(COMPANIES,v.company)+'</select>')+
+      (v.company==='Other' ? fld('company',t.companyOther,'<input id="f_coo" value="'+esc(v.companyOther)+'">') : '<div></div>')+'</div>'+
+    fld('phone',t.phone,'<input id="f_phone" type="tel" inputmode="tel" value="'+esc(v.phone)+'">')+
+    fld('licNo',t.licNo,'<input id="f_lic" value="'+esc(v.licNo)+'">')+
+    '<div class="row2">'+fld('licType',t.licType,'<select id="f_lt">'+opts(LIC_TYPES,v.licType)+'</select>')+fld('licExp',t.licExp,'<input id="f_le" type="date" value="'+esc(v.licExp)+'">')+'</div>'+
+    fld('id4',t.id4,'<input id="f_id4" maxlength="4" autocapitalize="characters" value="'+esc(v.id4)+'">',t.id4Hint)+
+    '<div class="field"><label>'+esc(t.plate)+'</label><input id="f_plate" value="'+esc(v.plate)+'"></div>'+
+    '<label class="confirm-gate"><input type="checkbox" id="f_priv"'+(v.privacy?' checked':'')+'><span>'+esc(t.privAgree)+' <a href="#" id="privLink">'+esc(t.privLink)+'</a>. <span class="req" style="color:#b3261e">*</span></span></label>'+
+    '<label class="confirm-gate"><input type="checkbox" id="f_cert"'+(v.certify?' checked':'')+'><span>'+esc(t.certify)+' <span class="req" style="color:#b3261e">*</span></span></label>'+
+    '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button><button class="btn btn-primary" id="nx">'+esc(t.next)+'</button></div></div>';
+  const bind = (id,key,ev) => { const el=$(id); if(el) el.addEventListener(ev||'input', () => { v[key]=el.value; if(id==='f_company'||id==='f_lt'||id==='f_le') {if(id==='f_company') render(); } check(); }); };
+  [['f_name','name'],['f_phone','phone'],['f_lic','licNo'],['f_id4','id4'],['f_plate','plate'],['f_coo','companyOther']].forEach(a=>bind(a[0],a[1]));
+  bind('f_company','company','change'); bind('f_lt','licType','change'); bind('f_le','licExp','change');
+  $('f_priv').onchange = e => { v.privacy = e.target.checked; check(); };
+  $('f_cert').onchange = e => { v.certify = e.target.checked; check(); };
+  $('privLink').onclick = e => { e.preventDefault(); e.stopPropagation(); modal(t.privTitle, t.priv); };
+  $('bk').onclick = () => { S.step='welcome'; render(); };
+  function check(){ $('nx').disabled = !(v.privacy && v.certify); }
+  check();
+  $('nx').onclick = () => { const e = detailErrors(); if(Object.keys(e).length){ S.touched = true; vDetails(); return; } S.touched=false; S.step='mods'; S.mod=0; render(); };
+}
+
+function modal(title, body){
+  const m = document.createElement('div'); m.className='modal'; m.id='modal';
+  m.innerHTML = '<div class="box"><h3>'+esc(title)+'</h3><p>'+esc(body)+'</p><div class="btn-row"><button class="btn btn-primary" id="mx">'+esc(L().close)+'</button></div></div>';
+  document.body.appendChild(m);
+  const close = () => { m.remove(); document.removeEventListener('keydown', k); };
+  const k = e => { if(e.key==='Escape') close(); };
+  document.addEventListener('keydown', k);
+  m.onclick = e => { if(e.target===m) close(); };
+  m.querySelector('#mx').onclick = close;
+}
+
+function vMods(){
+  const t = L(), M = MODS[lang], m = M[S.mod], last = S.mod === M.length-1;
+  const isOdo = S.mod === 3;
+  let h = progress((S.mod)/ (M.length+1)) + '<div class="card"><div class="step-title">'+esc(t.modLabel)+' '+(S.mod+1)+' '+esc(t.of)+' '+M.length+'</div><h2>'+esc(m.t)+'</h2>'+
+    '<ul class="bullets">'+m.i.map(x=>'<li>'+fmtItem(x)+'</li>').join('')+'</ul>';
+  if(isOdo){
+    h += '<div class="note info"><b>'+esc(t.odoTitle)+'</b><br>'+esc(t.odoBody)+'</div>'+
+      '<div class="photo-box'+(S.odoImg?' has':'')+'" id="odoBox">'+(S.odoImg?'<img src="'+S.odoImg+'" alt="">':'<div class="muted">'+esc(t.odoTake)+'</div>')+'</div>'+
+      (S.odoImg?'<div class="muted" style="text-align:center;margin-top:8px"><a href="#" id="odoRe" style="color:#357f5c">'+esc(t.odoRetake)+'</a></div>':'')+
+      '<div class="field" style="margin-top:14px"><label>'+esc(t.odoRead)+'</label><input id="odoVal" inputmode="numeric" value="'+esc(S.odoVal)+'"><div class="hint">'+esc(t.odoHint)+'</div></div>'+
+      (S.odoDone?'<div class="note info">'+esc(t.odoDone)+'</div>':'');
+  }
+  h += '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button><button class="btn btn-primary" id="nx">'+esc(last?t.qIntro:t.next)+'</button></div></div>';
+  $('app').innerHTML = h;
+  $('bk').onclick = () => { if(S.mod===0){ S.step='details'; } else S.mod--; render(); };
+  const upd = () => { $('nx').disabled = isOdo && !S.odoDone; };
+  if(isOdo){
+    const open = () => takePhoto(img => { S.odoImg = img; S.odoDone = !!(S.odoVal.replace(/\D/g,'').length>=1); vMods(); });
+    $('odoBox').onclick = open; const r=$('odoRe'); if(r) r.onclick = e => { e.preventDefault(); open(); };
+    $('odoVal').oninput = e => { S.odoVal = e.target.value; const was=S.odoDone; S.odoDone = !!(S.odoImg && S.odoVal.replace(/\D/g,'').length>=1); upd(); if(was!==S.odoDone) { const pos=e.target.selectionStart; vMods(); const el=$('odoVal'); el.focus(); try{el.setSelectionRange(pos,pos);}catch(x){} } };
+  }
+  upd();
+  $('nx').onclick = () => { if(last){ S.step='quizIntro'; } else S.mod++; render(); };
+}
+
+/* live camera only (falls back to the phone camera input if getUserMedia is unavailable) */
+function takePhoto(cb){
+  const t = L();
+  const fallback = () => {
+    const i = document.createElement('input'); i.type='file'; i.accept='image/*'; i.setAttribute('capture','environment');
+    i.onchange = () => { const f=i.files&&i.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>cb(r.result); r.readAsDataURL(f); };
+    i.click();
+  };
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ fallback(); return; }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false}).then(stream => {
+    const m = document.createElement('div'); m.className='camera-modal';
+    m.innerHTML = '<video autoplay playsinline muted></video><div class="cam-top"><button class="cam-x" id="cx">✕</button><span class="cam-hint">'+esc(t.camHint)+'</span></div><div class="cam-bottom"><button class="shutter" id="sh" aria-label="photo"></button></div>';
+    document.body.appendChild(m);
+    const vid = m.querySelector('video'); vid.srcObject = stream;
+    const stop = () => { stream.getTracks().forEach(x=>x.stop()); m.remove(); };
+    m.querySelector('#cx').onclick = stop;
+    m.querySelector('#sh').onclick = () => {
+      const c = document.createElement('canvas'); const w = vid.videoWidth||1280, h = vid.videoHeight||720; const sc = Math.min(1, 1000/Math.max(w,h));
+      c.width = Math.round(w*sc); c.height = Math.round(h*sc); c.getContext('2d').drawImage(vid,0,0,c.width,c.height);
+      const url = c.toDataURL('image/jpeg',.7); stop(); cb(url);
+    };
+  }).catch(() => { fallback(); });
+}
+
+function vQuizIntro(){
+  const t = L();
+  $('app').innerHTML = progress(MODS[lang].length/(MODS[lang].length+1)) + '<div class="card"><div class="step-title">'+esc(t.qIntro)+'</div><p>'+esc(t.qIntroBody)+'</p><div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button><button class="btn btn-primary" id="go">'+esc(t.qStart)+'</button></div></div>';
+  $('bk').onclick = () => { S.step='mods'; S.mod=MODS[lang].length-1; render(); };
+  $('go').onclick = startQuiz;
+}
+function startQuiz(){
+  const idx = shuffle(QB.en.map((_,i)=>i)).slice(0,QUIZ_N);
+  S.quiz = idx.map(i => ({ i, order: shuffle([0,1,2,3]) }));
+  S.ans = new Array(QUIZ_N).fill(-1); S.qi = 0; S.step='quiz'; render();
+}
+function vQuiz(){
+  const t = L(), q = S.quiz[S.qi], item = QB[lang][q.i];
+  const opts = q.order.map(k => '<button class="opt'+(S.ans[S.qi]===k?' sel':'')+'" data-k="'+k+'">'+esc(item.a[k])+'</button>').join('');
+  const last = S.qi === QUIZ_N-1;
+  $('app').innerHTML = progress((S.qi)/QUIZ_N) + '<div class="card"><div class="step-title">'+esc(t.question)+' '+(S.qi+1)+' '+esc(t.of)+' '+QUIZ_N+'</div><h2>'+esc(item.q)+'</h2>'+opts+
+    '<div class="btn-row">'+(S.qi>0?'<button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button>':'')+'<button class="btn btn-primary" id="nx"'+(S.ans[S.qi]<0?' disabled':'')+'>'+esc(last?t.finish:t.next)+'</button></div></div>';
+  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { S.ans[S.qi] = +b.dataset.k; vQuiz(); });
+  const bk=$('bk'); if(bk) bk.onclick = () => { S.qi--; vQuiz(); };
+  $('nx').onclick = () => { if(last) finishQuiz(); else { S.qi++; vQuiz(); } };
+}
+
+function finishQuiz(){
+  S.score = S.ans.filter(a => a === 0).length;   // option index 0 is always the correct answer
+  S.attempt++; S.step='result'; S.result = null; S.saveState = 'saving';
+  const pass = S.score >= PASS_MARK;
+  S.clientId = 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+  S.payload = { action:'driverInduction', clientId:S.clientId, name:S.v.name.trim(), company:companyName(), phone:S.v.phone.trim(), licenceNo:S.v.licNo.trim(),
+    licenceType:S.v.licType, licenceExpiry:S.v.licExp, idLast4:S.v.id4.trim().toUpperCase(), plate:S.v.plate.trim(), lang:lang, score:S.score, outOf:QUIZ_N };
+  render(); send();
+}
+function send(){
+  S.saveState = 'saving'; draw();
+  fetch(SCRIPT_URL, { method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(S.payload) })
+    .then(r => r.json()).then(j => {
+      if(j && j.status === 'ok'){ S.result = j; S.saveState = 'saved'; try{ localStorage.removeItem('drv_pending'); }catch(e){} }
+      else { S.saveState = 'fail'; keep(); }
+      draw();
+    }).catch(() => { S.saveState = 'fail'; keep(); draw(); });
+}
+function keep(){ try{ localStorage.setItem('drv_pending', JSON.stringify(S.payload)); }catch(e){} }
+function draw(){ if(S.step==='result') vResult(true); }
+
+function vResult(keepScroll){
+  const t = L(), pass = S.score >= PASS_MARK;
+  let h = '<div class="card" style="text-align:center"><div class="step-title">'+esc(t.score)+'</div><div class="big '+(pass?'pass':'failc')+'">'+S.score+' / '+QUIZ_N+'</div><h2 class="'+(pass?'pass':'failc')+'" style="margin-top:6px">'+esc(pass?t.pass:t.fail)+'</h2>';
+  h += '<p class="muted">'+esc(S.saveState==='saving'?t.saving:S.saveState==='saved'?t.saved:t.saveFail)+'</p>';
+  if(S.saveState==='fail') h += '<div class="btn-row"><button class="btn btn-primary" id="rs">'+esc(t.retrySave)+'</button></div>';
+  h += '</div>';
+  if(!pass){
+    h += '<div class="card"><p>'+esc(t.retryBody)+'</p><div class="btn-row"><button class="btn btn-secondary" id="rv">'+esc(t.review)+'</button><button class="btn btn-primary" id="rt">'+esc(t.retry)+'</button></div></div>';
+  } else if(S.saveState==='saved' && S.result && S.result.code){
+    h += '<div class="card"><div class="step-title">'+esc(t.certTitle)+'</div><canvas id="certCv" width="1200" height="850"></canvas><div class="btn-row"><button class="btn btn-primary" id="dl">'+esc(t.dl)+'</button></div><div class="note info">'+esc(t.signNote)+'</div></div>';
+  }
+  $('app').innerHTML = h;
+  const rs=$('rs'); if(rs) rs.onclick = send;
+  const rt=$('rt'); if(rt) rt.onclick = startQuiz;
+  const rv=$('rv'); if(rv) rv.onclick = () => { S.step='mods'; S.mod=0; render(); };
+  if(pass && S.saveState==='saved' && S.result && S.result.code){ drawCert($('certCv')); $('dl').onclick = () => { const a=document.createElement('a'); a.download='Driver-Induction-'+S.result.certNo+'.png'; a.href=$('certCv').toDataURL('image/png'); a.click(); }; }
+  if(!keepScroll) window.scrollTo(0,0);
+}
+
+function drawCert(cv){
+  const c = cv.getContext('2d'), W = cv.width, H = cv.height, r = S.result, v = S.v, t = L();
+  c.fillStyle='#fff'; c.fillRect(0,0,W,H);
+  c.fillStyle='#44a276'; c.fillRect(0,0,W,16); c.fillRect(0,H-16,W,16);
+  c.fillStyle='#FFC600'; c.fillRect(60,64,70,6);
+  c.textBaseline='alphabetic';
+  c.fillStyle='#44a276'; c.font='700 30px Jost, sans-serif'; c.fillText('ECOOILS', 60, 56);
+  c.fillStyle='#6e6b6c'; c.font='300 24px Jost, sans-serif'; c.fillText('SEI MANGKEI', 215, 56);
+  c.fillStyle='#231f20'; c.font='300 54px Jost, sans-serif'; c.fillText('DRIVER INDUCTION CERTIFICATE', 60, 170);
+  c.fillStyle='#6e6b6c'; c.font='400 24px Jost, sans-serif'; c.fillText('Commuter & pass-through drivers', 60, 210);
+  c.fillStyle='#231f20'; c.font='600 56px Jost, sans-serif'; c.fillText(v.name.trim().toUpperCase().slice(0,32), 60, 320);
+  c.fillStyle='#6e6b6c'; c.font='400 30px Jost, sans-serif'; c.fillText(companyName(), 60, 366);
+  const rows = [['Certificate no.', r.certNo],['Induction date', todayStr()],['Valid until', r.validUntil||''],['Score', S.score+' / '+QUIZ_N+'  PASS'],['SIM', '•••• '+v.licNo.trim().slice(-4)+'  ('+v.licType+')']];
+  rows.forEach((x,i)=>{ const y=450+i*58; c.fillStyle='#8a8788'; c.font='400 24px Jost, sans-serif'; c.fillText(x[0], 60, y); c.fillStyle='#231f20'; c.font='500 30px Jost, sans-serif'; c.fillText(x[1], 330, y); });
+  // QR
+  try{
+    const q = QRCodeLib(0,'M'); q.addData(VERIFY_BASE+'?code='+r.code); q.make();
+    const n = q.getModuleCount(), cell = Math.floor(230/(n+2)), size = cell*(n+2), ox = W-60-size, oy = 400;
+    c.fillStyle='#fff'; c.fillRect(ox,oy,size,size); c.fillStyle='#000';
+    for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(q.isDark(y,x)) c.fillRect(ox+(x+1)*cell, oy+(y+1)*cell, cell, cell);
+    c.fillStyle='#6e6b6c'; c.font='400 20px Jost, sans-serif'; c.textAlign='center'; c.fillText('Scan to verify', ox+size/2, oy+size+28); c.fillText(r.code, ox+size/2, oy+size+54); c.textAlign='left';
+  }catch(e){}
+  c.fillStyle='#6e6b6c'; c.font='400 19px Jost, sans-serif';
+  c.fillText('Valid only with HSSE officer sign-off (shown on the verification page).', 60, H-70);
+  c.fillText('Personal data is held confidentially in the EcoOils HSSE driver register.', 60, H-42);
+  c.save(); c.translate(W/2,H/2+60); c.rotate(-0.45); c.fillStyle='rgba(68,162,118,0.07)'; c.font='700 110px Jost, sans-serif'; c.textAlign='center'; c.fillText('ECOOILS · SEI MANGKEI', 0, 0); c.restore();
+}
+
+/* =============================== VERIFY PAGE =============================== */
+function vVerify(){
+  const t = L(), code = S.code;
+  $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.verTitle)+'</div><p id="vr">'+esc(t.verChecking)+'</p></div>';
+  fetch(SCRIPT_URL+'?action=driverInductionVerify&code='+encodeURIComponent(code)).then(r=>r.json()).then(j => {
+    const el = $('vr'); if(!el) return;
+    if(j.status !== 'ok'){ el.innerHTML = '<span class="tag bad">'+esc(t.verNo)+'</span>'; return; }
+    const ok = !j.expired;
+    el.outerHTML = '<h2 class="'+(ok?'pass':'failc')+'">'+esc(ok?t.verOk:t.verExpired)+'</h2>'+
+      '<table class="t"><tr><th>'+esc(t.verName)+'</th><td>'+esc(j.name)+'</td></tr><tr><th>'+esc(t.verCo)+'</th><td>'+esc(j.company)+'</td></tr><tr><th>'+esc(t.verNum)+'</th><td>'+esc(j.certNo)+'</td></tr><tr><th>'+esc(t.verDate)+'</th><td>'+esc(j.date)+'</td></tr><tr><th>'+esc(t.verUntil)+'</th><td>'+esc(j.validUntil)+'</td></tr></table>'+
+      '<p style="margin-top:12px"><span class="tag '+(j.signoff==='Signed'?'ok':'wait')+'">'+esc(j.signoff==='Signed'?t.verSigned:t.verPending)+'</span></p>';
+  }).catch(() => { const el=$('vr'); if(el) el.textContent = t.offline; });
+}
+
+/* =============================== OFFICER SIGN-OFF =============================== */
+const O = { email:'', token:'', step:'login', rows:[], sel:null, tab:'pending', q:'', msg:'', sim:false, veh:false, route:false, notes:'' };
+function post(body){ return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)}).then(r=>r.json()); }
+function vOfficer(){
+  const t = L();
+  if(!O.token){
+    const sent = O.step === 'code';
+    $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.officer)+'</div>'+
+      '<div class="field"><label>'+esc(t.oEmail)+'</label><input id="oe" type="email" autocomplete="email" value="'+esc(O.email)+'"></div>'+
+      (sent?'<div class="field"><label>'+esc(t.oCode)+'</label><input id="oc" inputmode="numeric" maxlength="6"></div>':'')+
+      (O.msg?'<div class="err" style="color:#b3261e;font-size:13px;margin-bottom:8px">'+esc(O.msg)+'</div>':'')+
+      '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button><button class="btn btn-primary" id="go">'+esc(sent?t.oLogin:t.oSend)+'</button></div></div>';
+    $('bk').onclick = () => { S.step='welcome'; O.msg=''; render(); };
+    $('go').onclick = () => {
+      O.email = $('oe').value.trim(); O.msg='';
+      if(!sent){ post({action:'requestCode',email:O.email}).then(j => { if(j.status==='ok') O.step='code'; else O.msg=j.message||t.offline; vOfficer(); }).catch(()=>{O.msg=t.offline;vOfficer();}); }
+      else { post({action:'verifyCode',email:O.email,code:$('oc').value.trim()}).then(j => { if(j.status==='ok'){ O.token=j.token; loadList(); } else { O.msg=j.message||t.offline; vOfficer(); } }).catch(()=>{O.msg=t.offline;vOfficer();}); }
+    };
+    return;
+  }
+  if(O.sel) return vSign();
+  const rows = O.rows.filter(r => (O.tab==='pending' ? r.signoff!=='Signed' : true) && (!O.q || String(r.name).toLowerCase().indexOf(O.q.toLowerCase())>=0));
+  $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.officer)+'</div>'+
+    '<div class="btn-row" style="margin-top:0"><button class="btn '+(O.tab==='pending'?'btn-primary':'btn-secondary')+'" id="t1">'+esc(t.oPending)+'</button><button class="btn '+(O.tab==='all'?'btn-primary':'btn-secondary')+'" id="t2">'+esc(t.oAll)+'</button></div>'+
+    '<div class="field" style="margin-top:14px"><input id="oq" placeholder="'+esc(t.oSearch)+'" value="'+esc(O.q)+'"></div>'+
+    (O.msg?'<div class="note info">'+esc(O.msg)+'</div>':'')+
+    (rows.length ? '<table class="t">'+rows.map((r,i)=>'<tr data-c="'+esc(r.code)+'" style="cursor:pointer"><td><b>'+esc(r.name)+'</b><br><span class="muted">'+esc(r.company)+' · '+esc(r.date)+'</span></td><td style="text-align:right"><span class="tag '+(r.signoff==='Signed'?'ok':'wait')+'">'+esc(r.signoff==='Signed'?'✓':'…')+'</span></td></tr>').join('')+'</table>' : '<p class="muted">'+esc(t.oNone)+'</p>')+
+    '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button></div></div>';
+  $('t1').onclick=()=>{O.tab='pending';vOfficer();}; $('t2').onclick=()=>{O.tab='all';vOfficer();};
+  $('oq').oninput = e => { O.q=e.target.value; const p=e.target.selectionStart; vOfficer(); const el=$('oq'); el.focus(); try{el.setSelectionRange(p,p);}catch(x){} };
+  $('bk').onclick = () => { S.step='welcome'; render(); };
+  document.querySelectorAll('tr[data-c]').forEach(tr => tr.onclick = () => { O.sel = O.rows.find(r=>r.code===tr.dataset.c); O.sim=O.veh=O.route=false; O.notes=''; O.msg=''; vOfficer(); });
+}
+function loadList(){ post({action:'listDriverInductions',token:O.token}).then(j => { if(j.status==='ok'){ O.rows=j.rows; } else { O.msg=j.message||''; O.token=''; } vOfficer(); }).catch(()=>{O.msg=L().offline; vOfficer();}); }
+function vSign(){
+  const t = L(), r = O.sel, done = r.signoff==='Signed';
+  $('app').innerHTML = '<div class="card"><div class="step-title">'+esc(t.officer)+'</div><h2>'+esc(r.name)+'</h2>'+
+    '<table class="t"><tr><th>'+esc(t.company)+'</th><td>'+esc(r.company)+'</td></tr><tr><th>'+esc(t.phone)+'</th><td>'+esc(r.phone)+'</td></tr><tr><th>SIM</th><td>'+esc(r.licenceNo)+' · '+esc(r.licenceType)+' · '+esc(r.licenceExpiry)+'</td></tr><tr><th>'+esc(t.plate)+'</th><td>'+esc(r.plate||'—')+'</td></tr><tr><th>'+esc(t.score)+'</th><td>'+esc(r.score)+' / '+esc(r.outOf)+'</td></tr><tr><th>'+esc(t.verUntil)+'</th><td>'+esc(r.validUntil)+'</td></tr></table>'+
+    (done?'<div class="note info">'+esc(t.oDone)+' '+esc(r.signedBy||'')+'</div>':
+     '<label class="confirm-gate"><input type="checkbox" id="c1"><span>'+esc(t.oSim)+'</span></label><label class="confirm-gate"><input type="checkbox" id="c2"><span>'+esc(t.oVeh)+'</span></label><label class="confirm-gate"><input type="checkbox" id="c3"><span>'+esc(t.oRoute)+'</span></label>'+
+     '<div class="field" style="margin-top:14px"><label>'+esc(t.oNotes)+'</label><input id="on" maxlength="200"></div>')+
+    (O.msg?'<div class="note danger">'+esc(O.msg)+'</div>':'')+
+    '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.oBackList)+'</button>'+(done?'':'<button class="btn btn-primary" id="sg" disabled>'+esc(t.oSign)+'</button>')+'</div></div>';
+  $('bk').onclick = () => { O.sel=null; O.msg=''; vOfficer(); };
+  if(done) return;
+  const chk = () => { $('sg').disabled = !($('c1').checked && $('c2').checked && $('c3').checked); };
+  ['c1','c2','c3'].forEach(i => $(i).onchange = chk);
+  $('sg').onclick = () => {
+    $('sg').disabled = true;
+    post({action:'signoffDriverInduction',token:O.token,code:r.code,sim:true,vehicle:true,route:true,notes:$('on').value.trim()}).then(j => {
+      if(j.status==='ok'){ r.signoff='Signed'; O.msg=t.oDone; O.sel=null; vOfficer(); } else { O.msg=j.message||t.offline; vSign(); }
+    }).catch(()=>{ O.msg=t.offline; vSign(); });
+  };
+}
+
+/* =============================== START =============================== */
+(function init(){
+  document.documentElement.lang = lang;
+  const code = new URLSearchParams(location.search).get('code');
+  if(code){ S.step='verify'; S.code=code; }
+  chrome(); render();
+  try{ const p = localStorage.getItem('drv_pending'); if(p && !code){ /* a finished result that did not reach the register is re-sent silently */
+    const pl = JSON.parse(p); fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(pl)}).then(r=>r.json()).then(j=>{ if(j&&j.status==='ok') localStorage.removeItem('drv_pending'); }).catch(()=>{}); } }catch(e){}
+})();
+</script>
+</body>
+</html>
