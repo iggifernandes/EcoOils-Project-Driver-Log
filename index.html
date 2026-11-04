@@ -412,12 +412,7 @@
     </div>
   </div>
 
-  <a class="induction-link" href="https://iggifernandes.github.io/EcoOils-Project-Site-Induction-Sei-Mangkei/" target="_blank" rel="noopener">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-    <span data-i18n="inductionLink">New to site? Complete your HSSE induction first</span>
-  </a>
-
-  <a class="induction-link" href="induction/" style="padding-top:0">
+  <a class="induction-link" href="induction/">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>
     <span data-i18n="driverInductionLink">Driver induction (required for all drivers)</span>
   </a>
@@ -438,6 +433,10 @@
           <button type="button" id="switchDriverBtn" data-i18n="switchDriverBtn">Not you? Switch driver</button>
         </div>
         <button type="button" class="admin-link" id="selfProfileOpenBtn" style="margin-top:8px;" data-i18n="selfProfileLink">Update your photo &amp; emergency contact</button>
+      </div>
+
+      <div class="note-box" style="margin-bottom:16px;">
+        <span data-i18n="siteSpeedNote">On-site speed limit is 15 km/h. Use your indicators and watch for workers on foot.</span>
       </div>
 
       <div class="field">
@@ -593,7 +592,8 @@ en:{
   pinResetBackLink:"Back to PIN entry",
   pinNoEmailMsg:"No email on file for you — ask your HSSE admin to reset your PIN.",
   pinInvalidMsg:"Enter a 4 to 6 digit PIN.",
-  lblVehicle:"Vehicle", other:"Other", phVehicleOther:"Enter vehicle plate number",
+  lblVehicle:"Vehicle", other:"Other", phVehicleOther:"e.g. BK-1234-AB",
+  siteSpeedNote:"On-site speed limit is 15 km/h. Use your indicators and watch for workers on foot.",
   lblDate:"Date", lblTime:"Time",
   lblActivity:"Activity",
   actStart:"Start of Shift", actStartDesc:"Pre-use vehicle checklist + fitness to drive",
@@ -640,6 +640,12 @@ en:{
   adminLinkText:"Driver Profiles (Admin)",
   adminTitle:"Driver Profiles",
   adminEmailNotice:"Enter your admin email — a one-time login code will be sent to it.",
+  adminFieldLicenceNoHint:"12 digits, numbers only.",
+  adminLicenceNoError:"Driving licence (SIM) number must be exactly 12 digits.",
+  phoneOtherOption:"Other (confirm with HSSE officer)",
+  phoneOtherCodePh:"e.g. +44",
+  phoneOtherConfirmHint:"This country code must be confirmed by the HSSE officer.",
+  phoneUnconfirmedSuffix:"(unconfirmed)",
   adminRequestCodeBtn:"Email me a login code",
   adminRequestingCode:"Sending…",
   adminCodeSentNotice:"Code sent. Check your email — it expires in 10 minutes.",
@@ -719,7 +725,8 @@ id:{
   pinResetBackLink:"Kembali ke entri PIN",
   pinNoEmailMsg:"Tidak ada email terdaftar untuk Anda — minta admin HSSE mengatur ulang PIN Anda.",
   pinInvalidMsg:"Masukkan PIN 4 hingga 6 digit.",
-  lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"Masukkan nomor plat kendaraan",
+  lblVehicle:"Kendaraan", other:"Lainnya", phVehicleOther:"cth. BK-1234-AB",
+  siteSpeedNote:"Batas kecepatan di lokasi adalah 15 km/jam. Gunakan lampu sein dan perhatikan pekerja yang berjalan kaki.",
   lblDate:"Tanggal", lblTime:"Jam",
   lblActivity:"Aktivitas",
   actStart:"Awal Shift", actStartDesc:"Daftar periksa kendaraan + kelayakan mengemudi",
@@ -763,6 +770,12 @@ id:{
   adminLinkText:"Profil Pengemudi (Admin)",
   adminTitle:"Profil Pengemudi",
   adminEmailNotice:"Masukkan email admin Anda — kode login sekali pakai akan dikirim ke email tersebut.",
+  adminFieldLicenceNoHint:"12 digit, hanya angka.",
+  adminLicenceNoError:"Nomor SIM harus tepat 12 digit.",
+  phoneOtherOption:"Lainnya (konfirmasi dengan petugas HSSE)",
+  phoneOtherCodePh:"cth. +44",
+  phoneOtherConfirmHint:"Kode negara ini harus dikonfirmasi oleh petugas HSSE.",
+  phoneUnconfirmedSuffix:"(belum dikonfirmasi)",
   adminRequestCodeBtn:"Kirim kode login ke email saya",
   adminRequestingCode:"Mengirim…",
   adminCodeSentNotice:"Kode terkirim. Periksa email Anda — berlaku 10 menit.",
@@ -842,7 +855,8 @@ ms:{
   pinResetBackLink:"Kembali ke kemasukan PIN",
   pinNoEmailMsg:"Tiada emel berdaftar untuk anda — minta admin HSSE menetapkan semula PIN anda.",
   pinInvalidMsg:"Masukkan PIN 4 hingga 6 digit.",
-  lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"Masukkan nombor plat kenderaan",
+  lblVehicle:"Kenderaan", other:"Lain-lain", phVehicleOther:"cth. BK-1234-AB",
+  siteSpeedNote:"Had laju di tapak ialah 15 km/j. Gunakan lampu isyarat dan berhati-hati dengan pekerja berjalan kaki.",
   lblDate:"Tarikh", lblTime:"Masa",
   lblActivity:"Aktiviti",
   actStart:"Permulaan Syif", actStartDesc:"Senarai semak kenderaan + kelayakan memandu",
@@ -886,6 +900,12 @@ ms:{
   adminLinkText:"Profil Pemandu (Admin)",
   adminTitle:"Profil Pemandu",
   adminEmailNotice:"Masukkan e-mel admin anda — kod log masuk sekali guna akan dihantar ke e-mel itu.",
+  adminFieldLicenceNoHint:"12 digit, nombor sahaja.",
+  adminLicenceNoError:"Nombor lesen memandu (SIM) mesti tepat 12 digit.",
+  phoneOtherOption:"Lain (sahkan dengan pegawai HSSE)",
+  phoneOtherCodePh:"cth. +44",
+  phoneOtherConfirmHint:"Kod negara ini mesti disahkan oleh pegawai HSSE.",
+  phoneUnconfirmedSuffix:"(belum disahkan)",
   adminRequestCodeBtn:"Hantar kod log masuk ke e-mel saya",
   adminRequestingCode:"Menghantar…",
   adminCodeSentNotice:"Kod dihantar. Semak e-mel anda — tamat tempoh dalam 10 minit.",
@@ -986,6 +1006,31 @@ document.getElementById('entryTime').value = new Date().toTimeString().slice(0,5
 const ICON_VAN = `<svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 16V8a1 1 0 0 1 1-1h11l5 4v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Z"/><path d="M15 7v9"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>`;
 const ICON_MPV = `<svg class="v-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 16V12.2a1 1 0 0 1 .5-.87l2.6-1.5 1.4-2.6a1 1 0 0 1 .88-.53h6.24a1 1 0 0 1 .88.53l1.4 2.6 2.6 1.5a1 1 0 0 1 .5.87V16a1 1 0 0 1-1 1h-16a1 1 0 0 1-1-1Z"/><path d="M3.5 12h17"/><circle cx="7.5" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg>`;
 
+// Standing standard (applies across EcoOils apps): phone number country
+// codes are limited to this Asian list by default; anything else goes
+// through "Other", flagged for the HSSE officer to confirm.
+const ASIAN_PHONE_CODES = [
+  { code:'+62', label:'Indonesia' },
+  { code:'+60', label:'Malaysia' },
+  { code:'+65', label:'Singapore' },
+  { code:'+66', label:'Thailand' },
+  { code:'+84', label:'Vietnam' },
+  { code:'+63', label:'Philippines' },
+  { code:'+95', label:'Myanmar' },
+  { code:'+855', label:'Cambodia' },
+  { code:'+856', label:'Laos' },
+  { code:'+673', label:'Brunei' },
+  { code:'+91', label:'India' },
+  { code:'+86', label:'China' },
+  { code:'+852', label:'Hong Kong' },
+  { code:'+886', label:'Taiwan' },
+  { code:'+81', label:'Japan' },
+  { code:'+82', label:'South Korea' },
+  { code:'+880', label:'Bangladesh' },
+  { code:'+94', label:'Sri Lanka' },
+  { code:'+977', label:'Nepal' }
+];
+
 const VEHICLES = [
   { plate:'BK-7769-DQ', model:'Toyota Hiace', icon:ICON_VAN },
   { plate:'BK-1411-ADG', model:'Toyota Kijang Innova Reborn', icon:ICON_MPV },
@@ -1019,7 +1064,20 @@ document.getElementById('vehicleGrid').addEventListener('click', e=>{
     otherInput.style.display = 'none'; state.vehicle = val;
   }
 });
-document.getElementById('vehicleOther').addEventListener('input', e=>{ state.vehicle = e.target.value; });
+function formatPlate_(raw){
+  // Standard format: LL-NNNN-LLL, all caps (2 letters, up to 4 digits, up to 3 letters).
+  const clean = (raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const letters1 = (clean.match(/^[A-Z]{0,2}/)||[''])[0];
+  const rest = clean.slice(letters1.length);
+  const digits = (rest.match(/^[0-9]{0,4}/)||[''])[0];
+  const letters2 = rest.slice(digits.length).replace(/[0-9]/g,'').slice(0,3);
+  return [letters1, digits, letters2].filter(Boolean).join('-');
+}
+document.getElementById('vehicleOther').addEventListener('input', e=>{
+  const formatted = formatPlate_(e.target.value);
+  e.target.value = formatted;
+  state.vehicle = formatted;
+});
 
 document.querySelectorAll('.activity-card').forEach(card=>{
   card.addEventListener('click', ()=>{
@@ -1714,7 +1772,15 @@ function renderAdminProfileForm(profile){
     </div>
     <div class="field">
       <label>${t('adminFieldPhone')}</label>
-      <input type="text" id="pfPhone" value="${escapeHtml(p.phone||'')}">
+      <div style="display:flex; gap:8px;">
+        <select id="pfPhoneCode" style="flex:0 0 112px; padding:12px 8px; border:1px solid var(--grey-line); border-radius:8px; font-family:'Jost',sans-serif; font-size:14px;">
+          ${ASIAN_PHONE_CODES.map(c=>`<option value="${c.code}">${c.code} ${c.label}</option>`).join('')}
+          <option value="__other">${t('phoneOtherOption')}</option>
+        </select>
+        <input type="text" id="pfPhoneNumber" inputmode="tel" style="flex:1;" value="${escapeHtml(p.phone||'')}">
+      </div>
+      <input type="text" id="pfPhoneOtherCode" style="display:none; margin-top:8px;" placeholder="${t('phoneOtherCodePh')}">
+      <div class="hint" id="pfPhoneOtherHint" style="display:none; color:var(--warn-amber);">${t('phoneOtherConfirmHint')}</div>
     </div>
     <div class="field">
       <label>${t('adminFieldEmail')}</label>
@@ -1729,7 +1795,8 @@ function renderAdminProfileForm(profile){
     </div>
     <div class="field">
       <label>${t('adminFieldLicenceNo')}</label>
-      <input type="text" id="pfLicenceNo" value="${escapeHtml(p.licenceNo||'')}">
+      <input type="text" id="pfLicenceNo" inputmode="numeric" maxlength="12" value="${escapeHtml(p.licenceNo||'')}">
+      <div class="hint">${t('adminFieldLicenceNoHint')}</div>
     </div>
     <div class="field">
       <label>${t('adminFieldLicenceExpiry')}</label>
@@ -1798,21 +1865,59 @@ function renderAdminProfileForm(profile){
     });
   });
 
+  // Phone: pre-fill the code dropdown from an existing number when we can
+  // recognise it; otherwise leave the raw value in the number field so
+  // nothing already saved is lost, and default the code to Indonesia.
+  const pfPhoneCode = document.getElementById('pfPhoneCode');
+  const pfPhoneNumber = document.getElementById('pfPhoneNumber');
+  const pfPhoneOtherCode = document.getElementById('pfPhoneOtherCode');
+  const pfPhoneOtherHint = document.getElementById('pfPhoneOtherHint');
+  (function prefillPhone(){
+    const existing = String(p.phone||'').trim();
+    const match = existing.match(/^(\+\d{1,3})\s*(.*)$/);
+    if(match && ASIAN_PHONE_CODES.some(c=>c.code===match[1])){
+      pfPhoneCode.value = match[1];
+      pfPhoneNumber.value = match[2];
+    } else if(match){
+      pfPhoneCode.value = '__other';
+      pfPhoneOtherCode.style.display = 'block';
+      pfPhoneOtherHint.style.display = 'block';
+      pfPhoneOtherCode.value = match[1];
+      pfPhoneNumber.value = match[2];
+    } else {
+      pfPhoneCode.value = '+62';
+      pfPhoneNumber.value = existing;
+    }
+  })();
+  pfPhoneCode.addEventListener('change', ()=>{
+    const isOther = pfPhoneCode.value === '__other';
+    pfPhoneOtherCode.style.display = isOther ? 'block' : 'none';
+    pfPhoneOtherHint.style.display = isOther ? 'block' : 'none';
+  });
+
   document.getElementById('pfSaveBtn').addEventListener('click', async ()=>{
     const btn = document.getElementById('pfSaveBtn');
     const statusEl = document.getElementById('pfStatus');
     const name = document.getElementById('pfName').value.trim();
     if(!name){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
+    const licenceNo = document.getElementById('pfLicenceNo').value.trim();
+    if(licenceNo && !/^[0-9]{12}$/.test(licenceNo)){
+      statusEl.className='admin-status error'; statusEl.textContent = t('adminLicenceNoError'); return;
+    }
+    const phoneCodeVal = pfPhoneCode.value;
+    const phoneCode = phoneCodeVal === '__other' ? pfPhoneOtherCode.value.trim() : phoneCodeVal;
+    const phoneNumber = pfPhoneNumber.value.trim();
+    const phone = phoneNumber ? (phoneCode + ' ' + phoneNumber + (phoneCodeVal === '__other' ? ' ' + t('phoneUnconfirmedSuffix') : '')) : '';
     btn.disabled = true; btn.textContent = t('adminSaving');
     const companyVal = document.getElementById('pfCompany').value;
     try{
       const res = await adminFetch({
         action:'saveDriverProfile', token: admin.token,
         name: name,
-        phone: document.getElementById('pfPhone').value.trim(),
+        phone: phone,
         email: document.getElementById('pfEmail').value.trim(),
         vehicle: document.getElementById('pfVehicle').value,
-        licenceNo: document.getElementById('pfLicenceNo').value.trim(),
+        licenceNo: licenceNo,
         licenceExpiry: document.getElementById('pfLicenceExpiry').value,
         company: companyVal === '__other' ? '' : companyVal,
         emergencyName: document.getElementById('pfEmName').value.trim(),

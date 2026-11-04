@@ -67,6 +67,9 @@ p{line-height:1.6;font-size:15px;margin:0 0 12px;}
 .note.danger{border-left-color:var(--fail);background:#FBEAE9;color:#7a1a14;}
 .opt{display:block;width:100%;text-align:left;border:1.5px solid var(--grey-line);background:#fff;border-radius:9px;padding:13px 14px;font-family:inherit;font-size:15px;line-height:1.45;color:var(--ink);cursor:pointer;margin-bottom:10px;}
 .opt.sel{border-color:var(--green);background:var(--green-bg);color:var(--green-dark);font-weight:500;}
+.opt.correct{border-color:var(--green);background:var(--green-bg);color:var(--green-dark);font-weight:600;}
+.opt.wrong{border-color:var(--fail);background:#FBEAE9;color:#7a1a14;font-weight:600;}
+.opt:disabled{cursor:default;opacity:.92;}
 .photo-box{border:1.5px dashed var(--grey-line);border-radius:var(--radius);padding:18px;text-align:center;cursor:pointer;}
 .photo-box.has{border-style:solid;border-color:var(--green);padding:0;overflow:hidden;}
 .photo-box img{width:100%;display:block;max-height:300px;object-fit:contain;background:#111;}
@@ -139,7 +142,7 @@ const UI = {
   certify:'I certify that all details entered above are correct and not falsified.', close:'Close',
   modLabel:'Module', of:'of', ready:'I have read and understood this module',
   qIntro:'Final check', qIntroBody:'15 questions. You need 12 correct (80%). Questions and answers change on every attempt. Take your time.', qStart:'Start the check',
-  question:'Question', finish:'Finish',
+  question:'Question', finish:'Finish', correctLabel:'Correct answer',
   pass:'PASSED', fail:'NOT PASSED', score:'Score', retryBody:'You need 12 of 15. Review the modules and try again. A new set of questions will be given.', retry:'Try again', review:'Review the modules',
   saving:'Saving your result…', saved:'Result saved.', saveFail:'Could not reach the register. Your result is kept on this phone.', retrySave:'Send again',
   certTitle:'Your certificate', dl:'Download certificate', signNote:'Next step: meet an HSSE officer for the in-person check (SIM, vehicle, route briefing). Your induction is complete only after the officer signs you off.',
@@ -166,7 +169,7 @@ const UI = {
   certify:'Saya menyatakan bahwa semua data di atas benar dan tidak dipalsukan.', close:'Tutup',
   modLabel:'Modul', of:'dari', ready:'Saya telah membaca dan memahami modul ini',
   qIntro:'Pemeriksaan akhir', qIntroBody:'15 soal. Anda harus benar 12 (80%). Soal dan jawaban berubah setiap percobaan. Jawab dengan tenang.', qStart:'Mulai pemeriksaan',
-  question:'Soal', finish:'Selesai',
+  question:'Soal', finish:'Selesai', correctLabel:'Jawaban benar',
   pass:'LULUS', fail:'BELUM LULUS', score:'Nilai', retryBody:'Anda perlu 12 dari 15. Pelajari kembali modul dan coba lagi. Soal baru akan diberikan.', retry:'Coba lagi', review:'Pelajari modul',
   saving:'Menyimpan hasil…', saved:'Hasil tersimpan.', saveFail:'Tidak dapat terhubung ke register. Hasil Anda disimpan di HP ini.', retrySave:'Kirim lagi',
   certTitle:'Sertifikat Anda', dl:'Unduh sertifikat', signNote:'Langkah berikut: temui petugas HSSE untuk pemeriksaan langsung (SIM, kendaraan, briefing rute). Induksi selesai setelah petugas menandatangani.',
@@ -193,7 +196,7 @@ const UI = {
   certify:'Saya mengesahkan bahawa semua butiran di atas adalah betul dan tidak dipalsukan.', close:'Tutup',
   modLabel:'Modul', of:'daripada', ready:'Saya telah membaca dan memahami modul ini',
   qIntro:'Semakan akhir', qIntroBody:'15 soalan. Anda perlu betul 12 (80%). Soalan dan jawapan berubah setiap percubaan. Ambil masa anda.', qStart:'Mula semakan',
-  question:'Soalan', finish:'Selesai',
+  question:'Soalan', finish:'Selesai', correctLabel:'Jawapan betul',
   pass:'LULUS', fail:'BELUM LULUS', score:'Markah', retryBody:'Anda perlu 12 daripada 15. Ulang kaji modul dan cuba lagi. Soalan baharu akan diberikan.', retry:'Cuba lagi', review:'Ulang kaji modul',
   saving:'Menyimpan keputusan…', saved:'Keputusan disimpan.', saveFail:'Tidak dapat menghubungi daftar. Keputusan anda disimpan pada telefon ini.', retrySave:'Hantar semula',
   certTitle:'Sijil anda', dl:'Muat turun sijil', signNote:'Langkah seterusnya: berjumpa pegawai HSSE untuk semakan secara bersemuka (SIM, kenderaan, taklimat laluan). Induksi lengkap hanya selepas pegawai menandatangani.',
@@ -254,7 +257,12 @@ const MODS = {
    '**Report everything:** crashes, near misses, any vehicle damage (even a scratch), injuries, unsafe roads or site conditions, and any security event.',
    '**First actions after an incident:** 1) stop and make the scene safe (hazard lights, engine off, triangle); 2) check people and call the emergency number {{emergency}}; 3) do not move the vehicle unless it is unsafe to leave it; 4) call your supervisor and the HSSE/security contact immediately; 5) give facts only and take photos if safe.',
    '**Then record it** in the Driver Log (Incident / near-miss field) at the end of the shift. The phone call comes first, within minutes, not hours.',
-   'Reporting is never punished. **Hiding an incident is.**']}
+   'Reporting is never punished. **Hiding an incident is.**']},
+  {t:'Warnings for violations', i:[
+   '**Any violation** of these rules — including failing this induction, unsafe driving, falsifying records, or repeated safety flags on your daily log — is handled through EcoOils\' standard warning system: **SP1** (first written warning), **SP2** (second written warning), and **SP3** (third and final written warning).',
+   '**SP3 is final.** Repeating a violation after SP3 can lead to removal from the project.',
+   'Warnings are issued by the HSSE officer based on the facts of what happened — never automatically by this app.',
+   'This standard applies to every company on site. Your own subcontracting agency is responsible for any disciplinary action taken against you under their own terms of employment.']}
  ],
  id:[
   {t:'Informasi lokasi untuk pengemudi lintas', i:[
@@ -298,7 +306,12 @@ const MODS = {
    '**Laporkan semuanya:** tabrakan, nyaris celaka, kerusakan kendaraan sekecil apa pun (termasuk goresan), cedera, jalan atau kondisi lokasi tidak aman, dan kejadian keamanan.',
    '**Tindakan pertama setelah insiden:** 1) berhenti dan amankan lokasi (lampu hazard, mesin mati, segitiga); 2) cek orang dan hubungi nomor darurat {{emergency}}; 3) jangan pindahkan kendaraan kecuali berbahaya jika ditinggal; 4) segera hubungi atasan dan kontak HSSE/keamanan; 5) sampaikan fakta saja dan ambil foto jika aman.',
    '**Lalu catat** di Driver Log (kolom Insiden / nyaris celaka) di akhir shift. Telepon dulu, dalam hitungan menit, bukan jam.',
-   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']}
+   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']},
+  {t:'Peringatan atas pelanggaran', i:[
+   '**Setiap pelanggaran** terhadap aturan ini — termasuk gagal tes induksi, mengemudi tidak aman, memalsukan catatan, atau flag keselamatan berulang pada log harian Anda — ditangani melalui sistem peringatan standar EcoOils: **SP1** (Surat Peringatan 1), **SP2** (Surat Peringatan 2), dan **SP3** (Surat Peringatan 3, final).',
+   '**SP3** adalah peringatan terakhir. Mengulangi pelanggaran setelah SP3 dapat berakibat pemberhentian dari proyek.',
+   'Peringatan diterbitkan oleh petugas HSSE berdasarkan fakta kejadian — bukan secara otomatis oleh aplikasi ini.',
+   'Standar ini berlaku untuk semua perusahaan — agen penyalur Anda sendiri bertanggung jawab atas tindakan disiplin yang diambil terhadap Anda sesuai ketentuan kerja mereka.']}
  ],
  ms:[
   {t:'Maklumat tapak untuk pemandu lintasan', i:[
@@ -342,7 +355,12 @@ const MODS = {
    '**Laporkan semuanya:** kemalangan, nyaris celaka, sebarang kerosakan kenderaan (walaupun calar), kecederaan, jalan atau keadaan tapak yang tidak selamat, dan sebarang kejadian keselamatan.',
    '**Tindakan pertama selepas insiden:** 1) berhenti dan selamatkan tempat kejadian (lampu kecemasan, enjin dimatikan, segi tiga); 2) semak orang dan hubungi nombor kecemasan {{emergency}}; 3) jangan alihkan kenderaan kecuali tidak selamat untuk ditinggalkan; 4) hubungi penyelia dan HSSE/keselamatan dengan segera; 5) beri fakta sahaja dan ambil gambar jika selamat.',
    '**Kemudian rekod** dalam Driver Log (ruangan Insiden / nyaris celaka) pada akhir syif. Telefon dahulu, dalam beberapa minit, bukan jam.',
-   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']}
+   'Melapor tidak pernah dihukum. **Menyembunyikan insiden yang dihukum.**']},
+  {t:'Amaran atas pelanggaran', i:[
+   '**Sebarang pelanggaran** terhadap peraturan ini — termasuk gagal induksi ini, memandu tidak selamat, memalsukan rekod, atau flag keselamatan berulang pada log harian anda — dikendalikan melalui sistem amaran standard EcoOils: **SP1** (amaran bertulis pertama), **SP2** (amaran bertulis kedua), dan **SP3** (amaran bertulis ketiga dan terakhir).',
+   '**SP3 adalah muktamad.** Mengulangi pelanggaran selepas SP3 boleh menyebabkan penyingkiran daripada projek.',
+   'Amaran dikeluarkan oleh pegawai HSSE berdasarkan fakta kejadian — bukan secara automatik oleh aplikasi ini.',
+   'Standard ini terpakai kepada semua syarikat di tapak. Agensi subkontrak anda sendiri bertanggungjawab atas sebarang tindakan tatatertib yang diambil ke atas anda mengikut terma pekerjaan mereka sendiri.']}
  ]
 };
 
@@ -368,7 +386,10 @@ const QB = {
   {q:'You had a near miss and nobody was hurt. You:',a:['Report it; near misses help prevent crashes','Do not report it because there was no damage','Report it only after it happens twice','Tell only your passengers']},
   {q:'The site alarm sounds while you are waiting for passengers. You:',a:['Take everyone to the assembly point and wait for HSSE instructions','Keep waiting in the vehicle','Drive out of the gate immediately','Go and look for the cause']},
   {q:'What is the rule on alcohol and drugs for drivers?',a:['Zero tolerance, before and during driving','A little is fine off site','Allowed on rest days before driving','Allowed if you feel fine']},
-  {q:'The gate guard asks to see your documents. You:',a:['Stop, show ID, SIM and vehicle documents, and follow instructions','Slow down and wave','Show them only if asked twice','Pass them through the window without stopping']}
+  {q:'The gate guard asks to see your documents. You:',a:['Stop, show ID, SIM and vehicle documents, and follow instructions','Slow down and wave','Show them only if asked twice','Pass them through the window without stopping']},
+  {q:'What vehicle documents must you carry and be able to show at any time?',a:['Valid vehicle registration (STNK/road tax), insurance, and your driving licence (SIM)','Only your driving licence','Only the vehicle registration','None, since the vehicle is checked once a year']},
+  {q:'Your vehicle registration document expired last month. You:',a:['Tell your coordinator and do not drive the vehicle until it is renewed','Drive carefully and renew it later','Drive only inside the site','Use a photocopy of last year\'s document instead']},
+  {q:'Before a shift you notice your SIM (driving licence) expires next week. You:',a:['Tell your coordinator now so it can be renewed before it expires','Keep driving until the expiry date arrives','Ignore it since it is still valid today','Ask a colleague to drive instead without telling anyone']}
  ],
  id:[
   {q:'Apa peran Anda saat mengemudi ke lokasi Mentari?',a:['Mengantar orang dari/ke lokasi; saya hanya melintas dan tidak bekerja di lokasi','Membantu kontraktor bekerja sambil menunggu','Parkir di mana saja dekat area kerja','Mengambil material dari area konstruksi']},
@@ -390,7 +411,10 @@ const QB = {
   {q:'Anda mengalami nyaris celaka dan tidak ada yang cedera. Anda:',a:['Melapor; nyaris celaka membantu mencegah tabrakan','Tidak melapor karena tidak ada kerusakan','Melapor setelah terjadi dua kali','Memberi tahu penumpang saja']},
   {q:'Alarm lokasi berbunyi saat Anda menunggu penumpang. Anda:',a:['Membawa semua ke titik kumpul dan menunggu arahan HSSE','Tetap menunggu di kendaraan','Langsung keluar gerbang','Mencari penyebabnya']},
   {q:'Apa aturan alkohol dan narkoba bagi pengemudi?',a:['Toleransi nol, sebelum dan saat mengemudi','Sedikit boleh di luar lokasi','Boleh di hari libur sebelum mengemudi','Boleh jika merasa sehat']},
-  {q:'Petugas gerbang meminta melihat dokumen Anda. Anda:',a:['Berhenti, tunjukkan KTP, SIM dan dokumen kendaraan, ikuti arahan','Memperlambat dan melambai','Menunjukkan jika diminta dua kali','Menyerahkan lewat jendela tanpa berhenti']}
+  {q:'Petugas gerbang meminta melihat dokumen Anda. Anda:',a:['Berhenti, tunjukkan KTP, SIM dan dokumen kendaraan, ikuti arahan','Memperlambat dan melambai','Menunjukkan jika diminta dua kali','Menyerahkan lewat jendela tanpa berhenti']},
+  {q:'Dokumen kendaraan apa yang harus Anda bawa dan bisa tunjukkan kapan saja?',a:['STNK yang masih berlaku, asuransi, dan SIM yang sah','Hanya SIM','Hanya STNK','Tidak ada, karena kendaraan diperiksa setahun sekali']},
+  {q:'STNK kendaraan Anda sudah habis masa berlakunya bulan lalu. Anda:',a:['Beri tahu koordinator dan jangan mengemudikan kendaraan sampai diperpanjang','Tetap mengemudi dengan hati-hati dan perpanjang nanti','Mengemudi hanya di dalam lokasi','Menggunakan fotokopi dokumen tahun lalu']},
+  {q:'Sebelum shift Anda sadar SIM Anda akan habis minggu depan. Anda:',a:['Beri tahu koordinator sekarang agar bisa diperpanjang sebelum habis','Tetap mengemudi sampai tanggal habisnya tiba','Mengabaikannya karena masih berlaku hari ini','Meminta rekan mengemudi tanpa memberi tahu siapa pun']}
  ],
  ms:[
   {q:'Apakah peranan anda apabila memandu ke tapak Mentari?',a:['Membawa orang ke dan dari tapak; saya hanya melalui dan tidak bekerja di tapak','Membantu kontraktor bekerja sambil menunggu','Letak kenderaan di mana-mana berhampiran kawasan kerja','Mengambil bahan dari kawasan pembinaan']},
@@ -412,7 +436,10 @@ const QB = {
   {q:'Anda mengalami nyaris celaka dan tiada yang cedera. Anda:',a:['Lapor; nyaris celaka membantu mencegah kemalangan','Tidak lapor kerana tiada kerosakan','Lapor selepas berlaku dua kali','Beritahu penumpang sahaja']},
   {q:'Penggera tapak berbunyi semasa anda menunggu penumpang. Anda:',a:['Bawa semua ke tempat berkumpul dan tunggu arahan HSSE','Terus menunggu dalam kenderaan','Terus keluar pintu pagar','Pergi mencari puncanya']},
   {q:'Apakah peraturan alkohol dan dadah untuk pemandu?',a:['Toleransi sifar, sebelum dan semasa memandu','Sedikit boleh di luar tapak','Dibenarkan pada hari rehat sebelum memandu','Dibenarkan jika rasa sihat']},
-  {q:'Pengawal pintu pagar meminta melihat dokumen anda. Anda:',a:['Berhenti, tunjuk ID, SIM dan dokumen kenderaan, ikut arahan','Perlahankan dan melambai','Tunjuk jika diminta dua kali','Hulur melalui tingkap tanpa berhenti']}
+  {q:'Pengawal pintu pagar meminta melihat dokumen anda. Anda:',a:['Berhenti, tunjuk ID, SIM dan dokumen kenderaan, ikut arahan','Perlahankan dan melambai','Tunjuk jika diminta dua kali','Hulur melalui tingkap tanpa berhenti']},
+  {q:'Dokumen kenderaan apakah yang mesti anda bawa dan boleh tunjukkan pada bila-bila masa?',a:['Geran/cukai jalan yang sah, insurans, dan lesen memandu (SIM) anda','Hanya lesen memandu','Hanya geran kenderaan','Tiada, kerana kenderaan disemak sekali setahun']},
+  {q:'Cukai jalan kenderaan anda telah luput bulan lepas. Anda:',a:['Beritahu penyelaras dan jangan memandu kenderaan itu sehingga diperbaharui','Tetap memandu dengan berhati-hati dan perbaharui kemudian','Memandu hanya di dalam tapak','Guna salinan dokumen tahun lepas']},
+  {q:'Sebelum syif anda perasan SIM anda akan luput minggu depan. Anda:',a:['Beritahu penyelaras sekarang supaya ia boleh diperbaharui sebelum luput','Terus memandu sehingga tarikh luput tiba','Abaikan kerana ia masih sah hari ini','Minta rakan memandu tanpa memberitahu sesiapa']}
  ]
 };
 
@@ -572,11 +599,20 @@ function startQuiz(){
 }
 function vQuiz(){
   const t = L(), q = S.quiz[S.qi], item = QB[lang][q.i];
-  const opts = q.order.map(k => '<button class="opt'+(S.ans[S.qi]===k?' sel':'')+'" data-k="'+k+'">'+esc(item.a[k])+'</button>').join('');
+  const answered = S.ans[S.qi] >= 0;
+  const opts = q.order.map(k => {
+    let cls = 'opt';
+    if(answered){
+      if(k===0) cls += ' correct';
+      else if(S.ans[S.qi]===k) cls += ' wrong';
+    } else if(S.ans[S.qi]===k) cls += ' sel';
+    const tag = (answered && k===0) ? ' <span style="font-size:12px;font-weight:700;">✓ '+esc(t.correctLabel)+'</span>' : '';
+    return '<button class="'+cls+'" data-k="'+k+'"'+(answered?' disabled':'')+'>'+esc(item.a[k])+tag+'</button>';
+  }).join('');
   const last = S.qi === QUIZ_N-1;
   $('app').innerHTML = progress((S.qi)/QUIZ_N) + '<div class="card"><div class="step-title">'+esc(t.question)+' '+(S.qi+1)+' '+esc(t.of)+' '+QUIZ_N+'</div><h2>'+esc(item.q)+'</h2>'+opts+
     '<div class="btn-row">'+(S.qi>0?'<button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button>':'')+'<button class="btn btn-primary" id="nx"'+(S.ans[S.qi]<0?' disabled':'')+'>'+esc(last?t.finish:t.next)+'</button></div></div>';
-  document.querySelectorAll('.opt').forEach(b => b.onclick = () => { S.ans[S.qi] = +b.dataset.k; vQuiz(); });
+  if(!answered) document.querySelectorAll('.opt').forEach(b => b.onclick = () => { S.ans[S.qi] = +b.dataset.k; vQuiz(); });
   const bk=$('bk'); if(bk) bk.onclick = () => { S.qi--; vQuiz(); };
   $('nx').onclick = () => { if(last) finishQuiz(); else { S.qi++; vQuiz(); } };
 }
@@ -629,8 +665,8 @@ function drawCert(cv){
   c.textBaseline='alphabetic';
   c.fillStyle='#44a276'; c.font='700 30px Jost, sans-serif'; c.fillText('ECOOILS', 60, 56);
   c.fillStyle='#6e6b6c'; c.font='300 24px Jost, sans-serif'; c.fillText('SEI MANGKEI', 215, 56);
-  c.fillStyle='#231f20'; c.font='300 54px Jost, sans-serif'; c.fillText('DRIVER INDUCTION CERTIFICATE', 60, 170);
-  c.fillStyle='#6e6b6c'; c.font='400 24px Jost, sans-serif'; c.fillText('Commuter & pass-through drivers', 60, 210);
+  c.fillStyle='#231f20'; c.font='300 44px Jost, sans-serif'; c.fillText('DRIVER FAMILIARIZATION & AWARENESS', 60, 160);
+  c.fillStyle='#6e6b6c'; c.font='400 24px Jost, sans-serif'; c.fillText('Mentari Project · Commuter & pass-through drivers', 60, 210);
   c.fillStyle='#231f20'; c.font='600 56px Jost, sans-serif'; c.fillText(v.name.trim().toUpperCase().slice(0,32), 60, 320);
   c.fillStyle='#6e6b6c'; c.font='400 30px Jost, sans-serif'; c.fillText(companyName(), 60, 366);
   const rows = [['Certificate no.', r.certNo],['Induction date', todayStr()],['Valid until', r.validUntil||''],['Score', S.score+' / '+QUIZ_N+'  PASS'],['SIM', '•••• '+v.licNo.trim().slice(-4)+'  ('+v.licType+')']];
@@ -643,7 +679,10 @@ function drawCert(cv){
     for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(q.isDark(y,x)) c.fillRect(ox+(x+1)*cell, oy+(y+1)*cell, cell, cell);
     c.fillStyle='#6e6b6c'; c.font='400 20px Jost, sans-serif'; c.textAlign='center'; c.fillText('Scan to verify', ox+size/2, oy+size+28); c.fillText(r.code, ox+size/2, oy+size+54); c.textAlign='left';
   }catch(e){}
-  c.fillStyle='#6e6b6c'; c.font='400 19px Jost, sans-serif';
+  c.fillStyle='#6e6b6c'; c.font='400 17px Jost, sans-serif';
+  c.fillText('This certificate confirms completion of site familiarization & awareness training only.', 60, H-150);
+  c.fillText('It is not proof of employment as a direct employee of EcoOils.', 60, H-126);
+  c.fillText('The holder is employed by their own subcontracting agency, under a contract for services with EcoOils.', 60, H-102);
   c.fillText('Valid only with HSSE officer sign-off (shown on the verification page).', 60, H-70);
   c.fillText('Personal data is held confidentially in the EcoOils HSSE driver register.', 60, H-42);
   c.save(); c.translate(W/2,H/2+60); c.rotate(-0.45); c.fillStyle='rgba(68,162,118,0.07)'; c.font='700 110px Jost, sans-serif'; c.textAlign='center'; c.fillText('ECOOILS · SEI MANGKEI', 0, 0); c.restore();
