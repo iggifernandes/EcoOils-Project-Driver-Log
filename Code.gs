@@ -1,4 +1,4 @@
-// VERSION: 2.2.0
+// VERSION: 2.2.1
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -720,7 +720,14 @@ function handleGetDashboardData_(payload) {
 
   for (let i = 1; i < data.length; i++) {
     const row = data[i];
-    const dateStr = String(row[4] || '');
+    // Sheets silently converts a "2026-11-04"-looking string into a real
+    // Date cell on append, so row[4] can come back as a Date object, not a
+    // string — format it back to yyyy-MM-dd first, or the month filter
+    // below never matches anything and the dashboard looks permanently empty.
+    const rawDate = row[4];
+    const dateStr = (rawDate instanceof Date && !isNaN(rawDate.getTime()))
+      ? Utilities.formatDate(rawDate, TIMEZONE, 'yyyy-MM-dd')
+      : String(rawDate || '');
     if (dateStr.indexOf(month) !== 0) continue; // only rows in the requested month
 
     const name = String(row[2] || '').trim();
