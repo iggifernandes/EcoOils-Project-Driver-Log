@@ -149,6 +149,10 @@ const UI = {
   odoTitle:'Practice: odometer photo', odoBody:'Now practise what you will do every shift. Take a photo of an odometer (any vehicle) so that all the digits are clear, then type the reading exactly as shown. This practice photo is not saved.',
   odoTake:'Take practice photo', odoRetake:'Retake', odoRead:'Odometer reading (km)', odoHint:'Digits only. Do not use the trip meter.', odoDone:'Good. You will do this at the start and end of every shift in the Driver Log.',
   camErr:'Camera not available. Allow camera access, or use the phone camera when asked.', camHint:'Show all odometer digits',
+  watchVideo:'Watch the video — required', vidLoading:'Loading video…', watchedConfirm:'I have watched the video and understood the requirements of',
+  vidOpenToStart:'Open one of the videos above to start the timer.', vidUnlocksIn:'Continue unlocks in', vidWatchedOk:'Video watched. You can tick the box and continue.', vidProgress:'Watched {a} of {b} — the video must play through',
+  vidFallbackMsg:'The video cannot play inside this page on your phone or network. Open the video below, watch it fully, then come back. Continue unlocks after a waiting time.',
+  lsrDriving:'Driving', lsrLifting:'Suspended loads', lsrLineoffire:'Line of fire',
   verTitle:'Certificate check', verChecking:'Checking…', verNo:'No certificate found for this code.', verOk:'Valid driver induction', verExpired:'EXPIRED', verSigned:'Officer sign-off complete', verPending:'Awaiting officer sign-off', verName:'Name', verCo:'Company', verDate:'Induction date', verUntil:'Valid until', verNum:'Certificate no.',
   officer:'HSSE officer sign-off', home:'Back to Driver Log',
   oEmail:'Your officer email', oSend:'Email me a code', oCode:'Code from email', oLogin:'Log in', oPending:'Pending sign-off', oAll:'All passed drivers', oSearch:'Search name…',
@@ -176,6 +180,10 @@ const UI = {
   odoTitle:'Latihan: foto odometer', odoBody:'Sekarang latih apa yang akan Anda lakukan setiap shift. Foto odometer (kendaraan apa saja) sampai semua angka jelas, lalu ketik angka persis seperti yang tampak. Foto latihan ini tidak disimpan.',
   odoTake:'Ambil foto latihan', odoRetake:'Ulangi', odoRead:'Angka odometer (km)', odoHint:'Hanya angka. Jangan gunakan trip meter.', odoDone:'Bagus. Ini akan Anda lakukan di awal dan akhir setiap shift di Driver Log.',
   camErr:'Kamera tidak tersedia. Izinkan akses kamera, atau gunakan kamera HP saat diminta.', camHint:'Tampilkan semua angka odometer',
+  watchVideo:'Tonton video — wajib', vidLoading:'Memuat video…', watchedConfirm:'Saya telah menonton video dan memahami persyaratan dari',
+  vidOpenToStart:'Buka salah satu video di atas untuk memulai penghitung waktu.', vidUnlocksIn:'Lanjut terbuka dalam', vidWatchedOk:'Video selesai ditonton. Centang kotak dan lanjutkan.', vidProgress:'Ditonton {a} dari {b} — video harus diputar sampai selesai',
+  vidFallbackMsg:'Video tidak dapat diputar di halaman ini pada HP atau jaringan Anda. Buka video di bawah, tonton sampai selesai, lalu kembali. Tombol lanjut terbuka setelah waktu tunggu.',
+  lsrDriving:'Berkendara', lsrLifting:'Beban menggantung', lsrLineoffire:'Jalur bahaya',
   verTitle:'Cek sertifikat', verChecking:'Memeriksa…', verNo:'Sertifikat tidak ditemukan untuk kode ini.', verOk:'Induksi pengemudi valid', verExpired:'KEDALUWARSA', verSigned:'Tanda tangan petugas lengkap', verPending:'Menunggu tanda tangan petugas', verName:'Nama', verCo:'Perusahaan', verDate:'Tanggal induksi', verUntil:'Berlaku sampai', verNum:'No. sertifikat',
   officer:'Persetujuan petugas HSSE', home:'Kembali ke Driver Log',
   oEmail:'Email petugas Anda', oSend:'Kirim kode ke email', oCode:'Kode dari email', oLogin:'Masuk', oPending:'Menunggu persetujuan', oAll:'Semua pengemudi lulus', oSearch:'Cari nama…',
@@ -203,6 +211,10 @@ const UI = {
   odoTitle:'Latihan: gambar odometer', odoBody:'Sekarang berlatih apa yang anda akan buat setiap syif. Ambil gambar odometer (mana-mana kenderaan) supaya semua digit jelas, kemudian taip bacaan tepat seperti dipaparkan. Gambar latihan ini tidak disimpan.',
   odoTake:'Ambil gambar latihan', odoRetake:'Ambil semula', odoRead:'Bacaan odometer (km)', odoHint:'Digit sahaja. Jangan guna trip meter.', odoDone:'Bagus. Anda akan melakukan ini pada awal dan akhir setiap syif dalam Driver Log.',
   camErr:'Kamera tidak tersedia. Benarkan akses kamera, atau guna kamera telefon apabila diminta.', camHint:'Tunjukkan semua digit odometer',
+  watchVideo:'Tonton video — diwajibkan', vidLoading:'Memuatkan video…', watchedConfirm:'Saya telah menonton video dan memahami keperluan bagi',
+  vidOpenToStart:'Buka salah satu video di atas untuk memulakan pemasa.', vidUnlocksIn:'Teruskan dibuka dalam', vidWatchedOk:'Video selesai ditonton. Tandakan kotak dan teruskan.', vidProgress:'Ditonton {a} daripada {b} — video mesti dimainkan sehingga habis',
+  vidFallbackMsg:'Video tidak dapat dimainkan dalam halaman ini pada telefon atau rangkaian anda. Buka video di bawah, tonton sehingga habis, kemudian kembali. Butang teruskan dibuka selepas masa menunggu.',
+  lsrDriving:'Pemanduan', lsrLifting:'Beban tergantung', lsrLineoffire:'Line of Fire',
   verTitle:'Semakan sijil', verChecking:'Menyemak…', verNo:'Tiada sijil dijumpai untuk kod ini.', verOk:'Induksi pemandu sah', verExpired:'TAMAT TEMPOH', verSigned:'Tandatangan pegawai lengkap', verPending:'Menunggu tandatangan pegawai', verName:'Nama', verCo:'Syarikat', verDate:'Tarikh induksi', verUntil:'Sah sehingga', verNum:'No. sijil',
   officer:'Kelulusan pegawai HSSE', home:'Kembali ke Driver Log',
   oEmail:'E-mel pegawai anda', oSend:'E-mel kod kepada saya', oCode:'Kod daripada e-mel', oLogin:'Log masuk', oPending:'Menunggu kelulusan', oAll:'Semua pemandu lulus', oSearch:'Cari nama…',
@@ -447,7 +459,8 @@ const QB = {
 let lang = 'id';
 try{ const s = localStorage.getItem('drv_lang'); if(s && UI[s]) lang = s; }catch(e){}
 const S = { step:'welcome', mod:0, odoDone:false, odoImg:'', odoVal:'', v:{name:'',company:'',companyOther:'',phone:'',licNo:'',licType:'',licExp:'',id4:'',plate:'',privacy:false,certify:false},
-  quiz:[], qi:0, ans:[], score:0, saveState:'', result:null, touched:false, attempt:0 };
+  quiz:[], qi:0, ans:[], score:0, saveState:'', result:null, touched:false, attempt:0,
+  lsrWatch:{}, lsrConfirmed:{}, lsrPick:{} };
 const $ = id => document.getElementById(id);
 const L = () => UI[lang];
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -537,9 +550,147 @@ function modal(title, body){
   m.querySelector('#mx').onclick = close;
 }
 
+/* ============ LSR VIDEO WATCH-GATE: same mechanism as the main induction app — plays each required Life Saving Rule video inside the page and counts real playing time ============ */
+const LSR_VIDEO_LINKS = {
+  driving:    { en:'https://youtu.be/Dfwi7OEn0hQ', id:'https://youtu.be/WT4-cuWQGa0' },
+  lifting:    { en:'https://youtu.be/lRw3aGtBe64', id:'https://youtu.be/bEvr_aT1fgg' },
+  lineoffire: { en:'https://youtu.be/klEhJQW6lc4', id:'https://youtu.be/uyYlbW9cuzs' }
+};
+const LSR_VIDEO_ORDER = ['driving','lifting','lineoffire'];
+const LSR_WATCH_PCT = 0.9, LSR_FALLBACK_SECS = 150;
+function lsrVidId(url){ const m = String(url).match(/youtu\.be\/([\w-]{6,})/) || String(url).match(/[?&]v=([\w-]{6,})/); return m ? m[1] : ''; }
+function lsrWatchRec(id){ return S.lsrWatch[id] || (S.lsrWatch[id] = {sec:0, dur:0, mode:'', clicked:false, t0:0}); }
+function lsrRecDone(w){ return !!w && ((w.dur>0 && w.sec >= w.dur*LSR_WATCH_PCT) || (w.mode==='fallback' && w.clicked && w.t0 && (Date.now()-w.t0)/1000 >= LSR_FALLBACK_SECS)); }
+function lsrWatchDone(key){
+  const Lk = LSR_VIDEO_LINKS[key]; if(!Lk) return true;
+  return [lsrVidId(Lk.en), lsrVidId(Lk.id)].some(id => lsrRecDone(S.lsrWatch[id]));
+}
+function lsrAllDone(){ return LSR_VIDEO_ORDER.every(k => lsrWatchDone(k) && S.lsrConfirmed[k]); }
+function fmtClock(s){ s = Math.max(0, Math.round(s)); return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
+function loadYT(){
+  if(window.YT && window.YT.Player) return Promise.resolve();
+  if(window.__ytApiP) return window.__ytApiP;
+  window.__ytApiP = new Promise((res,rej)=>{
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { try{ if(prev) prev(); }catch(e){} res(); };
+    const s = document.createElement('script'); s.src = 'https://www.youtube.com/iframe_api'; s.onerror = () => { window.__ytApiP = null; rej(new Error('yt')); };
+    document.head.appendChild(s);
+    setTimeout(() => { if(!(window.YT && window.YT.Player)){ window.__ytApiP = null; rej(new Error('timeout')); } }, 10000);
+  });
+  return window.__ytApiP;
+}
+function lsrLabel(key){ const t = L(); return key==='driving' ? t.lsrDriving : key==='lifting' ? t.lsrLifting : t.lsrLineoffire; }
+function lsrVideoGateHtml(key){
+  const t = L(), Lk = LSR_VIDEO_LINKS[key], label = lsrLabel(key), done = lsrWatchDone(key);
+  return '<div class="lsr-gate" data-key="'+key+'" style="margin:14px 0;padding:14px;border:1.5px solid var(--grey-line);border-radius:10px;">'+
+    '<div style="font-weight:700;color:var(--green-dark);margin-bottom:6px;">'+esc(t.watchVideo)+' — '+esc(label)+'</div>'+
+    '<div style="display:flex;gap:8px;margin-bottom:8px;">'+
+      '<button type="button" class="btn btn-secondary" data-vl="en" style="flex:1;padding:8px;font-size:13px;">English</button>'+
+      '<button type="button" class="btn btn-secondary" data-vl="id" style="flex:1;padding:8px;font-size:13px;">Bahasa Indonesia</button>'+
+    '</div>'+
+    '<div style="position:relative;width:100%;padding-top:56.25%;background:#0b1f14;border-radius:8px;overflow:hidden;">'+
+      '<div id="vidbox_'+key+'" style="position:absolute;inset:0;"></div>'+
+      '<div id="vidwait_'+key+'" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#d6e8dc;font-size:13px;text-align:center;padding:10px;">'+esc(t.vidLoading)+'</div>'+
+    '</div>'+
+    '<div style="margin-top:8px;height:8px;background:var(--chip);border-radius:5px;overflow:hidden;"><div id="vidbar_'+key+'" style="height:100%;width:0;background:var(--green);transition:width .4s;"></div></div>'+
+    '<div id="vidtxt_'+key+'" class="muted" style="margin-top:4px;font-size:12.5px;"></div>'+
+    '<div id="vidfallback_'+key+'" style="display:none;margin-top:8px;padding:8px 10px;border-left:3px solid var(--amber);background:#FFF7D6;color:#5c4400;border-radius:6px;font-size:12.5px;">'+
+      '<div style="margin-bottom:6px;">'+esc(t.vidFallbackMsg)+'</div>'+
+      '<a href="'+Lk.en+'" target="_blank" rel="noopener" class="vidext" data-vl="en" style="display:block;margin-bottom:4px;color:#0A5C9E;font-weight:600;">English</a>'+
+      '<a href="'+Lk.id+'" target="_blank" rel="noopener" class="vidext" data-vl="id" style="display:block;color:#0A5C9E;font-weight:600;">Bahasa Indonesia</a>'+
+    '</div>'+
+    '<label class="confirm-gate" style="margin-top:10px;"><input type="checkbox" id="lsrcb_'+key+'" '+(S.lsrConfirmed[key]?'checked':'')+' '+(done?'':'disabled')+'><span>'+esc(t.watchedConfirm)+' <b>'+esc(label)+'</b></span></label>'+
+  '</div>';
+}
+const lsrTimers = {}, lsrPlayers = {};
+function stopLsrGate(key){
+  if(lsrTimers[key]){ clearInterval(lsrTimers[key]); delete lsrTimers[key]; }
+  try{ if(lsrPlayers[key] && lsrPlayers[key].destroy) lsrPlayers[key].destroy(); }catch(e){}
+  delete lsrPlayers[key];
+}
+function stopAllLsrGates(){ LSR_VIDEO_ORDER.forEach(stopLsrGate); }
+function initLsrGate(key){
+  const root = document.querySelector('.lsr-gate[data-key="'+key+'"]'); if(!root) return;
+  const Lk = LSR_VIDEO_LINKS[key];
+  const ids = { en: lsrVidId(Lk.en), id: lsrVidId(Lk.id) };
+  let cur = S.lsrPick[key] || (lang==='en' ? 'en' : 'id');
+  S.lsrPick[key] = cur;
+  const cb = document.getElementById('lsrcb_'+key), bar = document.getElementById('vidbar_'+key), txt = document.getElementById('vidtxt_'+key);
+  const wait = document.getElementById('vidwait_'+key), fb = document.getElementById('vidfallback_'+key);
+  let last = null, fell = false;
+  const markOutline = () => root.querySelectorAll('button[data-vl]').forEach(x => x.style.outline = x.dataset.vl===cur ? '3px solid var(--green)' : 'none');
+  const refresh = () => {
+    if(!document.getElementById('vidbar_'+key)){ stopLsrGate(key); return; }
+    const t = L(), done = lsrWatchDone(key), w = lsrWatchRec(ids[cur]);
+    if(w.mode==='fallback' && !done){
+      const left = Math.max(0, LSR_FALLBACK_SECS - (w.clicked && w.t0 ? (Date.now()-w.t0)/1000 : 0));
+      bar.style.width = (w.clicked ? Math.min(100, 100*(LSR_FALLBACK_SECS-left)/LSR_FALLBACK_SECS) : 0) + '%';
+      txt.textContent = !w.clicked ? t.vidOpenToStart : (t.vidUnlocksIn + ' ' + fmtClock(left));
+    } else if(done){
+      bar.style.width = '100%';
+      txt.innerHTML = '<b style="color:var(--green-dark);">✓ ' + esc(t.vidWatchedOk) + '</b>';
+    } else {
+      const need = w.dur ? w.dur*LSR_WATCH_PCT : 0;
+      bar.style.width = need ? Math.min(100, 100*w.sec/need) + '%' : '0%';
+      txt.textContent = w.dur ? t.vidProgress.replace('{a}',fmtClock(w.sec)).replace('{b}',fmtClock(w.dur)) : '';
+    }
+    if(cb){ if(done){ cb.disabled = false; } else { cb.disabled = true; if(cb.checked){ cb.checked = false; S.lsrConfirmed[key] = false; } } }
+    updateLsrNextGate();
+  };
+  const fallback = () => {
+    if(fell) return; fell = true; stopLsrGate(key);
+    wait.style.display = 'none'; fb.style.display = 'block';
+    ['en','id'].forEach(k => { const w = lsrWatchRec(ids[k]); if(!w.dur || w.sec < w.dur*LSR_WATCH_PCT) w.mode = 'fallback'; });
+    root.querySelectorAll('.vidext').forEach(a => { a.addEventListener('click', () => { ['en','id'].forEach(k => { const w = lsrWatchRec(ids[k]); if(w.mode==='fallback' && !w.clicked){ w.clicked = true; w.t0 = Date.now(); } }); refresh(); }); });
+    lsrTimers[key] = setInterval(() => { refresh(); if(lsrWatchDone(key)){ clearInterval(lsrTimers[key]); delete lsrTimers[key]; } }, 1000);
+    refresh();
+  };
+  const tickFn = () => {
+    const p = lsrPlayers[key]; if(!p || !p.getPlayerState) return;
+    let st; try{ st = p.getPlayerState(); }catch(e){ return; }
+    const w = lsrWatchRec(ids[cur]);
+    try{ const d = p.getDuration(); if(d > 0) w.dur = d; }catch(e){}
+    if(st === 1 && document.visibilityState === 'visible'){
+      const tcur = p.getCurrentTime();
+      if(last !== null){ const d = tcur - last; if(d > 0 && d <= 1.6) w.sec += d; }
+      last = tcur;
+    } else last = null;
+    refresh();
+  };
+  const startPlayer = () => {
+    if(fell) return; stopLsrGate(key); last = null;
+    const box = document.getElementById('vidbox_'+key); if(!box) return;
+    box.innerHTML = '<div id="vidmount_'+key+'"></div>'; wait.style.display = 'flex';
+    try{
+      lsrPlayers[key] = new YT.Player('vidmount_'+key, { videoId: ids[cur], width:'100%', height:'100%',
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: { rel:0, modestbranding:1, playsinline:1, iv_load_policy:3 },
+        events: {
+          onReady: () => { wait.style.display = 'none'; refresh(); },
+          onError: () => fallback(),
+          onStateChange: (ev) => { if(ev.data===0){ tickFn(); refresh(); } }
+        } });
+    }catch(e){ fallback(); return; }
+    lsrTimers[key] = setInterval(tickFn, 500);
+  };
+  root.querySelectorAll('button[data-vl]').forEach(b => {
+    b.addEventListener('click', () => {
+      if(b.dataset.vl === cur) return;
+      cur = b.dataset.vl; S.lsrPick[key] = cur; markOutline();
+      if(!fell) startPlayer(); refresh();
+    });
+  });
+  markOutline();
+  if(cb) cb.onchange = () => { S.lsrConfirmed[key] = !!cb.checked; updateLsrNextGate(); };
+  loadYT().then(startPlayer).catch(fallback);
+}
+function updateLsrNextGate(){ const nx = $('nx'); if(nx && S.step==='mods' && S.mod===1) nx.disabled = !lsrAllDone(); }
+
 function vMods(){
   const t = L(), M = MODS[lang], m = M[S.mod], last = S.mod === M.length-1;
   const isOdo = S.mod === 3;
+  const isLSR = S.mod === 1;
+  stopAllLsrGates();
   let h = progress((S.mod)/ (M.length+1)) + '<div class="card"><div class="step-title">'+esc(t.modLabel)+' '+(S.mod+1)+' '+esc(t.of)+' '+M.length+'</div><h2>'+esc(m.t)+'</h2>'+
     '<ul class="bullets">'+m.i.map(x=>'<li>'+fmtItem(x)+'</li>').join('')+'</ul>';
   if(isOdo){
@@ -549,17 +700,23 @@ function vMods(){
       '<div class="field" style="margin-top:14px"><label>'+esc(t.odoRead)+'</label><input id="odoVal" inputmode="numeric" value="'+esc(S.odoVal)+'"><div class="hint">'+esc(t.odoHint)+'</div></div>'+
       (S.odoDone?'<div class="note info">'+esc(t.odoDone)+'</div>':'');
   }
+  if(isLSR){
+    h += LSR_VIDEO_ORDER.map(k=>lsrVideoGateHtml(k)).join('');
+  }
   h += '<div class="btn-row"><button class="btn btn-secondary" id="bk">'+esc(t.back)+'</button><button class="btn btn-primary" id="nx">'+esc(last?t.qIntro:t.next)+'</button></div></div>';
   $('app').innerHTML = h;
-  $('bk').onclick = () => { if(S.mod===0){ S.step='details'; } else S.mod--; render(); };
-  const upd = () => { $('nx').disabled = isOdo && !S.odoDone; };
+  $('bk').onclick = () => { stopAllLsrGates(); if(S.mod===0){ S.step='details'; } else S.mod--; render(); };
+  const upd = () => { $('nx').disabled = (isOdo && !S.odoDone) || (isLSR && !lsrAllDone()); };
   if(isOdo){
     const open = () => takePhoto(img => { S.odoImg = img; S.odoDone = !!(S.odoVal.replace(/\D/g,'').length>=1); vMods(); });
     $('odoBox').onclick = open; const r=$('odoRe'); if(r) r.onclick = e => { e.preventDefault(); open(); };
     $('odoVal').oninput = e => { S.odoVal = e.target.value; const was=S.odoDone; S.odoDone = !!(S.odoImg && S.odoVal.replace(/\D/g,'').length>=1); upd(); if(was!==S.odoDone) { const pos=e.target.selectionStart; vMods(); const el=$('odoVal'); el.focus(); try{el.setSelectionRange(pos,pos);}catch(x){} } };
   }
+  if(isLSR){
+    LSR_VIDEO_ORDER.forEach(initLsrGate);
+  }
   upd();
-  $('nx').onclick = () => { if(last){ S.step='quizIntro'; } else S.mod++; render(); };
+  $('nx').onclick = () => { stopAllLsrGates(); if(last){ S.step='quizIntro'; } else S.mod++; render(); };
 }
 
 /* live camera only (falls back to the phone camera input if getUserMedia is unavailable) */
