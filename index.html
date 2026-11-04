@@ -653,6 +653,19 @@ en:{
   adminVerifyBtn:"Verify & continue",
   adminVerifying:"Verifying…",
   adminBackBtn:"Back",
+  adminPinLoginLink:"Have a PIN? Log in with it instead",
+  adminPinLoginTitle:"Log in with your PIN",
+  adminPinLoginNotice:"Enter your admin email and PIN. This also remembers this device for 30 days.",
+  adminPinInputLabel:"PIN",
+  adminPinLoginBtn:"Log in",
+  adminBackToEmailLink:"Use the emailed code instead",
+  adminSetPinTitle:"Stay signed in on this device",
+  adminSetPinNotice:"Set a PIN to stay signed in on this device for 30 days, with no login code needed next time. Your PIN also works as a quick login on a new device.",
+  adminSetPinBtn:"Set PIN & stay signed in",
+  adminSkipPinLink:"Skip for now",
+  adminPinInvalidError:"PIN must be 4 to 6 digits.",
+  adminForgetDeviceLink:"Forget this device",
+  adminForgetDeviceDone:"This device is no longer remembered.",
   adminAddDriverBtn:"+ Add driver",
   adminFieldPhoto:"Photo",
   adminUploadPhoto:"Upload photo",
@@ -783,6 +796,19 @@ id:{
   adminVerifyBtn:"Verifikasi & lanjutkan",
   adminVerifying:"Memverifikasi…",
   adminBackBtn:"Kembali",
+  adminPinLoginLink:"Punya PIN? Masuk dengan PIN",
+  adminPinLoginTitle:"Masuk dengan PIN Anda",
+  adminPinLoginNotice:"Masukkan email admin dan PIN Anda. Ini juga akan mengingat perangkat ini selama 30 hari.",
+  adminPinInputLabel:"PIN",
+  adminPinLoginBtn:"Masuk",
+  adminBackToEmailLink:"Gunakan kode email sebagai gantinya",
+  adminSetPinTitle:"Tetap masuk di perangkat ini",
+  adminSetPinNotice:"Atur PIN untuk tetap masuk di perangkat ini selama 30 hari, tanpa perlu kode login lagi. PIN Anda juga berfungsi sebagai login cepat di perangkat baru.",
+  adminSetPinBtn:"Atur PIN & tetap masuk",
+  adminSkipPinLink:"Lewati untuk saat ini",
+  adminPinInvalidError:"PIN harus 4 sampai 6 digit.",
+  adminForgetDeviceLink:"Lupakan perangkat ini",
+  adminForgetDeviceDone:"Perangkat ini tidak lagi diingat.",
   adminAddDriverBtn:"+ Tambah pengemudi",
   adminFieldPhoto:"Foto",
   adminUploadPhoto:"Unggah foto",
@@ -913,6 +939,19 @@ ms:{
   adminVerifyBtn:"Sahkan & teruskan",
   adminVerifying:"Mengesahkan…",
   adminBackBtn:"Kembali",
+  adminPinLoginLink:"Ada PIN? Log masuk dengannya",
+  adminPinLoginTitle:"Log masuk dengan PIN anda",
+  adminPinLoginNotice:"Masukkan e-mel admin dan PIN anda. Ini juga akan mengingati peranti ini selama 30 hari.",
+  adminPinInputLabel:"PIN",
+  adminPinLoginBtn:"Log masuk",
+  adminBackToEmailLink:"Guna kod e-mel sebagai gantinya",
+  adminSetPinTitle:"Kekal log masuk pada peranti ini",
+  adminSetPinNotice:"Tetapkan PIN untuk kekal log masuk pada peranti ini selama 30 hari, tanpa perlu kod log masuk lagi. PIN anda juga berfungsi sebagai log masuk pantas pada peranti baharu.",
+  adminSetPinBtn:"Tetapkan PIN & kekal log masuk",
+  adminSkipPinLink:"Langkau buat masa ini",
+  adminPinInvalidError:"PIN mesti 4 hingga 6 digit.",
+  adminForgetDeviceLink:"Lupakan peranti ini",
+  adminForgetDeviceDone:"Peranti ini tidak lagi diingati.",
   adminAddDriverBtn:"+ Tambah pemandu",
   adminFieldPhoto:"Foto",
   adminUploadPhoto:"Muat naik foto",
@@ -1636,12 +1675,43 @@ function openAdmin(){
   if(savedToken && savedExp > Date.now()){
     admin.token = savedToken;
     renderAdminDriverList();
+    return;
+  }
+  const rememberEmail = localStorage.getItem('driverlog_admin_remember_email');
+  const rememberToken = localStorage.getItem('driverlog_admin_remember_token');
+  if(rememberEmail && rememberToken){
+    adminBody.innerHTML = `<div class="admin-notice">${t('adminLoadingDrivers')}</div>`;
+    adminFetch({ action:'adminRememberLogin', email: rememberEmail, rememberToken: rememberToken }).then(res=>{
+      if(res.status === 'ok' && res.token){
+        admin.token = res.token;
+        admin.email = rememberEmail;
+        admin.isFullAdmin = !!res.isFullAdmin;
+        sessionStorage.setItem('driverlog_admin_token', res.token);
+        sessionStorage.setItem('driverlog_admin_token_exp', String(Date.now() + 2*60*60*1000));
+        renderAdminDriverList();
+      } else {
+        clearRememberedDevice();
+        renderAdminLogin();
+      }
+    }).catch(()=>{ renderAdminLogin(); });
   } else {
     renderAdminLogin();
   }
 }
 function closeAdmin(){
   adminModal.classList.remove('show');
+}
+function saveRememberedDevice(email, rememberToken){
+  try{
+    localStorage.setItem('driverlog_admin_remember_email', email);
+    localStorage.setItem('driverlog_admin_remember_token', rememberToken);
+  }catch(e){}
+}
+function clearRememberedDevice(){
+  try{
+    localStorage.removeItem('driverlog_admin_remember_email');
+    localStorage.removeItem('driverlog_admin_remember_token');
+  }catch(e){}
 }
 
 function renderAdminLogin(){
@@ -1653,7 +1723,9 @@ function renderAdminLogin(){
     </div>
     <button type="button" class="btn btn-primary" id="adminRequestCodeBtn" style="width:100%;">${t('adminRequestCodeBtn')}</button>
     <div class="admin-status" id="adminLoginStatus"></div>
+    <div style="text-align:center; margin-top:14px;"><a href="#" id="adminPinLoginLink" style="font-size:13.5px;">${t('adminPinLoginLink')}</a></div>
   `;
+  document.getElementById('adminPinLoginLink').addEventListener('click', e=>{ e.preventDefault(); renderAdminPinLogin(); });
   document.getElementById('adminRequestCodeBtn').addEventListener('click', async ()=>{
     const btn = document.getElementById('adminRequestCodeBtn');
     const statusEl = document.getElementById('adminLoginStatus');
@@ -1700,7 +1772,7 @@ function renderAdminCodeEntry(){
         admin.isFullAdmin = !!res.isFullAdmin;
         sessionStorage.setItem('driverlog_admin_token', res.token);
         sessionStorage.setItem('driverlog_admin_token_exp', String(Date.now() + 2*60*60*1000));
-        renderAdminDriverList();
+        renderAdminSetPinOffer();
       } else {
         statusEl.className = 'admin-status error';
         statusEl.textContent = t('adminInvalidCode');
@@ -1710,6 +1782,91 @@ function renderAdminCodeEntry(){
       statusEl.className = 'admin-status error';
       statusEl.textContent = t('adminGenericError');
       btn.disabled = false; btn.textContent = t('adminVerifyBtn');
+    }
+  });
+}
+
+function renderAdminPinLogin(){
+  adminBody.innerHTML = `
+    <div style="font-weight:600; margin-bottom:8px;">${t('adminPinLoginTitle')}</div>
+    <div class="admin-notice">${t('adminPinLoginNotice')}</div>
+    <div class="field">
+      <label>${t('adminEmailInputLabel')}</label>
+      <input type="email" id="adminEmailInput" autocomplete="email" value="${escapeHtml(admin.email||'')}">
+    </div>
+    <div class="field">
+      <label>${t('adminPinInputLabel')}</label>
+      <input type="text" id="adminPinInput" inputmode="numeric" maxlength="6" style="letter-spacing:.3em; text-align:center; font-size:20px;">
+    </div>
+    <button type="button" class="btn btn-primary" id="adminPinLoginBtn" style="width:100%;">${t('adminPinLoginBtn')}</button>
+    <div class="admin-status" id="adminLoginStatus"></div>
+    <div style="text-align:center; margin-top:14px;"><a href="#" id="adminBackToEmailLink" style="font-size:13.5px;">${t('adminBackToEmailLink')}</a></div>
+  `;
+  document.getElementById('adminBackToEmailLink').addEventListener('click', e=>{ e.preventDefault(); renderAdminLogin(); });
+  document.getElementById('adminPinLoginBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('adminPinLoginBtn');
+    const statusEl = document.getElementById('adminLoginStatus');
+    const email = document.getElementById('adminEmailInput').value.trim();
+    const pin = document.getElementById('adminPinInput').value.trim();
+    if(!email || !pin){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
+    admin.email = email;
+    btn.disabled = true; btn.textContent = t('adminVerifying');
+    try{
+      const res = await adminFetch({ action:'adminPinLogin', email: email, pin: pin });
+      if(res.status === 'ok' && res.token){
+        admin.token = res.token;
+        admin.isFullAdmin = !!res.isFullAdmin;
+        sessionStorage.setItem('driverlog_admin_token', res.token);
+        sessionStorage.setItem('driverlog_admin_token_exp', String(Date.now() + 2*60*60*1000));
+        if(res.rememberToken) saveRememberedDevice(email, res.rememberToken);
+        renderAdminDriverList();
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false; btn.textContent = t('adminPinLoginBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminPinLoginBtn');
+    }
+  });
+}
+
+function renderAdminSetPinOffer(){
+  adminBody.innerHTML = `
+    <div style="font-weight:600; margin-bottom:8px;">${t('adminSetPinTitle')}</div>
+    <div class="admin-notice">${t('adminSetPinNotice')}</div>
+    <div class="field">
+      <label>${t('adminPinInputLabel')}</label>
+      <input type="text" id="adminNewPinInput" inputmode="numeric" maxlength="6" style="letter-spacing:.3em; text-align:center; font-size:20px;">
+    </div>
+    <button type="button" class="btn btn-primary" id="adminSetPinBtn" style="width:100%;">${t('adminSetPinBtn')}</button>
+    <div class="admin-status" id="adminLoginStatus"></div>
+    <div style="text-align:center; margin-top:14px;"><a href="#" id="adminSkipPinLink" style="font-size:13.5px;">${t('adminSkipPinLink')}</a></div>
+  `;
+  document.getElementById('adminSkipPinLink').addEventListener('click', e=>{ e.preventDefault(); renderAdminDriverList(); });
+  document.getElementById('adminSetPinBtn').addEventListener('click', async ()=>{
+    const btn = document.getElementById('adminSetPinBtn');
+    const statusEl = document.getElementById('adminLoginStatus');
+    const pin = document.getElementById('adminNewPinInput').value.trim();
+    if(!/^[0-9]{4,6}$/.test(pin)){ statusEl.className='admin-status error'; statusEl.textContent = t('adminPinInvalidError'); return; }
+    btn.disabled = true; btn.textContent = t('adminVerifying');
+    try{
+      const res = await adminFetch({ action:'setAdminPin', token: admin.token, pin: pin });
+      if(res.status === 'ok' && res.rememberToken){
+        admin.isFullAdmin = !!res.isFullAdmin;
+        saveRememberedDevice(admin.email, res.rememberToken);
+        renderAdminDriverList();
+      } else {
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = res.message || t('adminGenericError');
+        btn.disabled = false; btn.textContent = t('adminSetPinBtn');
+      }
+    }catch(err){
+      statusEl.className = 'admin-status error';
+      statusEl.textContent = t('adminGenericError');
+      btn.disabled = false; btn.textContent = t('adminSetPinBtn');
     }
   });
 }
@@ -1733,14 +1890,23 @@ async function renderAdminDriverList(){
           <div><div class="dname">${escapeHtml(p.name)}</div><div class="dcompany">${[p.company, p.vehicle].filter(Boolean).map(escapeHtml).join(' · ')}</div></div>
           <div class="dedit">${t('adminEditDriver')}</div>
         </div>`).join('');
+    const isRemembered = localStorage.getItem('driverlog_admin_remember_token') && localStorage.getItem('driverlog_admin_remember_email') === admin.email;
     adminBody.innerHTML = `
       <button type="button" class="btn btn-primary" id="adminAddDriverBtn" style="width:100%; margin-bottom:10px;">${t('adminAddDriverBtn')}</button>
       ${admin.isFullAdmin ? `<button type="button" class="btn btn-secondary" id="adminDashboardBtn" style="width:100%; margin-bottom:16px;">${t('adminDashboardBtn')}</button>` : ''}
       <div>${listHtml}</div>
+      ${isRemembered ? `<div style="text-align:center; margin-top:16px;"><a href="#" id="adminForgetDeviceLink" style="font-size:12.5px; color:var(--grey-mid,#888);">${t('adminForgetDeviceLink')}</a></div>` : ''}
     `;
     document.getElementById('adminAddDriverBtn').addEventListener('click', ()=> renderAdminProfileForm(null));
     if(admin.isFullAdmin){
       document.getElementById('adminDashboardBtn').addEventListener('click', ()=> renderAdminDashboard());
+    }
+    if(isRemembered){
+      document.getElementById('adminForgetDeviceLink').addEventListener('click', e=>{
+        e.preventDefault();
+        clearRememberedDevice();
+        alert(t('adminForgetDeviceDone'));
+      });
     }
     adminBody.querySelectorAll('.driver-list-item').forEach(item=>{
       item.addEventListener('click', ()=> renderAdminProfileForm(admin.profiles[Number(item.getAttribute('data-idx'))]));

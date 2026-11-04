@@ -1,4 +1,4 @@
-// VERSION: 2.1.0
+// VERSION: 2.2.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -27,6 +27,17 @@ const LIMITED_ADMIN_EMAILS = ['vsinaga67@gmail.com']; // Tino — confirm/replac
 const ALL_ADMIN_EMAILS = FULL_ADMIN_EMAILS.concat(LIMITED_ADMIN_EMAILS);
 const LOGIN_CODE_TTL_SECONDS = 600;      // 10 minutes
 const SESSION_TOKEN_TTL_SECONDS = 7200;  // 2 hours
+
+// Admin "stay signed in" — a long-lived remember token kept on the admin's
+// own device (CacheService caps out at 6 hours, so this is stored in its own
+// sheet instead). Right after a normal email-code login, an admin can set
+// their own PIN; this both saves the PIN (a fallback for logging in on a
+// new/different device without waiting for an emailed code) and remembers
+// the current device for ADMIN_REMEMBER_DAYS, after which it silently
+// re-logs in with no prompt. Only the PIN's hash and the remember token's
+// hash are ever stored — never the PIN or token themselves.
+const ADMIN_AUTH_SHEET_NAME = 'Admin Auth';
+const ADMIN_REMEMBER_DAYS = 30;
 
 // Project site reference point, used only to flag odometer photos taken
 // implausibly far away (possible GPS spoofing or a genuinely wrong reading).
@@ -77,6 +88,23 @@ function profilesSheet_() {
     'Full Name', 'Phone', 'Email', 'Assigned Vehicle', 'Licence No', 'Licence Expiry', 'Company',
     'Emergency Contact Name', 'Emergency Contact Phone', 'Photo URL', 'Last Updated', 'PIN Hash'
   ]);
+}
+
+function adminAuthSheet_() {
+  return getOrCreateSheet_(ADMIN_AUTH_SHEET_NAME, [
+    'Email', 'PIN Hash', 'Remember Token Hash', 'Remember Expires', 'Last Updated'
+  ]);
+}
+
+function findAdminAuthRow_(email) {
+  const sheet = adminAuthSheet_();
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toLowerCase() === String(email).trim().toLowerCase()) {
+      return { sheet: sheet, rowIndex: i + 1, row: data[i] };
+    }
+  }
+  return { sheet: sheet, rowIndex: -1, row: null };
 }
 
 function isFullAdminEmail_(email) {
@@ -138,6 +166,9 @@ function doPost(e) {
 
     if (action === 'requestCode') return handleRequestCode_(payload);
     if (action === 'verifyCode') return handleVerifyCode_(payload);
+    if (action === 'setAdminPin') return handleSetAdminPin_(payload);
+    if (action === 'adminRememberLogin') return handleAdminRememberLogin_(payload);
+    if (action === 'adminPinLogin') return handleAdminPinLogin_(payload);
     if (action === 'listDriverProfiles') return handleListProfiles_(payload);
     if (action === 'saveDriverProfile') return handleSaveProfile_(payload);
     if (action === 'getOwnProfile') return handleGetOwnProfile_(payload);
@@ -324,6 +355,91 @@ function requireAdmin_(token) {
   const email = CacheService.getScriptCache().get('token_' + String(token || ''));
   if (!email) throw new Error('Session expired. Please log in again.');
   return email;
+}
+
+// Sets the admin's own PIN right after a normal email-code login, and
+// remembers the current device for ADMIN_REMEMBER_DAYS (silent re-login,
+// no email code or PIN prompt needed until it expires).
+function handleSetAdminPin_(payload) {
+  let email;
+  try {
+    email = requireAdmin_(payload.token);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err.message || err) });
+  }
+  const pin = String(payload.pin || '').trim();
+  if (!/^[0-9]{4,6}$/.test(pin)) {
+    return jsonOut_({ status: 'error', message: 'PIN must be 4 to 6 digits.' });
+  }
+  const rememberToken = Utilities.getUuid() + Utilities.getUuid();
+  const rememberExpires = new Date(Date.now() + ADMIN_REMEMBER_DAYS * 24 * 60 * 60 * 1000);
+  const rowValues = [
+    email,
+    hashPin_(pin),
+    hashPin_(rememberToken),
+    Utilities.formatDate(rememberExpires, TIMEZONE, 'yyyy-MM-dd HH:mm:ss'),
+    Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM-dd HH:mm:ss')
+  ];
+  const found = findAdminAuthRow_(email);
+  if (found.rowIndex > 0) {
+    found.sheet.getRange(found.rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    found.sheet.appendRow(rowValues);
+  }
+  return jsonOut_({ status: 'ok', rememberToken: rememberToken, isFullAdmin: isFullAdminEmail_(email) });
+}
+
+// Silent re-login for a remembered device: the browser sends back the long-
+// lived remember token it stored (never the PIN), and gets a fresh normal
+// session token with no email code and no prompt shown to the admin.
+function handleAdminRememberLogin_(payload) {
+  const email = String(payload.email || '').trim().toLowerCase();
+  const rememberToken = String(payload.rememberToken || '').trim();
+  if (!isAllowedAdminEmail_(email) || !rememberToken) {
+    return jsonOut_({ status: 'error', message: 'Not authorized.' });
+  }
+  const found = findAdminAuthRow_(email);
+  if (found.rowIndex < 0) return jsonOut_({ status: 'error', message: 'Not remembered.' });
+  const rememberTokenHash = found.row[2];
+  const rememberExpiresStr = found.row[3];
+  const expires = rememberExpiresStr ? new Date(rememberExpiresStr) : null;
+  if (!expires || isNaN(expires.getTime()) || expires.getTime() < Date.now()) {
+    return jsonOut_({ status: 'error', message: 'Remembered device expired.' });
+  }
+  if (!rememberTokenHash || hashPin_(rememberToken) !== rememberTokenHash) {
+    return jsonOut_({ status: 'error', message: 'Not authorized.' });
+  }
+  // Roll the remember window forward another ADMIN_REMEMBER_DAYS on each use.
+  const newExpires = new Date(Date.now() + ADMIN_REMEMBER_DAYS * 24 * 60 * 60 * 1000);
+  found.sheet.getRange(found.rowIndex, 4).setValue(Utilities.formatDate(newExpires, TIMEZONE, 'yyyy-MM-dd HH:mm:ss'));
+  const token = Utilities.getUuid();
+  CacheService.getScriptCache().put('token_' + token, email, SESSION_TOKEN_TTL_SECONDS);
+  return jsonOut_({ status: 'ok', token: token, isFullAdmin: isFullAdminEmail_(email) });
+}
+
+// Fallback login on a new/different device: email + the PIN set above,
+// instead of waiting for an emailed code. Also remembers this new device.
+function handleAdminPinLogin_(payload) {
+  const email = String(payload.email || '').trim().toLowerCase();
+  const pin = String(payload.pin || '').trim();
+  if (!isAllowedAdminEmail_(email)) {
+    return jsonOut_({ status: 'error', message: 'Not authorized.' });
+  }
+  const found = findAdminAuthRow_(email);
+  if (found.rowIndex < 0) return jsonOut_({ status: 'error', message: 'No PIN set for this email yet.' });
+  const pinHash = found.row[1];
+  if (!pinHash || hashPin_(pin) !== pinHash) {
+    return jsonOut_({ status: 'error', message: 'Wrong PIN.' });
+  }
+  const rememberToken = Utilities.getUuid() + Utilities.getUuid();
+  const rememberExpires = new Date(Date.now() + ADMIN_REMEMBER_DAYS * 24 * 60 * 60 * 1000);
+  found.sheet.getRange(found.rowIndex, 3, 1, 2).setValues([[
+    hashPin_(rememberToken),
+    Utilities.formatDate(rememberExpires, TIMEZONE, 'yyyy-MM-dd HH:mm:ss')
+  ]]);
+  const token = Utilities.getUuid();
+  CacheService.getScriptCache().put('token_' + token, email, SESSION_TOKEN_TTL_SECONDS);
+  return jsonOut_({ status: 'ok', token: token, rememberToken: rememberToken, isFullAdmin: isFullAdminEmail_(email) });
 }
 
 function handleListProfiles_(payload) {
