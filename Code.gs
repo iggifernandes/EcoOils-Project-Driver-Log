@@ -1,4 +1,4 @@
-// VERSION: 1.9.0
+// VERSION: 2.0.0
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -76,6 +76,14 @@ function profilesSheet_() {
   ]);
 }
 
+function isFullAdminEmail_(email) {
+  return FULL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(String(email || '').toLowerCase()) !== -1;
+}
+
+function isAllowedAdminEmail_(email) {
+  return ALL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(String(email || '').toLowerCase()) !== -1;
+}
+
 function hashPin_(pin) {
   const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(pin));
   return bytes.map(b => ((b < 0 ? b + 256 : b).toString(16)).padStart(2, '0')).join('');
@@ -132,6 +140,8 @@ function doPost(e) {
     if (action === 'verifyDriverPin') return handleVerifyDriverPin_(payload);
     if (action === 'requestDriverPinReset') return handleRequestDriverPinReset_(payload);
     if (action === 'verifyDriverPinReset') return handleVerifyDriverPinReset_(payload);
+    if (action === 'deleteDriverProfile') return handleDeleteDriverProfile_(payload);
+    if (action === 'getDashboardData') return handleGetDashboardData_(payload);
 
     return handleSubmission_(payload);
   } catch (err) {
@@ -270,7 +280,7 @@ function savePhoto_(dataUrl, driverName, dateStr) {
 
 function handleRequestCode_(payload) {
   const email = String(payload.email || '').trim().toLowerCase();
-  if (ALL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(email) === -1) {
+  if (!isAllowedAdminEmail_(email)) {
     // Don't confirm/deny which emails are valid.
     return jsonOut_({ status: 'error', message: 'Not authorized.' });
   }
@@ -288,7 +298,7 @@ function handleRequestCode_(payload) {
 function handleVerifyCode_(payload) {
   const email = String(payload.email || '').trim().toLowerCase();
   const code = String(payload.code || '').trim();
-  if (ALL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(email) === -1) {
+  if (!isAllowedAdminEmail_(email)) {
     return jsonOut_({ status: 'error', message: 'Not authorized.' });
   }
   const cache = CacheService.getScriptCache();
@@ -299,7 +309,7 @@ function handleVerifyCode_(payload) {
   const token = Utilities.getUuid();
   cache.put('token_' + token, email, SESSION_TOKEN_TTL_SECONDS);
   cache.remove('code_' + email);
-  return jsonOut_({ status: 'ok', token: token });
+  return jsonOut_({ status: 'ok', token: token, isFullAdmin: isFullAdminEmail_(email) });
 }
 
 function requireAdmin_(token) {
@@ -309,8 +319,9 @@ function requireAdmin_(token) {
 }
 
 function handleListProfiles_(payload) {
+  let adminEmail;
   try {
-    requireAdmin_(payload.token);
+    adminEmail = requireAdmin_(payload.token);
   } catch (err) {
     return jsonOut_({ status: 'error', message: String(err.message || err) });
   }
@@ -335,7 +346,7 @@ function handleListProfiles_(payload) {
     });
   }
   rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  return jsonOut_({ status: 'ok', profiles: rows });
+  return jsonOut_({ status: 'ok', profiles: rows, isFullAdmin: isFullAdminEmail_(adminEmail) });
 }
 
 function handleSaveProfile_(payload) {
@@ -345,7 +356,7 @@ function handleSaveProfile_(payload) {
   } catch (err) {
     return jsonOut_({ status: 'error', message: String(err.message || err) });
   }
-  const isFullAdmin = FULL_ADMIN_EMAILS.map(e => e.toLowerCase()).indexOf(String(adminEmail).toLowerCase()) !== -1;
+  const isFullAdmin = isFullAdminEmail_(adminEmail);
 
   const name = String(payload.name || '').trim();
   if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
@@ -519,6 +530,142 @@ function handleUpdateOwnProfile_(payload) {
   sheet.getRange(found.rowIndex, 11).setValue(new Date());                                  // Last Updated
 
   return jsonOut_({ status: 'ok', photoUrl: photoUrl });
+}
+
+/* ============== DELETE DRIVER (full admin only) ==============
+   Removes the profile row and the matching Drivers-picker row, so the
+   driver stops appearing in the app. Past Submissions rows are never
+   touched — the safety log stays intact for anyone who was logged while
+   the driver was active. */
+
+function handleDeleteDriverProfile_(payload) {
+  let adminEmail;
+  try {
+    adminEmail = requireAdmin_(payload.token);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err.message || err) });
+  }
+  if (!isFullAdminEmail_(adminEmail)) {
+    return jsonOut_({ status: 'error', message: 'Only the main admin can delete a driver.' });
+  }
+  const name = String(payload.name || '').trim();
+  if (!name) return jsonOut_({ status: 'error', message: 'Name is required.' });
+
+  const found = findProfileRow_(name);
+  if (!found) return jsonOut_({ status: 'not_found' });
+  found.sheet.deleteRow(found.rowIndex);
+
+  const driversSheetObj = driversSheet_();
+  const driversData = driversSheetObj.getDataRange().getValues();
+  for (let i = 1; i < driversData.length; i++) {
+    if (String(driversData[i][0]).trim().toLowerCase() === name.toLowerCase()) {
+      driversSheetObj.deleteRow(i + 1);
+      break;
+    }
+  }
+
+  return jsonOut_({ status: 'ok' });
+}
+
+/* ============== ADMIN DASHBOARD (full admin only) ==============
+   Monthly km driven and work hours per driver, computed automatically by
+   pairing each day's Start-of-Shift and End-of-Day odometer/timestamp —
+   never from the manually-typed "Time" field, since the server's own
+   auto-timestamp (recorded the instant each entry was submitted) can't be
+   edited by the driver. Also a count of safety/fraud flags for the month,
+   and a list of every odometer photo link for the month. */
+
+function handleGetDashboardData_(payload) {
+  let adminEmail;
+  try {
+    adminEmail = requireAdmin_(payload.token);
+  } catch (err) {
+    return jsonOut_({ status: 'error', message: String(err.message || err) });
+  }
+  if (!isFullAdminEmail_(adminEmail)) {
+    return jsonOut_({ status: 'error', message: 'The dashboard is limited to the main admin.' });
+  }
+
+  const month = String(payload.month || Utilities.formatDate(new Date(), TIMEZONE, 'yyyy-MM'));
+  const sheet = submissionsSheet_();
+  const data = sheet.getDataRange().getValues();
+
+  const driverDateMap = {};   // { name: { 'yyyy-MM-dd': { start:{odo,ts}, end:{odo,ts} } } }
+  const photoEntries = [];
+  const flagCounts = { farFromSite: 0, clockMismatch: 0, incidents: 0, failedItems: 0 };
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const dateStr = String(row[4] || '');
+    if (dateStr.indexOf(month) !== 0) continue; // only rows in the requested month
+
+    const name = String(row[2] || '').trim();
+    if (!name) continue;
+    const activity = String(row[1] || '');
+    const odo = row[6];
+    const photoUrl = row[7];
+    const autoTs = row[0];
+    const clockOffset = row[26];
+    const locFlag = row[29];
+    const incident = row[21];
+    const failedItems = row[19];
+
+    if (locFlag) flagCounts.farFromSite++;
+    if (clockOffset !== '' && !isNaN(Number(clockOffset)) && Math.abs(Number(clockOffset)) > 15) flagCounts.clockMismatch++;
+    if (incident) flagCounts.incidents++;
+    if (failedItems) flagCounts.failedItems++;
+
+    if (photoUrl) {
+      photoEntries.push({
+        name: name, date: dateStr, activity: activity,
+        photoUrl: photoUrl, mapLink: row[25] || '', timestamp: autoTs
+      });
+    }
+
+    if (activity === 'start' || activity === 'end') {
+      if (!driverDateMap[name]) driverDateMap[name] = {};
+      if (!driverDateMap[name][dateStr]) driverDateMap[name][dateStr] = {};
+      driverDateMap[name][dateStr][activity] = { odo: odo, ts: autoTs };
+    }
+  }
+
+  const driverSummaries = [];
+  Object.keys(driverDateMap).forEach(function (name) {
+    let totalKm = 0, totalHours = 0, daysCounted = 0;
+    const dates = driverDateMap[name];
+    Object.keys(dates).forEach(function (dateStr) {
+      const pair = dates[dateStr];
+      if (pair.start && pair.end) {
+        const startOdo = Number(pair.start.odo);
+        const endOdo = Number(pair.end.odo);
+        if (!isNaN(startOdo) && !isNaN(endOdo) && endOdo >= startOdo) {
+          totalKm += (endOdo - startOdo);
+        }
+        const startTs = new Date(pair.start.ts);
+        const endTs = new Date(pair.end.ts);
+        if (!isNaN(startTs.getTime()) && !isNaN(endTs.getTime()) && endTs.getTime() > startTs.getTime()) {
+          totalHours += (endTs.getTime() - startTs.getTime()) / (1000 * 60 * 60);
+        }
+        daysCounted++;
+      }
+    });
+    driverSummaries.push({
+      name: name,
+      totalKm: Math.round(totalKm * 10) / 10,
+      totalHours: Math.round(totalHours * 10) / 10,
+      daysWithCompleteLog: daysCounted
+    });
+  });
+  driverSummaries.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  photoEntries.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+
+  return jsonOut_({
+    status: 'ok',
+    month: month,
+    drivers: driverSummaries,
+    flagCounts: flagCounts,
+    photoEntries: photoEntries
+  });
 }
 
 function saveProfilePhoto_(dataUrl, name) {

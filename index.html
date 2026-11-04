@@ -403,7 +403,7 @@
       <div class="brand-mark"><span class="dot"></span><span class="brand-title" data-i18n="appTitle">Driver's Log &amp; Pre-Use Checklist</span></div>
     </div>
     <div class="topbar-right">
-      <span class="version">v1.6.0</span>
+      <span class="version">v2.0.0</span>
       <div class="langtoggle">
         <button type="button" data-lang="en" class="active">EN</button>
         <button type="button" data-lang="id">ID</button>
@@ -631,7 +631,7 @@ en:{
   // Driver Profiles admin
   adminLinkText:"Driver Profiles (Admin)",
   adminTitle:"Driver Profiles",
-  adminEmailNotice:"A one-time login code will be emailed to",
+  adminEmailNotice:"Enter your admin email — a one-time login code will be sent to it.",
   adminRequestCodeBtn:"Email me a login code",
   adminRequestingCode:"Sending…",
   adminCodeSentNotice:"Code sent. Check your email — it expires in 10 minutes.",
@@ -655,6 +655,25 @@ en:{
   adminFieldPinSet:"PIN is set",
   adminFieldPinNotSet:"No PIN set yet",
   adminFieldPinHint:"4-6 digits. Leave blank to keep the current PIN unchanged.",
+  adminEmailInputLabel:"Your admin email",
+  adminDashboardBtn:"Dashboard",
+  adminDeleteDriverBtn:"Delete this driver",
+  adminDeleteConfirm:"Delete {name}? Their profile will be removed and they'll stop appearing in the driver list. Past log entries are kept.",
+  dashMonthLabel:"Month",
+  dashDriversTitle:"Km & hours by driver",
+  dashNameCol:"Driver",
+  dashKmCol:"Km",
+  dashHoursCol:"Hours",
+  dashDaysCol:"Days logged",
+  dashNoData:"No complete start/end entries for this month yet.",
+  dashFlagsTitle:"Flags this month",
+  dashFlagFar:"Far from site",
+  dashFlagClock:"Clock mismatch",
+  dashFlagIncident:"Incidents reported",
+  dashFlagFailed:"Failed safety items",
+  dashPhotosTitle:"Odometer photos",
+  dashNoPhotos:"No photos this month.",
+  dashViewPhoto:"View photo",
   adminSaveBtn:"Save profile",
   adminSaving:"Saving…",
   adminSavedNotice:"Profile saved.",
@@ -733,7 +752,7 @@ id:{
   declareEnd:"Dengan mengirim, <b>{name}</b> menegaskan laporan akhir hari ini akurat.",
   adminLinkText:"Profil Pengemudi (Admin)",
   adminTitle:"Profil Pengemudi",
-  adminEmailNotice:"Kode login sekali pakai akan dikirim ke",
+  adminEmailNotice:"Masukkan email admin Anda — kode login sekali pakai akan dikirim ke email tersebut.",
   adminRequestCodeBtn:"Kirim kode login ke email saya",
   adminRequestingCode:"Mengirim…",
   adminCodeSentNotice:"Kode terkirim. Periksa email Anda — berlaku 10 menit.",
@@ -757,6 +776,25 @@ id:{
   adminFieldPinSet:"PIN sudah diatur",
   adminFieldPinNotSet:"Belum ada PIN",
   adminFieldPinHint:"4-6 digit. Kosongkan untuk tetap menggunakan PIN saat ini.",
+  adminEmailInputLabel:"Email admin Anda",
+  adminDashboardBtn:"Dasbor",
+  adminDeleteDriverBtn:"Hapus pengemudi ini",
+  adminDeleteConfirm:"Hapus {name}? Profilnya akan dihapus dan tidak akan muncul lagi di daftar pengemudi. Riwayat log tetap tersimpan.",
+  dashMonthLabel:"Bulan",
+  dashDriversTitle:"Km & jam per pengemudi",
+  dashNameCol:"Pengemudi",
+  dashKmCol:"Km",
+  dashHoursCol:"Jam",
+  dashDaysCol:"Hari tercatat",
+  dashNoData:"Belum ada entri awal/akhir lengkap untuk bulan ini.",
+  dashFlagsTitle:"Tanda bulan ini",
+  dashFlagFar:"Jauh dari lokasi",
+  dashFlagClock:"Jam tidak sesuai",
+  dashFlagIncident:"Insiden dilaporkan",
+  dashFlagFailed:"Item keselamatan gagal",
+  dashPhotosTitle:"Foto odometer",
+  dashNoPhotos:"Tidak ada foto bulan ini.",
+  dashViewPhoto:"Lihat foto",
   adminSaveBtn:"Simpan profil",
   adminSaving:"Menyimpan…",
   adminSavedNotice:"Profil tersimpan.",
@@ -835,7 +873,7 @@ ms:{
   declareEnd:"Dengan menghantar, <b>{name}</b> mengesahkan laporan penghujung hari ini tepat.",
   adminLinkText:"Profil Pemandu (Admin)",
   adminTitle:"Profil Pemandu",
-  adminEmailNotice:"Kod log masuk sekali guna akan dihantar ke",
+  adminEmailNotice:"Masukkan e-mel admin anda — kod log masuk sekali guna akan dihantar ke e-mel itu.",
   adminRequestCodeBtn:"Hantar kod log masuk ke e-mel saya",
   adminRequestingCode:"Menghantar…",
   adminCodeSentNotice:"Kod dihantar. Semak e-mel anda — tamat tempoh dalam 10 minit.",
@@ -859,6 +897,25 @@ ms:{
   adminFieldPinSet:"PIN telah ditetapkan",
   adminFieldPinNotSet:"Belum ada PIN",
   adminFieldPinHint:"4-6 digit. Biarkan kosong untuk mengekalkan PIN semasa.",
+  adminEmailInputLabel:"E-mel admin anda",
+  adminDashboardBtn:"Papan pemuka",
+  adminDeleteDriverBtn:"Padam pemandu ini",
+  adminDeleteConfirm:"Padam {name}? Profilnya akan dialih keluar dan tidak akan muncul lagi dalam senarai pemandu. Log lama tetap disimpan.",
+  dashMonthLabel:"Bulan",
+  dashDriversTitle:"Km & jam mengikut pemandu",
+  dashNameCol:"Pemandu",
+  dashKmCol:"Km",
+  dashHoursCol:"Jam",
+  dashDaysCol:"Hari direkod",
+  dashNoData:"Belum ada entri mula/tamat lengkap untuk bulan ini.",
+  dashFlagsTitle:"Bendera bulan ini",
+  dashFlagFar:"Jauh dari tapak",
+  dashFlagClock:"Jam tidak sepadan",
+  dashFlagIncident:"Insiden dilaporkan",
+  dashFlagFailed:"Item keselamatan gagal",
+  dashPhotosTitle:"Foto odometer",
+  dashNoPhotos:"Tiada foto bulan ini.",
+  dashViewPhoto:"Lihat foto",
   adminSaveBtn:"Simpan profil",
   adminSaving:"Menyimpan…",
   adminSavedNotice:"Profil disimpan.",
@@ -1478,8 +1535,7 @@ document.getElementById('newEntryBtn').addEventListener('click', ()=>{
 });
 
 /* ============== DRIVER PROFILES ADMIN ============== */
-const ADMIN_EMAIL = 'Ignatius.Ambrosio@ecooils.com.my';
-const admin = { token: null, email: '', profiles: [], editing: null, photoDataUrl: '' };
+const admin = { token: null, email: '', isFullAdmin: false, profiles: [], editing: null, photoDataUrl: '' };
 
 const adminModal = document.getElementById('adminModal');
 const adminBody = document.getElementById('adminBody');
@@ -1504,16 +1560,23 @@ function closeAdmin(){
 
 function renderAdminLogin(){
   adminBody.innerHTML = `
-    <div class="admin-notice">${t('adminEmailNotice')} <b>${ADMIN_EMAIL}</b></div>
+    <div class="admin-notice">${t('adminEmailNotice')}</div>
+    <div class="field">
+      <label>${t('adminEmailInputLabel')}</label>
+      <input type="email" id="adminEmailInput" autocomplete="email" value="${escapeHtml(admin.email||'')}">
+    </div>
     <button type="button" class="btn btn-primary" id="adminRequestCodeBtn" style="width:100%;">${t('adminRequestCodeBtn')}</button>
     <div class="admin-status" id="adminLoginStatus"></div>
   `;
   document.getElementById('adminRequestCodeBtn').addEventListener('click', async ()=>{
     const btn = document.getElementById('adminRequestCodeBtn');
     const statusEl = document.getElementById('adminLoginStatus');
+    const email = document.getElementById('adminEmailInput').value.trim();
+    if(!email){ statusEl.className='admin-status error'; statusEl.textContent = t('errRequired'); return; }
+    admin.email = email;
     btn.disabled = true; btn.textContent = t('adminRequestingCode');
     try{
-      const res = await adminFetch({ action:'requestCode', email: ADMIN_EMAIL });
+      const res = await adminFetch({ action:'requestCode', email: admin.email });
       if(res.status === 'ok'){
         renderAdminCodeEntry();
       } else {
@@ -1545,9 +1608,10 @@ function renderAdminCodeEntry(){
     const code = document.getElementById('adminCodeInput').value.trim();
     btn.disabled = true; btn.textContent = t('adminVerifying');
     try{
-      const res = await adminFetch({ action:'verifyCode', email: ADMIN_EMAIL, code: code });
+      const res = await adminFetch({ action:'verifyCode', email: admin.email, code: code });
       if(res.status === 'ok' && res.token){
         admin.token = res.token;
+        admin.isFullAdmin = !!res.isFullAdmin;
         sessionStorage.setItem('driverlog_admin_token', res.token);
         sessionStorage.setItem('driverlog_admin_token_exp', String(Date.now() + 2*60*60*1000));
         renderAdminDriverList();
@@ -1574,6 +1638,7 @@ async function renderAdminDriverList(){
       return;
     }
     admin.profiles = res.profiles || [];
+    admin.isFullAdmin = !!res.isFullAdmin;
     let listHtml = admin.profiles.length === 0
       ? `<div class="admin-notice">${t('adminNoDrivers')}</div>`
       : admin.profiles.map((p,i)=>`
@@ -1583,10 +1648,14 @@ async function renderAdminDriverList(){
           <div class="dedit">${t('adminEditDriver')}</div>
         </div>`).join('');
     adminBody.innerHTML = `
-      <button type="button" class="btn btn-primary" id="adminAddDriverBtn" style="width:100%; margin-bottom:16px;">${t('adminAddDriverBtn')}</button>
+      <button type="button" class="btn btn-primary" id="adminAddDriverBtn" style="width:100%; margin-bottom:10px;">${t('adminAddDriverBtn')}</button>
+      ${admin.isFullAdmin ? `<button type="button" class="btn btn-secondary" id="adminDashboardBtn" style="width:100%; margin-bottom:16px;">${t('adminDashboardBtn')}</button>` : ''}
       <div>${listHtml}</div>
     `;
     document.getElementById('adminAddDriverBtn').addEventListener('click', ()=> renderAdminProfileForm(null));
+    if(admin.isFullAdmin){
+      document.getElementById('adminDashboardBtn').addEventListener('click', ()=> renderAdminDashboard());
+    }
     adminBody.querySelectorAll('.driver-list-item').forEach(item=>{
       item.addEventListener('click', ()=> renderAdminProfileForm(admin.profiles[Number(item.getAttribute('data-idx'))]));
     });
@@ -1661,10 +1730,34 @@ function renderAdminProfileForm(profile){
       <button type="button" class="btn btn-secondary" id="pfBackBtn">${t('adminBackBtn')}</button>
       <button type="button" class="btn btn-primary" id="pfSaveBtn">${t('adminSaveBtn')}</button>
     </div>
+    ${(admin.isFullAdmin && p.name) ? `<button type="button" class="btn" id="pfDeleteBtn" style="width:100%; margin-top:10px; color:var(--fail-red); border:1px solid var(--fail-red); background:#fff;">${t('adminDeleteDriverBtn')}</button>` : ''}
     <div class="admin-status" id="pfStatus"></div>
   `;
 
   document.getElementById('pfBackBtn').addEventListener('click', renderAdminDriverList);
+  if(admin.isFullAdmin && p.name){
+    document.getElementById('pfDeleteBtn').addEventListener('click', async ()=>{
+      if(!confirm(t('adminDeleteConfirm').replace('{name}', p.name))) return;
+      const btn = document.getElementById('pfDeleteBtn');
+      const statusEl = document.getElementById('pfStatus');
+      btn.disabled = true;
+      try{
+        const res = await adminFetch({ action:'deleteDriverProfile', token: admin.token, name: p.name });
+        if(res.status === 'ok'){
+          fetchDrivers();
+          renderAdminDriverList();
+        } else {
+          statusEl.className = 'admin-status error';
+          statusEl.textContent = res.message || t('adminGenericError');
+          btn.disabled = false;
+        }
+      }catch(err){
+        statusEl.className = 'admin-status error';
+        statusEl.textContent = t('adminGenericError');
+        btn.disabled = false;
+      }
+    });
+  }
   const photoBox = document.getElementById('profilePhotoBox');
   const photoInput = document.getElementById('profilePhotoInput');
   photoBox.addEventListener('click', ()=> photoInput.click());
@@ -1715,6 +1808,68 @@ function renderAdminProfileForm(profile){
       statusEl.textContent = t('adminGenericError');
       btn.disabled = false; btn.textContent = t('adminSaveBtn');
     }
+  });
+}
+
+function renderAdminDashboard(month){
+  month = month || new Date().toISOString().slice(0,7); // yyyy-MM, local-ish default
+  adminBody.innerHTML = `<div class="admin-notice">${t('adminLoadingDrivers')}</div>`;
+  adminFetch({ action:'getDashboardData', token: admin.token, month: month }).then(res=>{
+    if(res.status !== 'ok'){
+      adminBody.innerHTML = `<div class="admin-status error">${res.message || t('adminGenericError')}</div>`;
+      return;
+    }
+    const driverRows = (res.drivers||[]).length === 0
+      ? `<tr><td colspan="4" style="padding:10px; color:var(--grey-mid);">${t('dashNoData')}</td></tr>`
+      : res.drivers.map(d=>`
+        <tr>
+          <td style="padding:8px 6px;">${escapeHtml(d.name)}</td>
+          <td style="padding:8px 6px; text-align:right;">${d.totalKm}</td>
+          <td style="padding:8px 6px; text-align:right;">${d.totalHours}</td>
+          <td style="padding:8px 6px; text-align:right;">${d.daysWithCompleteLog}</td>
+        </tr>`).join('');
+    const photoRows = (res.photoEntries||[]).length === 0
+      ? `<div style="color:var(--grey-mid); font-size:13px; padding:6px 0;">${t('dashNoPhotos')}</div>`
+      : res.photoEntries.map(p=>`
+        <div style="display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid var(--grey-line); font-size:13.5px;">
+          <span>${escapeHtml(p.date)} · ${escapeHtml(p.name)} · ${escapeHtml(p.activity)}</span>
+          <a href="${p.photoUrl}" target="_blank" rel="noopener">${t('dashViewPhoto')}</a>
+        </div>`).join('');
+
+    adminBody.innerHTML = `
+      <button type="button" class="btn btn-secondary" id="dashBackBtn" style="width:100%; margin-bottom:14px;">${t('adminBackBtn')}</button>
+      <div class="field">
+        <label>${t('dashMonthLabel')}</label>
+        <input type="month" id="dashMonthInput" value="${res.month}">
+      </div>
+      <h3 style="margin:16px 0 8px; font-size:14px; color:var(--grey-title);">${t('dashDriversTitle')}</h3>
+      <table style="width:100%; border-collapse:collapse; font-size:13.5px;">
+        <thead><tr style="border-bottom:1px solid var(--grey-line); color:var(--grey-mid); text-align:left;">
+          <th style="padding:6px;">${t('dashNameCol')}</th>
+          <th style="padding:6px; text-align:right;">${t('dashKmCol')}</th>
+          <th style="padding:6px; text-align:right;">${t('dashHoursCol')}</th>
+          <th style="padding:6px; text-align:right;">${t('dashDaysCol')}</th>
+        </tr></thead>
+        <tbody>${driverRows}</tbody>
+      </table>
+
+      <h3 style="margin:20px 0 8px; font-size:14px; color:var(--grey-title);">${t('dashFlagsTitle')}</h3>
+      <div style="font-size:13.5px; line-height:1.9;">
+        <div>${t('dashFlagFar')}: <b>${res.flagCounts.farFromSite}</b></div>
+        <div>${t('dashFlagClock')}: <b>${res.flagCounts.clockMismatch}</b></div>
+        <div>${t('dashFlagIncident')}: <b>${res.flagCounts.incidents}</b></div>
+        <div>${t('dashFlagFailed')}: <b>${res.flagCounts.failedItems}</b></div>
+      </div>
+
+      <h3 style="margin:20px 0 8px; font-size:14px; color:var(--grey-title);">${t('dashPhotosTitle')}</h3>
+      <div>${photoRows}</div>
+    `;
+    document.getElementById('dashBackBtn').addEventListener('click', renderAdminDriverList);
+    document.getElementById('dashMonthInput').addEventListener('change', e=>{
+      renderAdminDashboard(e.target.value);
+    });
+  }).catch(()=>{
+    adminBody.innerHTML = `<div class="admin-status error">${t('adminGenericError')}</div>`;
   });
 }
 
