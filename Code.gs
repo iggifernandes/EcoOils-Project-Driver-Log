@@ -1,4 +1,4 @@
-// VERSION: 2.2.1
+// VERSION: 2.2.2
 // EcoOils Mentari — Driver's Log & Pre-Use Checklist backend
 // Deploy as a Web App (Execute as: Me, Who has access: Anyone) and paste the
 // /exec URL into CONFIG.APPS_SCRIPT_URL in index.html.
@@ -456,16 +456,21 @@ function handleListProfiles_(payload) {
     if (!data[i][0]) continue;
     const expiry = data[i][5];
     rows.push({
-      name: data[i][0],
-      phone: data[i][1],
-      email: data[i][2],
-      vehicle: data[i][3],
-      licenceNo: data[i][4],
+      // Sheets silently stores an all-digit value (a phone number, a 12-digit
+      // licence number) as a real Number cell, not text. Coerce every text
+      // field back to a string here so the client never receives a number
+      // where it expects one (a number has no .replace(), which otherwise
+      // breaks rendering of this profile with no visible error).
+      name: String(data[i][0] || ''),
+      phone: String(data[i][1] || ''),
+      email: String(data[i][2] || ''),
+      vehicle: String(data[i][3] || ''),
+      licenceNo: String(data[i][4] || ''),
       licenceExpiry: expiry ? Utilities.formatDate(new Date(expiry), TIMEZONE, 'yyyy-MM-dd') : '',
-      company: data[i][6],
-      emergencyName: data[i][7],
-      emergencyPhone: data[i][8],
-      photoUrl: data[i][9],
+      company: String(data[i][6] || ''),
+      emergencyName: String(data[i][7] || ''),
+      emergencyPhone: String(data[i][8] || ''),
+      photoUrl: String(data[i][9] || ''),
       hasPin: !!data[i][11]
     });
   }

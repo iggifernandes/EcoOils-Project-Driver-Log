@@ -1395,7 +1395,7 @@ function photoUploadHtml(){
     </div>`;
 }
 
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 function wireFormStep(){
   document.getElementById('backBtn').addEventListener('click', ()=>{
