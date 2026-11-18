@@ -1,0 +1,7 @@
+# clasp only pushes Code.gs (the Apps Script backend) and its manifest.
+# Everything else in this repo (index.html, induction/, icons, manifest.json,
+# sw.js) is the GitHub Pages frontend and must never be pushed into the
+# Apps Script project.
+**/**
+!Code.gs
+!appsscript.json

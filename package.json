@@ -1,0 +1,17 @@
+{
+  "name": "ecooils-project-driver-log",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Apps Script tooling for the EcoOils Driver's Log & Pre-Use Checklist backend (Code.gs). The frontend (index.html, induction/) is plain static files served by GitHub Pages and is not part of this tooling.",
+  "scripts": {
+    "login": "clasp login",
+    "clone": "clasp clone",
+    "push": "clasp push",
+    "pull": "clasp pull",
+    "deploy": "clasp push && clasp deploy",
+    "open": "clasp open"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}

@@ -1,0 +1,39 @@
+name: Deploy Code.gs to Apps Script
+
+# Runs automatically whenever Code.gs or appsscript.json changes on main, so
+# you never have to copy-paste into the Apps Script editor and click
+# "New version → Deploy" by hand again. It pushes the code, then creates a
+# new version on the SAME existing Web App deployment, so the live URL
+# drivers/admin already use never changes.
+#
+# One-time setup needed before this will work — see CLASP_SETUP.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Code.gs"
+      - "appsscript.json"
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install clasp
+        run: npm install -g @google/clasp@2
+
+      - name: Restore clasp login
+        run: echo "${{ secrets.CLASP_CREDENTIALS }}" > ~/.clasprc.json
+
+      - name: Push Code.gs to Apps Script
+        run: clasp push --force
+
+      - name: Deploy new version to the existing Web App
+        run: clasp deploy -i "${{ vars.CLASP_DEPLOYMENT_ID }}" -d "Auto-deploy $(date -u +%Y-%m-%dT%H:%M:%SZ) — ${{ github.sha }}"
