@@ -1,0 +1,72 @@
+DEFENSIVE DRIVING - ENGLISH - NARRATION SCRIPT (v1.0.0)
+One block per module. Generate one audio file per block and save it as audio/en/m<number>.mp3
+
+=== m1.mp3 ===
+Why defensive driving.
+
+Defensive driving means driving so that you stay safe, even when other people make mistakes.
+You cannot control other drivers, motorbikes or the weather. You can control your speed, your distance and your attention.
+Most crashes can be avoided. They happen when drivers are too fast, too close, tired or distracted.
+You carry people who trust you. Their safety is your first job on every trip.
+
+=== m2.mp3 ===
+Before you drive.
+
+Drive only if you are rested, sober and well. No alcohol or drugs, before or during driving.
+Walk around the vehicle first. Check the tyres, lights, brakes, mirrors, windscreen, and look for leaks.
+Adjust your seat and mirrors. Everyone wears a seatbelt before the vehicle moves.
+Put your phone away. No phone use while driving, hands-free included.
+Report any defect to your supervisor. Do not drive a vehicle that is not safe.
+
+=== m3.mp3 ===
+Speed and space.
+
+Obey the posted speed limit, and go slower when conditions are bad. The limit is a maximum, not a target.
+Keep at least 3 seconds from the vehicle ahead. Pick a fixed object, and count when the vehicle ahead passes it.
+Make it 4 seconds or more in rain, at night, or behind trucks.
+More speed means a much longer stopping distance. If you double your speed, your braking distance becomes about four times longer.
+Always leave yourself an escape route: a space to move into if something goes wrong.
+
+=== m4.mp3 ===
+Look ahead.
+
+Scan far ahead, not only at the vehicle in front. The earlier you see a problem, the more time you have.
+Check your mirrors every 5 to 8 seconds. Check your blind spots before you turn or change lane.
+Keep your eyes moving, and expect that other road users have not seen you.
+At junctions, slow down and look both ways. Look again before you move, even if you have the right of way.
+Motorbikes and pedestrians: check blind spots, give them space, and never turn without looking twice.
+
+=== m5.mp3 ===
+Rain, night and bad roads.
+
+Wet roads: slow down early, brake gently and early, and avoid sudden steering.
+Never drive through floodwater. Turn back.
+In heavy rain, if you cannot see well, slow down and switch on your lights. Pull over safely if you need to.
+Night: dip your lights, and do not drive faster than you can stop within your headlight range.
+If you are dazzled by oncoming lights, slow down and look to the left edge of the road.
+Watch for oil-palm fruit, oil, mud and potholes on the road.
+
+=== m6.mp3 ===
+Trucks, equipment and reversing.
+
+Stay out of the blind spots of heavy trucks. If you cannot see the truck driver in the mirror, the driver cannot see you.
+Never overtake on bends or hill crests. Expect wide turns from long vehicles.
+On site, give way to trucks, cranes and heavy equipment, and stay where the operator can see you.
+Reversing: walk around first, then reverse slowly. Use a spotter if you cannot see clearly. Park so that you can drive out forwards.
+Never drive, park or stand under a suspended load. Stop well clear and wait.
+
+=== m7.mp3 ===
+Fatigue and distraction.
+
+Sleep at least 7 hours before a long run. Take a break at least every 2 hours.
+Warning signs are yawning, heavy eyes and drifting in your lane. If you are sleepy, pull over safely, rest or swap drivers, and tell your supervisor.
+Do not rush to meet a flight. Arriving late is better than not arriving.
+Phone, food, music and talking can pull your attention away. Eyes on the road, hands on the wheel.
+
+=== m8.mp3 ===
+If something goes wrong.
+
+Breakdown: switch on hazard lights, move passengers to a safe place away from traffic, set the warning triangle, and call your supervisor.
+Crash or near miss: stop safely, check for injuries, and call the emergency contact you were given at induction. Then call your supervisor and HSSE or security.
+Report every incident and near miss, even small ones. Reporting prevents the next one.
+You have the authority to stop any unsafe situation. You will never be punished for stopping safely.

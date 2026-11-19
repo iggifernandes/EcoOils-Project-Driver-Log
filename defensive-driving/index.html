@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Defensive driving</title>
+<meta name="theme-color" content="#44a276">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* standard EcoOils app skin (same palette and type as the other apps) */
+    --green:#44a276; --green-dark:#357f5c; --green-soft:#EAF6F0;
+    --ink:#231f20; --grey-title:#6e6b6c; --grey-mid:#aaaaaa; --grey-line:#dcdcdc; --chip:#f4f4f4;
+    --radius:8px; --maxw:640px; --fs:16px;
+  }
+  @media (min-width:900px){ :root{ --maxw:820px; --fs:17px; } }
+  @media (min-width:1400px){ :root{ --maxw:1040px; --fs:19px; } }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Jost',system-ui,-apple-system,Segoe UI,Roboto,sans-serif; font-size:var(--fs); color:var(--ink); background:#fff; -webkit-font-smoothing:antialiased; min-height:100vh;}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 18px 64px;}
+
+  /* top bar: title left; version above the language toggle, top right */
+  .topbar{position:relative; display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding:22px 0 14px; border-bottom:1px solid var(--grey-line); margin-bottom:22px;}
+  .topbar:after{content:""; position:absolute; left:0; bottom:-1px; width:44px; height:4px; background:var(--green);}
+  .brand-mark{display:flex; align-items:center; gap:9px; min-width:0;}
+  .brand-mark .dot{width:9px; height:9px; border-radius:50%; background:var(--green); flex:none;}
+  .brand-title{font-weight:300; font-size:1.12em; letter-spacing:.14em; text-transform:uppercase; color:var(--grey-title); line-height:1.3;}
+  .topbar-right{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex:none;}
+  .version{font-size:.75em; color:var(--grey-title); letter-spacing:.06em; font-variant-numeric:tabular-nums;}
+  .langtoggle{display:flex;}
+  .langtoggle button{border:none; background:none; color:var(--grey-title); font-family:inherit; font-size:.875em; letter-spacing:.06em; padding:4px 8px; cursor:pointer; border-bottom:3px solid transparent; min-height:30px;}
+  .langtoggle button.active{color:var(--ink); font-weight:600; border-bottom-color:var(--green);}
+
+  /* module stepper */
+  .stepper{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 10px;}
+  .stepper button{width:2.2em; height:2.2em; border-radius:50%; border:1px solid var(--grey-line); background:#fff; color:var(--grey-title); font-family:inherit; font-size:.875em; cursor:pointer;}
+  .stepper button.seen{background:var(--chip);}
+  .stepper button.cur{background:var(--green); border-color:var(--green); color:#fff; font-weight:600;}
+  .progress{height:4px; background:var(--chip); border-radius:4px; overflow:hidden; margin:0 0 20px;}
+  .progress i{display:block; height:100%; background:var(--green); transition:width .25s;}
+
+  .card{border:1px solid var(--grey-line); border-radius:var(--radius); padding:22px 20px; margin-bottom:16px;}
+  .kicker{font-size:.8em; letter-spacing:.12em; text-transform:uppercase; color:var(--grey-mid); margin:0 0 6px;}
+  h2{font-weight:500; font-size:1.4em; line-height:1.25; margin:0 0 14px;}
+
+  /* narration player */
+  .player{display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--green-soft); border-radius:var(--radius); padding:10px 12px; margin:0 0 18px;}
+  .player .pbtn{border:none; background:var(--green); color:#fff; border-radius:7px; padding:9px 16px; font-family:inherit; font-size:.9em; font-weight:600; cursor:pointer; min-height:40px; min-width:6.5em;}
+  .player .pbtn:hover{background:var(--green-dark);}
+  .player input[type=range]{flex:1 1 120px; accent-color:var(--green); min-width:90px;}
+  .player .time{font-size:.8em; color:var(--grey-title); font-variant-numeric:tabular-nums; min-width:5.6em; text-align:right;}
+  .player .spd{border:1px solid var(--green); background:#fff; color:var(--green-dark); border-radius:7px; padding:6px 10px; font-family:inherit; font-size:.8em; cursor:pointer; min-height:34px;}
+  .player .vnote{font-size:.75em; color:var(--grey-title); letter-spacing:.04em; flex-basis:100%;}
+
+  ul.pts{margin:0; padding:0; list-style:none;}
+  ul.pts li{position:relative; padding:0 0 12px 22px; line-height:1.5;}
+  ul.pts li:before{content:""; position:absolute; left:4px; top:.6em; width:7px; height:7px; border-radius:50%; background:var(--green);}
+  ul.pts li strong{font-weight:600;}
+
+  .nav{display:flex; gap:10px; margin-top:6px;}
+  .btn{flex:1; padding:13px 16px; border-radius:9px; border:none; font-family:inherit; font-size:.95em; font-weight:600; cursor:pointer; min-height:46px;}
+  .btn-primary{background:var(--green); color:#fff;}
+  .btn-primary:hover{background:var(--green-dark);}
+  .btn-ghost{background:#fff; color:var(--green-dark); border:1px solid var(--grey-line);}
+  .btn[disabled]{opacity:.4; cursor:default;}
+  a.btn{display:block; text-align:center; text-decoration:none;}
+  .done{text-align:center;}
+  .done h2{font-weight:300; letter-spacing:.14em; text-transform:uppercase; color:var(--grey-title);}
+  button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid var(--green); outline-offset:2px;}
+  @media (max-width:420px){ .nav{flex-direction:column-reverse;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand-mark"><span class="dot"></span><span class="brand-title" id="ttl">Defensive driving</span></div>
+    <div class="topbar-right">
+      <span class="version" id="ver"></span>
+      <div class="langtoggle" id="lt">
+        <button type="button" data-lang="en">EN</button>
+        <button type="button" data-lang="id">ID</button>
+        <button type="button" data-lang="ms">MS</button>
+      </div>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<script src="content.js"></script>
+<script>
+(function(){
+'use strict';
+var C = window.COURSE, MODS = C.modules, N = MODS.length;
+var LANGS = ['en','id','ms'], VOICE = {en:'en-US', id:'id-ID', ms:'ms-MY'};
+var lang = 'en'; try { var sl = localStorage.getItem('ecooils_lang'); if (LANGS.indexOf(sl) > -1) lang = sl; } catch(e){}
+var cur = 0, finished = false, seen = {};
+var h = parseInt((location.hash || '').replace('#',''), 10); if (h >= 1 && h <= N) cur = h - 1;
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s).replace(/[&<>"]/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]; }); }
+function rich(s){ return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
+function plain(s){ return s.replace(/\*\*/g, ''); }
+function T(){ return C.ui[lang]; }
+
+/* ---------- narration: MP3 from audio/<lang>/m<n>.mp3, else browser voice ---------- */
+var A = new Audio(); A.preload = 'none';
+var mode = null, token = 0, rate = 1, RATES = [1, 1.25, 1.5];
+function scriptText(){ var m = MODS[cur]; return plain(m.t[lang]) + '. ' + m.i[lang].map(plain).join(' '); }
+function audioPath(){ return 'audio/' + lang + '/m' + (cur + 1) + '.mp3'; }
+function fmt(s){ if (!isFinite(s)) return '0:00'; s = Math.floor(s); return Math.floor(s/60) + ':' + ('0' + (s%60)).slice(-2); }
+function setBtn(state){ var b = $('pbtn'); if (!b) return; b.textContent = state === 'pause' ? T().pause : state === 'stop' ? T().stop : T().listen; b.dataset.state = state; }
+function note(on){ var n = $('vnote'); if (n) n.textContent = on ? T().voiceNote : ''; var s = $('seek'); if (s){ s.style.visibility = on ? 'hidden' : 'visible'; } }
+function stopAudio(){
+  token++; A.onerror = null; A.onended = null; try { A.pause(); } catch(e){} A.removeAttribute('src');
+  if (window.speechSynthesis) { try { speechSynthesis.cancel(); } catch(e){} }
+  mode = null; setBtn('listen'); note(false);
+  var s = $('seek'); if (s) s.value = 0; var t = $('time'); if (t) t.textContent = '0:00 / 0:00';
+}
+function startVoice(my){
+  if (!window.speechSynthesis) { setBtn('listen'); return; }
+  mode = 'voice'; note(true); setBtn('stop');
+  var u = new SpeechSynthesisUtterance(scriptText()); u.lang = VOICE[lang]; u.rate = rate;
+  u.onend = function(){ if (my === token) { mode = null; setBtn('listen'); } };
+  u.onerror = u.onend;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function startAudio(){
+  stopAudio();
+  var my = ++token; mode = 'file'; setBtn('pause'); note(false);
+  function fallback(){ if (my !== token || mode === 'voice') return; A.onerror = null; try { A.pause(); } catch(e){} A.removeAttribute('src'); startVoice(my); }
+  A.onerror = fallback;
+  A.onended = function(){ if (my === token) { mode = null; setBtn('listen'); } };
+  A.src = audioPath(); A.playbackRate = rate;
+  var p = A.play(); if (p && p.catch) p.catch(fallback);
+}
+function togglePlay(){
+  if (mode === 'file') { if (A.paused) { A.play(); setBtn('pause'); } else { A.pause(); setBtn('listen'); } return; }
+  if (mode === 'voice') { stopAudio(); return; }
+  startAudio();
+}
+A.addEventListener('timeupdate', function(){ var s = $('seek'), t = $('time'); if (!s || mode !== 'file') return; s.value = A.duration ? (A.currentTime / A.duration * 1000) : 0; t.textContent = fmt(A.currentTime) + ' / ' + fmt(A.duration); });
+A.addEventListener('loadedmetadata', function(){ var t = $('time'); if (t && mode === 'file') t.textContent = '0:00 / ' + fmt(A.duration); });
+
+/* ---------- rendering ---------- */
+function render(){
+  var t = T(); document.documentElement.lang = lang; $('ttl').textContent = t.title; document.title = t.title;
+  $('ver').textContent = 'v' + C.version;
+  Array.prototype.forEach.call($('lt').querySelectorAll('button'), function(b){ b.classList.toggle('active', b.dataset.lang === lang); });
+  stopAudio();
+  var app = $('app');
+  if (finished) {
+    app.innerHTML = '<div class="card done"><h2>' + esc(t.done) + '</h2><p>' + esc(t.doneBody) + '</p><div class="nav"><button class="btn btn-ghost" id="again">' + esc(t.restart) + '</button><a class="btn btn-primary" href="../induction/">' + esc(t.toInduction) + '</a></div></div>';
+    $('again').onclick = function(){ finished = false; cur = 0; seen = {}; render(); };
+    return;
+  }
+  seen[cur] = true;
+  var m = MODS[cur], dots = '';
+  for (var k = 0; k < N; k++) dots += '<button type="button" data-k="' + k + '" class="' + (k === cur ? 'cur' : seen[k] ? 'seen' : '') + '" aria-label="' + esc(t.module) + ' ' + (k+1) + '">' + (k+1) + '</button>';
+  app.innerHTML =
+    '<div class="stepper" id="stp">' + dots + '</div>' +
+    '<div class="progress"><i style="width:' + Math.round((cur + 1) / N * 100) + '%"></i></div>' +
+    '<div class="card"><p class="kicker">' + esc(t.module) + ' ' + (cur + 1) + ' ' + esc(t.of) + ' ' + N + '</p><h2>' + esc(m.t[lang]) + '</h2>' +
+    '<div class="player"><button type="button" class="pbtn" id="pbtn">' + esc(t.listen) + '</button>' +
+    '<input type="range" id="seek" min="0" max="1000" value="0" aria-label="seek"><span class="time" id="time">0:00 / 0:00</span>' +
+    '<button type="button" class="spd" id="spd" title="' + esc(t.speed) + '">' + rate + '×</button><span class="vnote" id="vnote"></span></div>' +
+    '<ul class="pts">' + m.i[lang].map(function(s){ return '<li>' + rich(s) + '</li>'; }).join('') + '</ul></div>' +
+    '<div class="nav"><button class="btn btn-ghost" id="pv"' + (cur === 0 ? ' disabled' : '') + '>' + esc(t.prev) + '</button><button class="btn btn-primary" id="nx">' + esc(t.next) + '</button></div>';
+  $('pbtn').onclick = togglePlay;
+  $('spd').onclick = function(){ rate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]; $('spd').textContent = rate + '×'; if (mode === 'file') A.playbackRate = rate; };
+  $('seek').oninput = function(){ if (mode === 'file' && A.duration) A.currentTime = this.value / 1000 * A.duration; };
+  $('stp').onclick = function(e){ var b = e.target.closest('button[data-k]'); if (b) { cur = +b.dataset.k; render(); window.scrollTo(0, 0); } };
+  $('pv').onclick = function(){ if (cur > 0) { cur--; render(); window.scrollTo(0, 0); } };
+  $('nx').onclick = function(){ if (cur < N - 1) cur++; else finished = true; render(); window.scrollTo(0, 0); };
+  try { history.replaceState(null, '', '#' + (cur + 1)); } catch(e){}
+}
+$('lt').onclick = function(e){ var b = e.target.closest('button[data-lang]'); if (!b) return; lang = b.dataset.lang; try { localStorage.setItem('ecooils_lang', lang); } catch(x){} render(); };
+render();
+if ('serviceWorker' in navigator) { window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }
+})();
+</script>
+</body>
+</html>

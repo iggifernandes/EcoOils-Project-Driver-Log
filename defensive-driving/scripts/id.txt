@@ -1,0 +1,72 @@
+DEFENSIVE DRIVING - BAHASA INDONESIA - NARRATION SCRIPT (v1.0.0)
+One block per module. Generate one audio file per block and save it as audio/id/m<number>.mp3
+
+=== m1.mp3 ===
+Mengapa mengemudi defensif.
+
+Mengemudi defensif berarti mengemudi sedemikian rupa agar Anda tetap aman, meskipun orang lain berbuat salah.
+Anda tidak bisa mengendalikan pengemudi lain, sepeda motor, atau cuaca. Anda bisa mengendalikan kecepatan, jarak, dan perhatian Anda.
+Sebagian besar kecelakaan dapat dihindari. Kecelakaan terjadi ketika pengemudi terlalu cepat, terlalu dekat, lelah, atau tidak fokus.
+Anda membawa orang yang mempercayai Anda. Keselamatan mereka adalah tugas pertama Anda di setiap perjalanan.
+
+=== m2.mp3 ===
+Sebelum mengemudi.
+
+Mengemudilah hanya jika Anda cukup istirahat, sehat, dan tidak terpengaruh apa pun. Tidak boleh alkohol atau narkoba, sebelum maupun saat mengemudi.
+Kelilingi kendaraan terlebih dahulu. Periksa ban, lampu, rem, kaca spion, kaca depan, dan lihat apakah ada kebocoran.
+Atur kursi dan kaca spion. Semua orang memakai sabuk pengaman sebelum kendaraan bergerak.
+Simpan ponsel Anda. Tidak memakai HP saat mengemudi, termasuk hands-free.
+Laporkan setiap kerusakan kepada atasan Anda. Jangan mengemudikan kendaraan yang tidak aman.
+
+=== m3.mp3 ===
+Kecepatan dan jarak.
+
+Patuhi batas kecepatan yang terpasang, dan kurangi kecepatan saat kondisi buruk. Batas kecepatan adalah maksimum, bukan target.
+Jaga jarak minimal 3 detik dari kendaraan di depan. Pilih satu objek tetap, lalu hitung saat kendaraan di depan melewatinya.
+Jadikan 4 detik atau lebih saat hujan, malam hari, atau di belakang truk.
+Semakin cepat, jarak berhenti semakin panjang. Jika kecepatan Anda dua kali lipat, jarak pengereman menjadi sekitar empat kali lebih panjang.
+Selalu sediakan jalur keluar: ruang untuk bergerak jika terjadi sesuatu.
+
+=== m4.mp3 ===
+Lihat jauh ke depan.
+
+Pindai jauh ke depan, bukan hanya kendaraan di depan Anda. Semakin cepat Anda melihat masalah, semakin banyak waktu Anda.
+Periksa kaca spion setiap 5 sampai 8 detik. Periksa titik buta sebelum berbelok atau pindah lajur.
+Gerakkan mata Anda terus, dan anggap pengguna jalan lain belum melihat Anda.
+Di persimpangan, perlambat dan lihat ke kedua arah. Lihat sekali lagi sebelum jalan, meskipun Anda punya hak jalan.
+Sepeda motor dan pejalan kaki: periksa titik buta, beri ruang, dan jangan pernah berbelok tanpa melihat dua kali.
+
+=== m5.mp3 ===
+Hujan, malam, dan jalan buruk.
+
+Jalan basah: perlambat lebih awal, rem dengan lembut dan lebih awal, dan hindari membelok mendadak.
+Jangan pernah menerobos banjir. Putar balik.
+Saat hujan deras, jika pandangan Anda terbatas, perlambat dan nyalakan lampu. Menepilah dengan aman jika perlu.
+Malam hari: gunakan lampu dekat, dan jangan melaju lebih cepat dari jarak henti Anda dalam jangkauan lampu.
+Jika silau oleh lampu dari depan, perlambat dan lihat tepi kiri jalan.
+Waspadai buah sawit, minyak, lumpur, dan lubang di jalan.
+
+=== m6.mp3 ===
+Truk, alat berat, dan mundur.
+
+Jauhi titik buta truk berat. Jika Anda tidak bisa melihat pengemudi truk di kaca spion, pengemudi itu juga tidak bisa melihat Anda.
+Jangan pernah menyalip di tikungan atau puncak tanjakan. Antisipasi belokan lebar dari kendaraan panjang.
+Di lokasi, beri jalan kepada truk, crane, dan alat berat, dan tetap berada di tempat yang terlihat oleh operator.
+Mundur: kelilingi kendaraan dahulu, lalu mundur perlahan. Gunakan pemandu jika pandangan Anda tidak jelas. Parkir agar Anda bisa keluar dengan maju.
+Jangan pernah mengemudi, parkir, atau berdiri di bawah beban yang menggantung. Berhenti jauh dan tunggu.
+
+=== m7.mp3 ===
+Kelelahan dan gangguan.
+
+Tidur minimal 7 jam sebelum perjalanan jauh. Istirahat minimal setiap 2 jam.
+Tanda-tanda bahayanya adalah menguap, mata berat, dan keluar dari jalur. Jika mengantuk, menepilah dengan aman, istirahat atau bergantian pengemudi, dan beri tahu atasan Anda.
+Jangan terburu-buru mengejar jadwal penerbangan. Terlambat lebih baik daripada tidak sampai.
+Ponsel, makanan, musik, dan mengobrol bisa mengalihkan perhatian Anda. Mata ke jalan, tangan di setir.
+
+=== m8.mp3 ===
+Jika terjadi sesuatu.
+
+Mogok: nyalakan lampu hazard, pindahkan penumpang ke tempat aman jauh dari lalu lintas, pasang segitiga pengaman, dan hubungi atasan Anda.
+Tabrakan atau nyaris celaka: berhenti dengan aman, periksa apakah ada yang cedera, dan hubungi kontak darurat yang diberikan saat induksi. Lalu hubungi atasan Anda dan HSSE atau keamanan.
+Laporkan setiap insiden dan nyaris celaka, sekecil apa pun. Pelaporan mencegah kejadian berikutnya.
+Anda berwenang menghentikan situasi apa pun yang tidak aman. Anda tidak akan pernah dihukum karena berhenti dengan aman.

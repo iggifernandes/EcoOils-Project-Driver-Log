@@ -1,0 +1,72 @@
+DEFENSIVE DRIVING - BAHASA MELAYU - NARRATION SCRIPT (v1.0.0)
+One block per module. Generate one audio file per block and save it as audio/ms/m<number>.mp3
+
+=== m1.mp3 ===
+Mengapa pemanduan defensif.
+
+Pemanduan defensif bermaksud memandu supaya anda kekal selamat, walaupun orang lain melakukan kesilapan.
+Anda tidak dapat mengawal pemandu lain, motosikal atau cuaca. Anda boleh mengawal kelajuan, jarak dan perhatian anda.
+Kebanyakan kemalangan boleh dielakkan. Ia berlaku apabila pemandu terlalu laju, terlalu dekat, letih atau terganggu.
+Anda membawa orang yang mempercayai anda. Keselamatan mereka ialah tugas pertama anda pada setiap perjalanan.
+
+=== m2.mp3 ===
+Sebelum memandu.
+
+Memandu hanya jika anda cukup berehat, sihat dan tidak terjejas oleh apa-apa. Tiada alkohol atau dadah, sebelum atau semasa memandu.
+Berjalan mengelilingi kenderaan dahulu. Periksa tayar, lampu, brek, cermin, cermin depan, dan lihat jika ada kebocoran.
+Laraskan tempat duduk dan cermin. Semua orang memakai tali pinggang keledar sebelum kenderaan bergerak.
+Simpan telefon anda. Tiada penggunaan telefon semasa memandu, termasuk tanpa tangan.
+Laporkan sebarang kerosakan kepada penyelia anda. Jangan memandu kenderaan yang tidak selamat.
+
+=== m3.mp3 ===
+Kelajuan dan jarak.
+
+Patuhi had laju yang ditetapkan, dan perlahankan kenderaan apabila keadaan buruk. Had laju ialah maksimum, bukan sasaran.
+Jaga jarak sekurang-kurangnya 3 saat dari kenderaan di hadapan. Pilih satu objek tetap, kemudian kira apabila kenderaan di hadapan melepasinya.
+Jadikan 4 saat atau lebih semasa hujan, waktu malam atau di belakang lori.
+Lebih laju bermakna jarak berhenti lebih panjang. Jika kelajuan anda digandakan, jarak brek menjadi kira-kira empat kali lebih panjang.
+Sentiasa sediakan laluan keluar: ruang untuk bergerak jika sesuatu berlaku.
+
+=== m4.mp3 ===
+Pandang jauh ke hadapan.
+
+Imbas jauh ke hadapan, bukan hanya kenderaan di depan anda. Semakin awal anda nampak masalah, semakin banyak masa anda.
+Periksa cermin setiap 5 hingga 8 saat. Periksa titik buta sebelum membelok atau menukar lorong.
+Gerakkan mata anda sentiasa, dan anggap pengguna jalan lain belum nampak anda.
+Di persimpangan, perlahankan kenderaan dan lihat kedua-dua arah. Lihat sekali lagi sebelum bergerak, walaupun anda ada hak laluan.
+Motosikal dan pejalan kaki: periksa titik buta, beri ruang, dan jangan sekali-kali membelok tanpa melihat dua kali.
+
+=== m5.mp3 ===
+Hujan, malam dan jalan buruk.
+
+Jalan basah: perlahankan kenderaan lebih awal, brek dengan lembut dan lebih awal, dan elakkan stereng secara mengejut.
+Jangan sekali-kali menerjah banjir. Berpatah balik.
+Semasa hujan lebat, jika penglihatan anda terhad, perlahankan kenderaan dan hidupkan lampu. Berhenti di tepi dengan selamat jika perlu.
+Waktu malam: gunakan lampu dekat, dan jangan memandu lebih laju daripada jarak henti anda dalam jangkauan lampu.
+Jika silau oleh lampu dari hadapan, perlahankan kenderaan dan lihat tepi kiri jalan.
+Berhati-hati dengan buah kelapa sawit, minyak, lumpur dan lubang di jalan.
+
+=== m6.mp3 ===
+Lori, jentera dan mengundur.
+
+Jauhi titik buta lori berat. Jika anda tidak nampak pemandu lori di dalam cermin, pemandu itu juga tidak nampak anda.
+Jangan sekali-kali memotong di selekoh atau puncak bukit. Jangkakan pusingan lebar daripada kenderaan panjang.
+Di tapak, beri laluan kepada lori, kren dan jentera berat, dan kekal di tempat yang operator boleh nampak.
+Mengundur: berjalan mengelilingi kenderaan dahulu, kemudian undur perlahan-lahan. Gunakan pemandu arah jika penglihatan anda tidak jelas. Letak kenderaan supaya anda boleh keluar ke hadapan.
+Jangan sekali-kali memandu, meletak kenderaan atau berdiri di bawah beban tergantung. Berhenti jauh dan tunggu.
+
+=== m7.mp3 ===
+Keletihan dan gangguan.
+
+Tidur sekurang-kurangnya 7 jam sebelum perjalanan jauh. Berehat sekurang-kurangnya setiap 2 jam.
+Tanda amaran ialah menguap, mata berat dan tersasar dari lorong. Jika mengantuk, berhenti di tepi dengan selamat, berehat atau bertukar pemandu, dan beritahu penyelia anda.
+Jangan tergesa-gesa mengejar penerbangan. Tiba lewat lebih baik daripada tidak tiba.
+Telefon, makanan, muzik dan berbual boleh mengalihkan perhatian anda. Mata ke jalan, tangan di stereng.
+
+=== m8.mp3 ===
+Jika sesuatu berlaku.
+
+Kenderaan rosak: hidupkan lampu kecemasan, bawa penumpang ke tempat selamat jauh dari lalu lintas, pasang segi tiga amaran, dan hubungi penyelia anda.
+Kemalangan atau nyaris kemalangan: berhenti dengan selamat, periksa jika ada yang cedera, dan hubungi kenalan kecemasan yang diberikan semasa induksi. Kemudian hubungi penyelia anda dan HSSE atau keselamatan.
+Laporkan setiap insiden dan nyaris kemalangan, walaupun kecil. Pelaporan mencegah kejadian seterusnya.
+Anda berhak menghentikan sebarang keadaan yang tidak selamat. Anda tidak akan sekali-kali dihukum kerana berhenti dengan selamat.
